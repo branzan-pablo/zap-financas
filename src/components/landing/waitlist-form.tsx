@@ -15,6 +15,8 @@ type Props = {
   className?: string;
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function WaitlistForm({
   intent = "waitlist",
   priceShown,
@@ -28,8 +30,11 @@ export function WaitlistForm({
   );
   const [error, setError] = useState("");
 
+  const emailValid = EMAIL_RE.test(email.trim());
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!emailValid || status === "loading") return;
     setStatus("loading");
     setError("");
     try {
@@ -37,7 +42,7 @@ export function WaitlistForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: email.trim(),
           hp,
           wants_founder: intent === "founder",
           price_shown: priceShown ?? null,
@@ -81,11 +86,7 @@ export function WaitlistForm({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className={cn("flex flex-col gap-2 sm:flex-row", className)}
-      noValidate
-    >
+    <form onSubmit={onSubmit} className={cn("flex flex-col gap-2", className)} noValidate>
       {/* Honeypot — hidden from humans, catches naive bots. */}
       <input
         type="text"
@@ -97,35 +98,37 @@ export function WaitlistForm({
         onChange={(e) => setHp(e.target.value)}
         className="absolute left-[-9999px] h-0 w-0 opacity-0"
       />
-      <label htmlFor={`email-${intent}`} className="sr-only">
-        Seu email
-      </label>
-      <Input
-        id={`email-${intent}`}
-        type="email"
-        inputMode="email"
-        autoComplete="email"
-        required
-        placeholder="seu@email.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="h-12 flex-1 bg-white text-base"
-        aria-invalid={status === "error"}
-      />
-      <Button
-        type="submit"
-        disabled={status === "loading"}
-        className="h-12 px-6 text-base font-semibold"
-      >
-        {status === "loading"
-          ? "Enviando…"
-          : ctaLabel ?? "Entrar na lista"}
-      </Button>
-      {status === "error" && (
-        <p
-          role="alert"
-          className="w-full text-sm text-[#b4540a] sm:order-last"
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <label htmlFor={`email-${intent}`} className="sr-only">
+          Seu email
+        </label>
+        <Input
+          id={`email-${intent}`}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          required
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (status === "error") setStatus("idle");
+          }}
+          className="h-12 flex-1 bg-white text-base"
+          aria-invalid={status === "error"}
+        />
+        <Button
+          type="submit"
+          disabled={!emailValid || status === "loading"}
+          className="h-12 px-6 text-base font-semibold"
         >
+          {status === "loading" ? "Enviando…" : ctaLabel ?? "Entrar na lista"}
+        </Button>
+      </div>
+
+      {status === "error" && (
+        <p role="alert" className="text-sm text-[#b4540a]">
           {error}
         </p>
       )}
