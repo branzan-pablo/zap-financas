@@ -9,12 +9,12 @@ export type WaitlistEntry = {
   user_agent: string | null;
 };
 
-const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPA_URL = process.env.SUPABASE_URL;
 const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 /**
  * Persists a waitlist lead.
- * - Production: Supabase (set NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).
+ * - Production: Supabase (set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — both server-only).
  * - Local dev without keys: appends to .data/waitlist.json so the smoke test works offline.
  */
 export async function saveLead(

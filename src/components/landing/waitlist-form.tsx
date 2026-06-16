@@ -21,6 +21,7 @@ export function WaitlistForm({
   className,
 }: Props) {
   const [email, setEmail] = useState("");
+  const [hp, setHp] = useState(""); // honeypot: humans never fill this
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
     "idle"
   );
@@ -36,6 +37,7 @@ export function WaitlistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
+          hp,
           wants_founder: intent === "founder",
           price_shown: priceShown ?? null,
           source:
@@ -82,6 +84,17 @@ export function WaitlistForm({
       className={cn("flex flex-col gap-2 sm:flex-row", className)}
       noValidate
     >
+      {/* Honeypot — hidden from humans, catches naive bots. */}
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
       <label htmlFor={`email-${intent}`} className="sr-only">
         Seu email
       </label>

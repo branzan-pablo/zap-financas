@@ -13,6 +13,11 @@ export async function POST(request: Request) {
     );
   }
 
+  // Honeypot: a filled "hp" field means a bot. Pretend success, save nothing.
+  if (body?.hp) {
+    return Response.json({ ok: true });
+  }
+
   const email = String(body?.email ?? "")
     .trim()
     .toLowerCase();

@@ -18,8 +18,10 @@ Sem variáveis de ambiente, os leads são salvos em `.data/waitlist.json` (só e
 
 ## Produção (captura real de leads)
 1. Crie um projeto grátis no [Supabase](https://supabase.com).
-2. Rode `supabase/schema.sql` no SQL editor.
-3. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+2. Aplique a migration: `supabase link --project-ref <ref>` e `supabase db push`
+   (ou cole `supabase/migrations/*.sql` no SQL editor).
+3. Copie `.env.example` para `.env.local` e preencha `SUPABASE_URL` e
+   `SUPABASE_SERVICE_ROLE_KEY` (ambas server-only — nunca `NEXT_PUBLIC_`).
 4. Deploy na Vercel (defina as mesmas variáveis no projeto).
 
 ## Specs (Spec-Driven Development)
