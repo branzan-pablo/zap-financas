@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "@vercel/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ export function WaitlistForm({
         setError(data?.error ?? "Algo deu errado. Tente de novo.");
         return;
       }
+      track("signup", { intent }); // conversion event for Vercel Analytics
       setStatus("done");
     } catch {
       setStatus("error");
