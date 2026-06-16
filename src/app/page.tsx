@@ -266,9 +266,17 @@ export default function Home() {
                   ctaLabel="Quero ser fundador"
                   checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL}
                 />
-                <p className="mt-3 text-center font-num text-xs text-slate">
-                  Pagamento seguro via Pix ou cartão · 7 dias de garantia
-                </p>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 font-num text-xs text-slate">
+                  <span className="rounded-full border border-line px-2.5 py-1">
+                    Pix
+                  </span>
+                  <span className="rounded-full border border-line px-2.5 py-1">
+                    Cartão em até 12x
+                  </span>
+                  <span className="rounded-full border border-line px-2.5 py-1">
+                    Garantia de 7 dias
+                  </span>
+                </div>
               </div>
             </div>
           </div>
