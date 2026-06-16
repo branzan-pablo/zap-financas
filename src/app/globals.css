@@ -1,0 +1,168 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Brand tokens */
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-emerald: var(--emerald);
+  --color-emerald-soft: var(--emerald-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-slate: var(--slate);
+  --color-line: var(--line);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Brand palette (see specs/04-design-guidelines.md) */
+  --ink: #0b1220;
+  --paper: #fbfbf9;
+  --emerald: #0fa968;
+  --emerald-soft: #e7f5ee;
+  --amber: #f59e0b;
+  --amber-soft: #fdf3e2;
+  --slate: #5b6675;
+  --line: #e8e8e3;
+
+  --radius: 0.75rem;
+
+  /* shadcn tokens mapped to brand (light only) */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--emerald);
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3ef;
+  --secondary-foreground: var(--ink);
+  --muted: #f3f3ef;
+  --muted-foreground: var(--slate);
+  --accent: var(--emerald-soft);
+  --accent-foreground: #0a6e44;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--emerald);
+  --chart-1: var(--emerald);
+  --chart-2: var(--amber);
+  --chart-3: #0a6e44;
+  --chart-4: #c77f0a;
+  --chart-5: var(--slate);
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--emerald);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--emerald-soft);
+  --sidebar-accent-foreground: #0a6e44;
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--emerald);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .font-num {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/* Signature animations — disabled under reduced motion */
+@keyframes cz-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cz-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.cz-rise {
+  animation: cz-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cz-bar {
+  transform-origin: left;
+  animation: cz-bar 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cz-rise,
+  .cz-bar {
+    animation: none;
+  }
+}
