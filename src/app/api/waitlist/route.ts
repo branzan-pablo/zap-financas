@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       user_agent: request.headers.get("user-agent")?.slice(0, 300) ?? null,
     });
     return Response.json({ ok: true, mode });
-  } catch {
+  } catch (e) {
+    console.error("waitlist save failed:", e);
     return Response.json(
       { ok: false, error: "Não foi possível salvar agora. Tente de novo." },
       { status: 500 }
