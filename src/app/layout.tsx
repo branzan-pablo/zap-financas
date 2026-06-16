@@ -25,11 +25,11 @@ const siteUrl = "https://cartaozap.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "CartãoZap — controle seu cartão pelo WhatsApp",
+  title: "CartãoZap: controle seu cartão pelo WhatsApp",
   description:
     "Saiba sua fatura antes dela fechar. Registre compras parceladas por mensagem e veja quanto você já comprometeu nos próximos meses.",
   openGraph: {
-    title: "CartãoZap — controle seu cartão pelo WhatsApp",
+    title: "CartãoZap: controle seu cartão pelo WhatsApp",
     description:
       "Saiba sua fatura antes dela fechar. Registre compras parceladas por mensagem e veja o que já comprometeu nos próximos meses.",
     locale: "pt_BR",

@@ -11,7 +11,7 @@ const SUSTOS = [
     kicker: "a armadilha",
     titulo: "Parcelas escondidas",
     texto:
-      "Aquele “10x sem juros” de meses atrás ainda está comendo sua fatura — e você nem lembra dele.",
+      "Aquele “10x sem juros” de meses atrás ainda está comendo sua fatura, e você nem lembra dele.",
   },
   {
     kicker: "o susto",
@@ -31,7 +31,7 @@ const PASSOS = [
   {
     n: "01",
     titulo: "Manda no zap",
-    texto: "“Comprei uma TV em 10x de 300.” Pronto — registrado, com as parcelas.",
+    texto: "“Comprei uma TV em 10x de 300.” Pronto. Registrado, com as parcelas.",
   },
   {
     n: "02",
@@ -108,7 +108,7 @@ export default function Home() {
                 <span className="text-emerald">antes</span> dela fechar.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-slate">
-                Registre suas compras — até as parceladas — mandando uma
+                Registre suas compras (até as parceladas) mandando uma
                 mensagem. O CartãoZap mostra sua fatura projetada e quanto você
                 já comprometeu nos próximos meses.
               </p>
@@ -220,8 +220,8 @@ export default function Home() {
               Vagas de fundador
             </h2>
             <p className="mt-4 leading-relaxed text-slate">
-              Quem entrar primeiro garante preço vitalício de fundador. Você não
-              paga agora — só garante a vaga e o preço.
+              Quem entra primeiro trava o melhor preço do CartãoZap pra sempre.
+              Poucas vagas com a condição de fundador.
             </p>
           </div>
 
@@ -235,15 +235,20 @@ export default function Home() {
               </span>
             </div>
             <div className="p-8">
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-end gap-2">
                 <span className="font-num text-5xl font-bold tracking-tight text-ink">
-                  R$ 89
+                  R$ 7,40
                 </span>
-                <span className="text-slate">/ ano</span>
-                <span className="font-num text-sm text-slate line-through">
-                  R$ 119
+                <span className="mb-1.5 text-slate">/mês</span>
+                <span className="mb-1.5 ml-1 rounded-full bg-emerald-soft px-2 py-0.5 font-num text-xs text-[#0a6e44]">
+                  fundador
                 </span>
               </div>
+              <p className="mt-2 text-sm text-slate">
+                <span className="font-num text-ink/55 line-through">R$ 9,90/mês</span>{" "}
+                no plano normal. Cobrado R$ 89 no primeiro ano e seu preço fica
+                travado pra sempre.
+              </p>
               <ul className="mt-7 space-y-3">
                 {PLANO.map((item) => (
                   <li key={item} className="flex items-center gap-3 text-ink">
@@ -287,7 +292,7 @@ export default function Home() {
         <div className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
           <span className="font-display font-semibold text-ink">CartãoZap</span>
           <p className="max-w-md sm:text-right">
-            Produto em validação — ainda não é um serviço financeiro. Usamos seu
+            Produto em validação. Ainda não é um serviço financeiro. Usamos seu
             email apenas para avisar sobre o lançamento.
           </p>
         </div>
