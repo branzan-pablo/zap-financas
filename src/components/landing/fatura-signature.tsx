@@ -45,7 +45,7 @@ export function FaturaSignature() {
                 <span className="w-8 font-num text-xs text-slate">{p.mes}</span>
                 <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#f3f3ef]">
                   <div
-                    className="cz-bar h-full rounded-full bg-emerald"
+                    className="cz-bar h-full rounded-full bg-emerald-bright"
                     style={{
                       width: p.width,
                       animationDelay: `${0.3 + i * 0.08}s`,

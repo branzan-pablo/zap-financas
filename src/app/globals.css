@@ -12,6 +12,7 @@
   --color-ink: var(--ink);
   --color-paper: var(--paper);
   --color-emerald: var(--emerald);
+  --color-emerald-bright: var(--emerald-bright);
   --color-emerald-soft: var(--emerald-soft);
   --color-amber: var(--amber);
   --color-amber-soft: var(--amber-soft);
@@ -61,15 +62,19 @@
 }
 
 :root {
-  /* Brand palette (see specs/04-design-guidelines.md) */
-  --ink: #0b1220;
-  --paper: #fbfbf9;
-  --emerald: #0fa968;
-  --emerald-soft: #e7f5ee;
-  --amber: #f59e0b;
-  --amber-soft: #fdf3e2;
-  --slate: #5b6675;
-  --line: #e8e8e3;
+  /* Brand palette (see specs/04-design-guidelines.md)
+     Ink-forward: primary actions are near-black (Linear/Vercel refs);
+     emerald is a deliberate accent, not the protagonist. */
+  --ink: #0c1322;
+  --ink-hover: #1c2740;
+  --paper: #f7f6f1;
+  --emerald: #0c8a55;
+  --emerald-bright: #10b981;
+  --emerald-soft: #e8f3ec;
+  --amber: #d97706;
+  --amber-soft: #fbf0df;
+  --slate: #58616f;
+  --line: #e7e6df;
 
   --radius: 0.75rem;
 
@@ -80,18 +85,18 @@
   --card-foreground: var(--ink);
   --popover: #ffffff;
   --popover-foreground: var(--ink);
-  --primary: var(--emerald);
+  --primary: var(--ink);
   --primary-foreground: #ffffff;
-  --secondary: #f3f3ef;
+  --secondary: #eeede7;
   --secondary-foreground: var(--ink);
-  --muted: #f3f3ef;
+  --muted: #eeede7;
   --muted-foreground: var(--slate);
   --accent: var(--emerald-soft);
   --accent-foreground: #0a6e44;
   --destructive: oklch(0.577 0.245 27.325);
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--emerald);
+  --ring: var(--ink);
   --chart-1: var(--emerald);
   --chart-2: var(--amber);
   --chart-3: #0a6e44;

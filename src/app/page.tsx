@@ -263,8 +263,12 @@ export default function Home() {
                 <WaitlistForm
                   intent="founder"
                   priceShown={FOUNDER_PRICE}
-                  ctaLabel="Quero o Plano Fundador"
+                  ctaLabel="Quero ser fundador"
+                  checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL}
                 />
+                <p className="mt-3 text-center font-num text-xs text-slate">
+                  Pagamento seguro via Pix ou cartão · 7 dias de garantia
+                </p>
               </div>
             </div>
           </div>
@@ -281,7 +285,7 @@ export default function Home() {
               WhatsApp.
             </p>
             <div className="mx-auto mt-8 max-w-md">
-              <WaitlistForm />
+              <WaitlistForm onDark />
             </div>
           </div>
         </section>

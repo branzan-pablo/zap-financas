@@ -13,6 +13,10 @@ type Props = {
   priceShown?: string;
   ctaLabel?: string;
   className?: string;
+  /** When set (founder intent), redirect to this checkout URL after saving the lead. */
+  checkoutUrl?: string;
+  /** Style the CTA for a dark background (ink button would be invisible there). */
+  onDark?: boolean;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,6 +26,8 @@ export function WaitlistForm({
   priceShown,
   ctaLabel,
   className,
+  checkoutUrl,
+  onDark,
 }: Props) {
   const [email, setEmail] = useState("");
   const [hp, setHp] = useState(""); // honeypot: humans never fill this
@@ -56,6 +62,12 @@ export function WaitlistForm({
       if (!res.ok || !data.ok) {
         setStatus("error");
         setError(data?.error ?? "Algo deu errado. Tente de novo.");
+        return;
+      }
+      // Founder pre-sale: lead saved, now send them to checkout (Pix/cartão).
+      if (intent === "founder" && checkoutUrl) {
+        track("checkout_started", { intent });
+        window.location.href = checkoutUrl;
         return;
       }
       track("signup", { intent }); // conversion event for Vercel Analytics
@@ -121,7 +133,10 @@ export function WaitlistForm({
         <Button
           type="submit"
           disabled={!emailValid || status === "loading"}
-          className="h-12 px-6 text-base font-semibold"
+          className={cn(
+            "h-12 px-6 text-base font-semibold",
+            onDark && "bg-emerald-bright text-white hover:bg-emerald"
+          )}
         >
           {status === "loading" ? "Enviando…" : ctaLabel ?? "Entrar na lista"}
         </Button>
