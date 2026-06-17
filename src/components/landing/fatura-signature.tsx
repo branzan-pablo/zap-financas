@@ -60,19 +60,6 @@ export function FaturaSignature() {
           </div>
         </div>
       </div>
-
-      {/* WhatsApp-style chat bubble */}
-      <div
-        className="cz-rise absolute -bottom-10 -left-4 w-64 rounded-2xl border border-line bg-white p-3 shadow-[0_8px_24px_rgba(11,18,32,.12)] sm:-left-10"
-        style={{ animationDelay: "0.5s" }}
-      >
-        <div className="ml-auto w-fit max-w-[90%] rounded-2xl rounded-br-sm bg-emerald-soft px-3 py-2 text-sm text-ink">
-          comprei uma TV em 10x de 300
-        </div>
-        <div className="mt-2 w-fit max-w-[95%] rounded-2xl rounded-bl-sm bg-[#f3f3ef] px-3 py-2 text-sm text-ink">
-          Registrado ✓ <span className="font-num">+R$ 300/mês</span> até abr/2027
-        </div>
-      </div>
     </div>
   );
 }

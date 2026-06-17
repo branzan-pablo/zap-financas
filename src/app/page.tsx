@@ -3,8 +3,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { FaturaSignature } from "@/components/landing/fatura-signature";
-
-const FOUNDER_PRICE = "R$ 89/ano (fundador)";
+import { WhatsappMockup } from "@/components/landing/whatsapp-mockup";
+import { Pricing } from "@/components/landing/pricing";
 
 const SUSTOS = [
   {
@@ -50,14 +50,6 @@ const FEATURES = [
   { nome: "Mapa de parcelas", valor: "6 meses à frente" },
   { nome: "Alerta de fechamento", valor: "no WhatsApp" },
   { nome: "Captura por mensagem", valor: "fala e registra" },
-];
-
-const PLANO = [
-  "Cartões ilimitados",
-  "Fatura projetada em tempo real",
-  "Mapa de parcelas futuras",
-  "Alertas antes do fechamento",
-  "Captura de compras pelo WhatsApp",
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -176,6 +168,40 @@ export default function Home() {
           </div>
         </section>
 
+        {/* WhatsApp — canal principal em destaque */}
+        <section className="border-y border-line bg-emerald-soft/30">
+          <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <Eyebrow>No WhatsApp</Eyebrow>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
+                Tão simples quanto mandar uma mensagem.
+              </h2>
+              <p className="mt-4 max-w-md leading-relaxed text-slate">
+                Sem abrir app, sem planilha. Você fala, o CartãoZap registra a
+                compra, calcula as parcelas e te diz a fatura na hora, tudo na
+                conversa que você já usa o dia inteiro.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Funciona por texto ou áudio",
+                  "Resposta na hora, sem abrir app",
+                  "Parcelas calculadas sozinhas",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-ink">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-white text-xs text-emerald">
+                      ✓
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-center lg:justify-end">
+              <WhatsappMockup />
+            </div>
+          </div>
+        </section>
+
         {/* Features — painel único estilo extrato (motivo-assinatura) */}
         <section className="border-y border-line bg-white">
           <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-20 sm:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-16">
@@ -212,75 +238,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Fake-door de preço */}
-        <section className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
-          <div className="mx-auto max-w-lg text-center">
-            <Eyebrow>Acesso antecipado</Eyebrow>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
-              Vagas de fundador
-            </h2>
-            <p className="mt-4 leading-relaxed text-slate">
-              Quem entra primeiro trava o melhor preço do CartãoZap pra sempre.
-              Poucas vagas com a condição de fundador.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-12 max-w-md overflow-hidden rounded-2xl border border-emerald/30 bg-white shadow-[0_1px_2px_rgba(11,18,32,.05),0_16px_40px_rgba(11,18,32,.07)]">
-            <div className="flex items-center justify-between border-b border-line bg-emerald-soft/60 px-8 py-3">
-              <span className="font-num text-xs uppercase tracking-[0.18em] text-[#0a6e44]">
-                Plano Fundador
-              </span>
-              <span className="font-num text-xs text-[#0a6e44]">
-                primeiras 100 vagas
-              </span>
-            </div>
-            <div className="p-8">
-              <div className="flex items-end gap-2">
-                <span className="font-num text-5xl font-bold tracking-tight text-ink">
-                  R$ 7,40
-                </span>
-                <span className="mb-1.5 text-slate">/mês</span>
-                <span className="mb-1.5 ml-1 rounded-full bg-emerald-soft px-2 py-0.5 font-num text-xs text-[#0a6e44]">
-                  fundador
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-slate">
-                <span className="font-num text-ink/55 line-through">R$ 9,90/mês</span>{" "}
-                no plano normal. Cobrado R$ 89 no primeiro ano e seu preço fica
-                travado pra sempre.
-              </p>
-              <ul className="mt-7 space-y-3">
-                {PLANO.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-ink">
-                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-soft text-xs text-emerald">
-                      ✓
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8">
-                <WaitlistForm
-                  intent="founder"
-                  priceShown={FOUNDER_PRICE}
-                  ctaLabel="Quero ser fundador"
-                  checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL}
-                />
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 font-num text-xs text-slate">
-                  <span className="rounded-full border border-line px-2.5 py-1">
-                    Pix
-                  </span>
-                  <span className="rounded-full border border-line px-2.5 py-1">
-                    Cartão em até 12x
-                  </span>
-                  <span className="rounded-full border border-line px-2.5 py-1">
-                    Garantia de 7 dias
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Preço — toggle Mensal/Trimestral/Anual */}
+        <Pricing checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL} />
 
         {/* CTA final */}
         <section className="bg-ink">
