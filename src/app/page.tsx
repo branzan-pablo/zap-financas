@@ -45,13 +45,6 @@ const PASSOS = [
   },
 ];
 
-const FEATURES = [
-  { nome: "Fatura projetada", valor: "em tempo real" },
-  { nome: "Mapa de parcelas", valor: "6 meses à frente" },
-  { nome: "Alerta de fechamento", valor: "no WhatsApp" },
-  { nome: "Captura por mensagem", valor: "fala e registra" },
-];
-
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <span className="font-num text-xs font-medium uppercase tracking-[0.18em] text-emerald">
@@ -100,9 +93,12 @@ export default function Home() {
                 <span className="text-emerald">antes</span> dela fechar.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-slate">
-                Registre suas compras (até as parceladas) mandando uma
-                mensagem. O CartãoZap mostra sua fatura projetada e quanto você
-                já comprometeu nos próximos meses.
+                Registre suas compras, até as parceladas, e receba tudo{" "}
+                <span className="font-semibold text-ink">
+                  direto no WhatsApp
+                </span>
+                : a fatura projetada, as parcelas que faltam e um aviso antes de
+                fechar. Sem baixar nenhum app.
               </p>
 
               <div id="lista" className="mt-8 max-w-md scroll-mt-24">
@@ -114,7 +110,7 @@ export default function Home() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <FaturaSignature />
+              <WhatsappMockup />
             </div>
           </div>
         </section>
@@ -168,41 +164,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* WhatsApp — canal principal em destaque */}
-        <section className="border-y border-line bg-emerald-soft/30">
-          <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
-            <div>
-              <Eyebrow>No WhatsApp</Eyebrow>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
-                Tão simples quanto mandar uma mensagem.
-              </h2>
-              <p className="mt-4 max-w-md leading-relaxed text-slate">
-                Sem abrir app, sem planilha. Você fala, o CartãoZap registra a
-                compra, calcula as parcelas e te diz a fatura na hora, tudo na
-                conversa que você já usa o dia inteiro.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {[
-                  "Funciona por texto ou áudio",
-                  "Resposta na hora, sem abrir app",
-                  "Parcelas calculadas sozinhas",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-ink">
-                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-white text-xs text-emerald">
-                      ✓
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex justify-center lg:justify-end">
-              <WhatsappMockup />
-            </div>
-          </div>
-        </section>
-
-        {/* Features — painel único estilo extrato (motivo-assinatura) */}
+        {/* Features — card de fatura projetada */}
         <section className="border-y border-line bg-white">
           <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-20 sm:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-16">
             <div>
@@ -214,26 +176,24 @@ export default function Home() {
                 Sem abrir cinco apps de banco. Sem somar parcela na cabeça. O
                 número certo, na hora certa.
               </p>
-            </div>
-
-            <div className="rounded-2xl border border-line bg-paper p-6 shadow-[0_1px_2px_rgba(11,18,32,.05),0_12px_32px_rgba(11,18,32,.05)] sm:p-8">
-              <div className="mb-5 flex items-center justify-between">
-                <span className="font-num text-xs uppercase tracking-[0.18em] text-slate">
-                  Incluído
-                </span>
-                <span className="size-2 rounded-full bg-emerald" />
-              </div>
-              <ul className="divide-y divide-line">
-                {FEATURES.map((f) => (
-                  <li key={f.nome} className="flex items-center py-3.5">
-                    <span className="text-ink">{f.nome}</span>
-                    <span className="ledger-leader" aria-hidden="true" />
-                    <span className="font-num text-sm text-emerald">
-                      {f.valor}
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Fatura projetada em tempo real",
+                  "Mapa das parcelas dos próximos meses",
+                  "Alerta no WhatsApp antes de fechar",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-ink">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-soft text-xs text-emerald">
+                      ✓
                     </span>
+                    {item}
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="flex justify-center lg:justify-end">
+              <FaturaSignature />
             </div>
           </div>
         </section>
