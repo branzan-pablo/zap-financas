@@ -45,6 +45,33 @@ const PASSOS = [
   },
 ];
 
+const FAQ = [
+  {
+    q: "Meus dados financeiros estão seguros?",
+    a: "Sim. Tratamos seus dados com cuidado de banco: tudo criptografado, acesso restrito e nunca vendemos nem compartilhamos suas informações. Você controla o que registra.",
+  },
+  {
+    q: "Preciso conectar a conta do meu banco?",
+    a: "Não. Você registra suas compras pelo WhatsApp ou importa a fatura. Sem dar a senha do seu banco pra ninguém.",
+  },
+  {
+    q: "Funciona com qualquer cartão?",
+    a: "Sim. Como é você quem registra as compras, funciona com qualquer cartão, de qualquer banco.",
+  },
+  {
+    q: "É seguro usar pelo WhatsApp?",
+    a: "Sim. Você compartilha só o que quiser, na conversa que já usa todo dia, e seus dados ficam protegidos do nosso lado.",
+  },
+  {
+    q: "Quando vou ter acesso?",
+    a: "Estamos finalizando os últimos detalhes. Quem entra como fundador é avisado primeiro, por email, assim que o acesso abrir.",
+  },
+  {
+    q: "Posso cancelar?",
+    a: "Pode, quando quiser. E você tem 7 dias de garantia: se não curtir, devolvemos seu dinheiro.",
+  },
+];
+
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <span className="font-num text-xs font-medium uppercase tracking-[0.18em] text-emerald">
@@ -198,8 +225,62 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Nota do fundador — confiança */}
+        <section className="border-t border-line bg-white">
+          <div className="mx-auto w-full max-w-3xl px-6 py-20 sm:py-24">
+            <Eyebrow>Quem está por trás</Eyebrow>
+            <figure className="mt-6">
+              <blockquote className="text-xl leading-relaxed text-balance text-ink sm:text-2xl sm:leading-relaxed">
+                “Criei o CartãoZap depois de tomar susto com a fatura mais vezes
+                do que admito. Eu não ganhava mal, só não enxergava quanto já
+                tinha comprometido em parcelas. Queria saber a verdade antes da
+                fatura fechar, sem planilha e sem abrir cinco apps. Como não
+                existia do jeito que eu queria, resolvi construir.”
+              </blockquote>
+              <figcaption className="mt-8 flex items-center gap-4">
+                {/* Troque por uma foto real em public/founder.jpg para mais confiança */}
+                <span className="grid size-12 shrink-0 place-items-center rounded-full bg-ink font-display text-lg font-bold text-white">
+                  P
+                </span>
+                <div>
+                  <p className="font-semibold text-ink">Pablo</p>
+                  <p className="text-sm text-slate">Fundador do CartãoZap</p>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
         {/* Preço — toggle Mensal/Trimestral/Anual */}
         <Pricing checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL} />
+
+        {/* FAQ — quebra de objeções */}
+        <section className="border-t border-line bg-white">
+          <div className="mx-auto w-full max-w-3xl px-6 py-20 sm:py-24">
+            <Eyebrow>Perguntas frequentes</Eyebrow>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
+              Ainda com alguma dúvida?
+            </h2>
+            <div className="mt-10">
+              {FAQ.map((item) => (
+                <details
+                  key={item.q}
+                  className="group border-b border-line py-5"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-medium text-ink [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-emerald-soft text-emerald transition-transform duration-200 group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 max-w-2xl leading-relaxed text-slate">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* CTA final */}
         <section className="bg-ink">
