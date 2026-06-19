@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { Reel } from "./Reel";
 import { Promo } from "./Promo";
+import { PromoVertical } from "./PromoVertical";
 
 export const RemotionRoot = () => {
   return (
@@ -22,6 +23,15 @@ export const RemotionRoot = () => {
         fps={30}
         width={1080}
         height={700}
+      />
+      {/* Versão vertical 9:16 para TikTok / Instagram Reels */}
+      <Composition
+        id="PromoVertical"
+        component={PromoVertical}
+        durationInFrames={1120} // ~37.3s
+        fps={30}
+        width={1080}
+        height={1920}
       />
     </>
   );

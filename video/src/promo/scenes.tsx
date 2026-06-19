@@ -21,6 +21,12 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const stream = (text: string, start: number, frame: number, cps = 0.7) =>
   text.slice(0, Math.max(0, Math.floor((frame - start) * cps)));
 
+// Detecta orientação vertical (Reels/TikTok) para reempilhar layouts.
+const usePortrait = () => {
+  const { width, height } = useVideoConfig();
+  return height >= width * 1.2;
+};
+
 const Grid: React.FC<{ color?: string; opacity?: number }> = ({
   color = "#15803D",
   opacity = 0.05,
@@ -39,12 +45,13 @@ const Particles: React.FC<{ n?: number; color?: string }> = ({
   color = C.green,
 }) => {
   const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
   return (
     <AbsoluteFill>
       {Array.from({ length: n }).map((_, i) => {
-        const x = random(`px${i}`) * 1080;
-        const baseY = random(`py${i}`) * 700;
-        const y = (baseY - frame * (0.4 + random(`pv${i}`))) % 700;
+        const x = random(`px${i}`) * width;
+        const baseY = random(`py${i}`) * height;
+        const y = (baseY - frame * (0.4 + random(`pv${i}`))) % height;
         const s = 3 + random(`ps${i}`) * 5;
         return (
           <div
@@ -52,7 +59,7 @@ const Particles: React.FC<{ n?: number; color?: string }> = ({
             style={{
               position: "absolute",
               left: x,
-              top: (y + 700) % 700,
+              top: (y + height) % height,
               width: s,
               height: s,
               borderRadius: 999,
@@ -102,6 +109,7 @@ const FloatingChip: React.FC<{
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const portrait = usePortrait();
   const sp = spring({ frame, fps, config: { damping: 200 } });
   const ty = interpolate(sp, [0, 1], [700, 0]);
   const rotX = interpolate(sp, [0, 1], [20, 8]);
@@ -122,7 +130,7 @@ export const Scene1: React.FC = () => {
             transformStyle: "preserve-3d",
           }}
         >
-          <PhoneFrame height={600}>
+          <PhoneFrame height={portrait ? 900 : 600}>
             <div
               style={{
                 position: "absolute",
@@ -307,6 +315,7 @@ export const Scene2: React.FC = () => (
 /* ---------- Scene 3: Fatura Projetada ---------- */
 export const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
+  const portrait = usePortrait();
   const val = interpolate(frame, [18, 78], [0, 2180], clamp);
   const bars = [
     { m: "jun", v: 1240 },
@@ -323,8 +332,15 @@ export const Scene3: React.FC = () => {
   );
   return (
     <SceneWrap duration={160}>
-      <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-        <PhoneFrame height={560}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: portrait ? "column" : "row",
+          gap: portrait ? 26 : 32,
+          alignItems: "center",
+        }}
+      >
+        <PhoneFrame height={portrait ? 470 : 560}>
           <div
             style={{
               position: "absolute",
@@ -346,7 +362,7 @@ export const Scene3: React.FC = () => {
 
         <div
           style={{
-            width: 560,
+            width: portrait ? 880 : 560,
             background: C.surface,
             border: `1px solid ${C.border}`,
             borderRadius: 20,
@@ -467,6 +483,7 @@ export const Scene3: React.FC = () => {
 /* ---------- Scene 4: Como Funciona ---------- */
 export const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
+  const portrait = usePortrait();
   const steps = [
     { n: "01", t: "Manda no zap" },
     { n: "02", t: "Vê a fatura projetada" },
@@ -494,30 +511,36 @@ export const Scene4: React.FC = () => {
           <div
             style={{ position: "relative", marginTop: 40, padding: "0 30px" }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: 26,
-                left: 90,
-                right: 90,
-                height: 2,
-                background: C.border,
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                top: 26,
-                left: 90,
-                width: `calc((100% - 180px) * ${lineW / 100})`,
-                height: 2,
-                background: C.green,
-              }}
-            />
+            {!portrait && (
+              <>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 26,
+                    left: 90,
+                    right: 90,
+                    height: 2,
+                    background: C.border,
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 26,
+                    left: 90,
+                    width: `calc((100% - 180px) * ${lineW / 100})`,
+                    height: 2,
+                    background: C.green,
+                  }}
+                />
+              </>
+            )}
             <div
               style={{
                 display: "flex",
-                gap: 24,
+                flexDirection: portrait ? "column" : "row",
+                gap: portrait ? 16 : 24,
+                alignItems: "center",
                 justifyContent: "space-between",
               }}
             >
@@ -525,7 +548,7 @@ export const Scene4: React.FC = () => {
                 <Pop key={s.n} delay={10 + i * 16}>
                   <div
                     style={{
-                      width: 250,
+                      width: portrait ? 560 : 250,
                       background: C.bg,
                       border: `1px solid ${C.border}`,
                       borderRadius: 16,
