@@ -13,10 +13,21 @@ export const C = {
   amberChip: "#FEF3C7",
 };
 
-export const SANS =
-  'Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif';
-export const MONO =
-  '"SF Mono", "JetBrains Mono", ui-monospace, "Cascadia Code", monospace';
+import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
+import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
+
+// Carrega as fontes de verdade (pixel-perfect no render, não depende do SO).
+const inter = loadInter("normal", {
+  weights: ["400", "500", "600", "700", "800"],
+  subsets: ["latin"],
+});
+const mono = loadMono("normal", {
+  weights: ["400", "500", "700", "800"],
+  subsets: ["latin"],
+});
+
+export const SANS = `${inter.fontFamily}, system-ui, sans-serif`;
+export const MONO = `${mono.fontFamily}, ui-monospace, monospace`;
 
 // Formata número com separador de milhar pt-BR sem depender de Intl.
 export const fmt = (n: number) =>
