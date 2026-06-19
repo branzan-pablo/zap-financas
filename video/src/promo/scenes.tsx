@@ -66,6 +66,38 @@ const Particles: React.FC<{ n?: number; color?: string }> = ({
   );
 };
 
+// Chip flutuante: É o próprio elemento absoluto (sem wrapper com transform,
+// que quebraria o posicionamento). Anima só opacity + leve translateY.
+const FloatingChip: React.FC<{
+  label: string;
+  style: React.CSSProperties;
+  delay: number;
+}> = ({ label, style, delay }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const p = spring({ frame: frame - delay, fps, config: { damping: 200 } });
+  return (
+    <div
+      style={{
+        position: "absolute",
+        ...style,
+        opacity: interpolate(p, [0, 1], [0, 1], { extrapolateRight: "clamp" }),
+        transform: `translateY(${interpolate(p, [0, 1], [12, 0])}px)`,
+        background: C.greenChip,
+        color: C.green,
+        fontWeight: 700,
+        fontSize: 16,
+        padding: "8px 16px",
+        borderRadius: 999,
+        border: `1px solid ${C.green}33`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </div>
+  );
+};
+
 /* ---------- Scene 1: WhatsApp Boot ---------- */
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
@@ -651,32 +683,17 @@ export const Scene6: React.FC = () => {
   const { fps } = useVideoConfig();
   const sp = spring({ frame, fps, config: { damping: 12, mass: 0.8 } });
   const chips = ["Fatura projetada", "Alertas", "Parcelas", "Cartões ilimitados"];
+  // Cantos, fora da faixa central (logo + título + subtítulo ficam em ~30%–72%).
   const pos = [
-    { left: "16%", top: "26%" },
-    { left: "70%", top: "24%" },
-    { left: "14%", top: "66%" },
-    { left: "72%", top: "66%" },
+    { left: "7%", top: "13%" },
+    { left: "70%", top: "13%" },
+    { left: "9%", top: "84%" },
+    { left: "68%", top: "84%" },
   ];
   return (
     <SceneWrap duration={120}>
       {chips.map((ch, i) => (
-        <Pop key={ch} delay={20 + i * 10} y={0}>
-          <div
-            style={{
-              position: "absolute",
-              ...pos[i],
-              background: C.greenChip,
-              color: C.green,
-              fontWeight: 700,
-              fontSize: 16,
-              padding: "8px 16px",
-              borderRadius: 999,
-              border: `1px solid ${C.green}33`,
-            }}
-          >
-            {ch}
-          </div>
-        </Pop>
+        <FloatingChip key={ch} label={ch} style={pos[i]} delay={20 + i * 10} />
       ))}
       <div style={{ textAlign: "center" }}>
         <div

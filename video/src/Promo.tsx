@@ -47,7 +47,6 @@ export const Promo: React.FC = () => {
           );
         })}
       </Series>
-
       {HAS_MUSIC && (
         <Audio
           src={staticFile("audio/music.mp3")}
