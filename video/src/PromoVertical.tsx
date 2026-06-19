@@ -8,19 +8,22 @@ import {
   useVideoConfig,
 } from "remotion";
 import { C } from "./promo/theme";
-import {
-  V1,
-  V2,
-  V3,
-  V4,
-  V5,
-  V6,
-  V7,
-  V8,
-} from "./promo/scenes-vertical";
+import { V1, V2, V3, V4, V5, V6, V7, V8 } from "./promo/scenes-vertical";
 
-// Trilha original gerada em video/public/audio/music.wav (troque por uma faixa pro quando quiser).
 const HAS_MUSIC = true;
+
+// Grão/ruído sutil em todo o vídeo (textura premium).
+const Grain: React.FC = () => (
+  <AbsoluteFill
+    style={{
+      pointerEvents: "none",
+      opacity: 0.04,
+      mixBlendMode: "overlay",
+      backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")`,
+      backgroundSize: "160px 160px",
+    }}
+  />
+);
 
 const SCENES: { C: React.FC; d: number }[] = [
   { C: V1, d: 120 },
@@ -48,9 +51,11 @@ export const PromoVertical: React.FC = () => {
         })}
       </Series>
 
+      <Grain />
+
       {HAS_MUSIC && (
         <Audio
-          src={staticFile("audio/music.wav")}
+          src={staticFile("audio/music.mp3")}
           volume={(f) =>
             interpolate(
               f,

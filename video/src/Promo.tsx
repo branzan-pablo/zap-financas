@@ -19,7 +19,7 @@ import {
   Scene8,
 } from "./promo/scenes";
 
-// Trilha original gerada em video/public/audio/music.wav (troque por uma faixa pro quando quiser).
+// Trilha em video/public/audio/music.mp3.
 const HAS_MUSIC = true;
 
 const SCENES: { C: React.FC; d: number }[] = [
@@ -49,7 +49,7 @@ export const Promo: React.FC = () => {
       </Series>
       {HAS_MUSIC && (
         <Audio
-          src={staticFile("audio/music.wav")}
+          src={staticFile("audio/music.mp3")}
           volume={(f) =>
             interpolate(
               f,
