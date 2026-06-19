@@ -94,7 +94,6 @@ export const Reel: React.FC = () => {
           </FadeUp>
         </Scene>
       </Sequence>
-
       {/* Cena 2 — a conta que assusta */}
       <Sequence from={150} durationInFrames={210}>
         <Scene bg={PAPER}>
@@ -141,9 +140,8 @@ export const Reel: React.FC = () => {
           </FadeUp>
         </Scene>
       </Sequence>
-
       {/* Cena 3 — virada */}
-      <Sequence from={360} durationInFrames={150}>
+      <Sequence from={369} durationInFrames={150}>
         <Scene>
           <FadeUp>
             <h1
@@ -174,7 +172,6 @@ export const Reel: React.FC = () => {
           </FadeUp>
         </Scene>
       </Sequence>
-
       {/* Cena 4 — CTA */}
       <Sequence from={510} durationInFrames={90}>
         <AbsoluteFill
