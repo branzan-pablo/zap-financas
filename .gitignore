@@ -40,6 +40,10 @@ yarn-error.log*
 # OMC orchestration state
 /.omc
 
+# remotion (video/)
+/video/node_modules
+/video/out
+
 # vercel
 .vercel
 

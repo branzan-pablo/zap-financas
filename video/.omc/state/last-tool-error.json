@@ -1,0 +1,7 @@
+{
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"cd C:\\\\Users\\\\pablo\\\\cartao-zap\\\\video; npm install -D typescript@latest @types/react@latest @types/react-dom@latest 2>&1 | Select-String -Pattern \\\"EPERM|EACCES|operation not permitted|sy...",
+  "error": "Exit code 48\nnpm error code \u001b[7mEPERM\u001b[0m\r\nnpm error \u001b[7msyscall\u001b[0m lstat\r\nnpm error \u001b[7mpath\u001b[0m C:\\Users\\pablo\\cartao-zap\\video\\node_modules\\@emnapi\\core\\dist\\emnapi-core.d.ts\r\nnpm error \u001b[7merrno\u001b[0m -4048\r\nnpm error Error: \u001b[7mEPERM\u001b[0m: \u001b[0m\u001b[7m\u001b[0moperation \u001b[0m\u001b[7m\u001b[0mnot \u001b[0m\u001b[7m\u001b[0mpermitted, \u001b[0m\u001b[7m\u001b[0mlstat \u001b[0m\r\n\u001b[7m\u001b[0m'C:\\Users\\pablo\\cartao-zap\\video\\node_modules\\@emnapi\\core\\dist\\emnapi-core.d.ts'\u001b[0m\r\nnpm error   \u001b[7merrno\u001b[0m: -4048,\r\nnpm error   code: '\u001b[7mEPERM\u001b[0m',\r\nnpm er...",
+  "timestamp": "2026-06-19T20:20:33.211Z",
+  "retry_count": 3
+}

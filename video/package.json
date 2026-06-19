@@ -1,0 +1,23 @@
+{
+  "name": "cartao-zap-videos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Videos (Reels) do CartaoZap feitos com Remotion",
+  "scripts": {
+    "dev": "remotion studio",
+    "studio": "remotion studio",
+    "render": "remotion render Reel1 out/reel1.mp4",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.481",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remotion": "^4.0.481"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  }
+}
