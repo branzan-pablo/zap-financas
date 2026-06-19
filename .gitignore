@@ -37,8 +37,8 @@ yarn-error.log*
 # local lead store (smoke test fallback)
 /.data
 
-# OMC orchestration state
-/.omc
+# OMC orchestration state (any depth)
+.omc/
 
 # remotion (video/)
 /video/node_modules
