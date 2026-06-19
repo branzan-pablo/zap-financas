@@ -1,13 +1,7 @@
-// WhatsApp-style phone mockup. The chat is card-focused (fatura/parcelas),
-// not a generic finance assistant — that's our differentiator.
+// Realistic WhatsApp phone mockup. Chat is card-focused (fatura/parcelas),
+// our differentiator vs a generic finance assistant.
 
-function Time({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="ml-2 inline-block translate-y-0.5 font-num text-[10px] text-slate/70">
-      {children}
-    </span>
-  );
-}
+const WA_GREEN = "#1fa855";
 
 function Incoming({
   children,
@@ -17,9 +11,11 @@ function Incoming({
   time: string;
 }) {
   return (
-    <div className="max-w-[82%] self-start rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-[13px] leading-snug text-ink shadow-[0_1px_1px_rgba(11,18,32,.12)]">
-      <span>{children}</span>
-      <Time>{time}</Time>
+    <div className="max-w-[82%] self-start rounded-xl rounded-tl-sm bg-white px-3 py-2 text-[13px] leading-snug text-ink shadow-[0_1px_1px_rgba(11,18,32,.14)]">
+      {children}
+      <span className="ml-2 inline-block translate-y-0.5 font-num text-[10px] text-slate/60">
+        {time}
+      </span>
     </div>
   );
 }
@@ -32,9 +28,9 @@ function Outgoing({
   time: string;
 }) {
   return (
-    <div className="max-w-[82%] self-end rounded-2xl rounded-tr-sm bg-[#d6f5cf] px-3 py-2 text-[13px] leading-snug text-ink shadow-[0_1px_1px_rgba(11,18,32,.12)]">
-      <span>{children}</span>
-      <span className="ml-2 inline-block translate-y-0.5 whitespace-nowrap font-num text-[10px] text-slate/70">
+    <div className="max-w-[82%] self-end rounded-xl rounded-tr-sm bg-[#d6f5cf] px-3 py-2 text-[13px] leading-snug text-ink shadow-[0_1px_1px_rgba(11,18,32,.14)]">
+      {children}
+      <span className="ml-2 inline-block translate-y-0.5 whitespace-nowrap font-num text-[10px] text-slate/60">
         {time} <span className="text-[#34b7f1]">✓✓</span>
       </span>
     </div>
@@ -44,37 +40,34 @@ function Outgoing({
 export function WhatsappMockup() {
   return (
     <div className="relative mx-auto w-full max-w-[300px]">
-      {/* Phone frame */}
-      <div className="cz-rise rounded-[2.6rem] border-[7px] border-ink bg-ink shadow-[0_24px_70px_rgba(11,18,32,.22)]">
-        {/* Notch */}
-        <div className="relative">
-          <div className="absolute left-1/2 top-0 z-10 h-5 w-28 -translate-x-1/2 rounded-b-2xl bg-ink" />
-        </div>
+      <div className="cz-rise relative rounded-[3rem] bg-[#0d0f14] p-2.5 shadow-[0_30px_80px_-24px_rgba(11,18,32,.5)]">
+        {/* Dynamic Island */}
+        <div className="absolute left-1/2 top-3.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
 
-        <div className="overflow-hidden rounded-[2.05rem] bg-[#e5ddd5]">
-          {/* Status bar */}
-          <div className="flex items-center justify-between bg-emerald px-5 pt-2.5 pb-1 font-num text-[10px] text-white/90">
-            <span>20:14</span>
-            <span className="tracking-tight">▮▮▮ 􀙇 100%</span>
-          </div>
-
+        <div className="overflow-hidden rounded-[2.5rem] bg-[#e5ddd5]">
           {/* WhatsApp header */}
-          <div className="flex items-center gap-2.5 bg-emerald px-3 pb-3 text-white">
-            <span className="text-lg leading-none">‹</span>
-            <span className="grid size-8 place-items-center rounded-full bg-white/20 font-display text-sm font-bold">
+          <div
+            className="flex items-center gap-2.5 px-4 pt-10 pb-3 text-white"
+            style={{ backgroundColor: WA_GREEN }}
+          >
+            <span className="grid size-8 place-items-center rounded-full bg-white/25 font-display text-sm font-bold">
               C
             </span>
             <div className="flex-1 leading-tight">
-              <p className="text-sm font-semibold">CartãoZap</p>
-              <p className="text-[11px] text-white/80">online</p>
+              <p className="flex items-center gap-1 text-sm font-semibold">
+                CartãoZap
+                <span className="grid size-3.5 place-items-center rounded-full bg-[#34b7f1] text-[8px] leading-none text-white">
+                  ✓
+                </span>
+              </p>
+              <p className="text-[11px] text-white/85">online</p>
             </div>
-            <span className="text-base opacity-90">📹</span>
-            <span className="text-base opacity-90">📞</span>
+            <span className="text-lg leading-none text-white/90">⋮</span>
           </div>
 
           {/* Chat */}
           <div className="flex flex-col gap-2 px-3 py-4">
-            <div className="mx-auto rounded-full bg-white/70 px-3 py-1 font-num text-[10px] text-slate">
+            <div className="mx-auto rounded-md bg-white/70 px-2.5 py-0.5 font-num text-[10px] text-slate">
               hoje
             </div>
             <Outgoing time="20:13">comprei uma TV em 10x de 300</Outgoing>
@@ -96,14 +89,18 @@ export function WhatsappMockup() {
             </Incoming>
           </div>
 
-          {/* Input bar (decorative) */}
-          <div className="flex items-center gap-2 px-3 pb-4">
-            <div className="flex flex-1 items-center gap-2 rounded-full bg-white px-4 py-2 text-[13px] text-slate">
-              <span className="opacity-60">😊</span>
+          {/* Input bar */}
+          <div className="flex items-center gap-2 px-3 pb-5">
+            <div className="flex-1 rounded-full bg-white px-4 py-2.5 text-[13px] text-slate/70">
               Mensagem
             </div>
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-emerald text-white">
-              ➤
+            <span
+              className="grid size-10 shrink-0 place-items-center rounded-full text-white"
+              style={{ backgroundColor: WA_GREEN }}
+            >
+              <svg viewBox="0 0 24 24" className="size-4 fill-white">
+                <path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z" />
+              </svg>
             </span>
           </div>
         </div>
