@@ -112,20 +112,16 @@ export default function Home() {
                 variant="secondary"
                 className="bg-emerald-soft font-num text-xs tracking-wide text-[#0a6e44]"
               >
-                Controle de cartão · pelo WhatsApp
+                Controle de cartão simplificado
               </Badge>
-              <h1 className="mt-6 text-[2.6rem] leading-[1.02] font-bold tracking-tight text-balance text-ink sm:text-6xl">
-                Saiba sua fatura
-                <br />
-                <span className="text-emerald">antes</span> dela fechar.
+              <h1 className="mt-6 text-[2.6rem] leading-[1.04] font-bold tracking-tight text-balance text-ink sm:text-6xl">
+                Seu assistente de cartão no{" "}
+                <span className="text-emerald">WhatsApp</span>.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-slate">
-                Registre suas compras, até as parceladas, e receba tudo{" "}
-                <span className="font-semibold text-ink">
-                  direto no WhatsApp
-                </span>
-                : a fatura projetada, as parcelas que faltam e um aviso antes de
-                fechar. Sem baixar nenhum app.
+                Registre compras por mensagem, acompanhe a fatura projetada e
+                seja avisado antes de fechar. Sem planilha, sem baixar nenhum
+                app.
               </p>
 
               <div id="lista" className="mt-8 max-w-md scroll-mt-24">
