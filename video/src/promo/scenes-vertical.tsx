@@ -21,7 +21,7 @@ const SAFE_BOTTOM = 320;
 /* ============ VFX primitives ============ */
 
 // Reveal de bloco com mola (overshoot) + blur de entrada (motion-blur look).
-const Reveal: React.FC<{
+export const Reveal: React.FC<{
   delay?: number;
   y?: number;
   children: React.ReactNode;
@@ -46,7 +46,7 @@ const Reveal: React.FC<{
 };
 
 // Reveal inline (palavras/letras) com trail de motion blur.
-const RiseSpan: React.FC<{
+export const RiseSpan: React.FC<{
   delay?: number;
   y?: number;
   children: React.ReactNode;
@@ -72,28 +72,31 @@ const RiseSpan: React.FC<{
 };
 
 // Texto revelado palavra a palavra; destaca uma palavra em verde.
-const Kinetic: React.FC<{
+export const Kinetic: React.FC<{
   text: string;
   delay?: number;
   step?: number;
-  highlight?: string;
+  highlight?: string | string[];
   style?: React.CSSProperties;
-}> = ({ text, delay = 0, step = 4, highlight, style }) => (
-  <span style={style}>
-    {text.split(" ").map((w, i) => (
-      <RiseSpan
-        key={i}
-        delay={delay + i * step}
-        style={{
-          marginRight: "0.28em",
-          color: highlight && w.replace(/[.,]/g, "") === highlight ? C.green : undefined,
-        }}
-      >
-        {w}
-      </RiseSpan>
-    ))}
-  </span>
-);
+}> = ({ text, delay = 0, step = 4, highlight, style }) => {
+  const hl = Array.isArray(highlight) ? highlight : highlight ? [highlight] : [];
+  return (
+    <span style={style}>
+      {text.split(" ").map((w, i) => (
+        <RiseSpan
+          key={i}
+          delay={delay + i * step}
+          style={{
+            marginRight: "0.28em",
+            color: hl.includes(w.replace(/[.,?!]/g, "")) ? C.green : undefined,
+          }}
+        >
+          {w}
+        </RiseSpan>
+      ))}
+    </span>
+  );
+};
 
 // Gradient mesh animado (blobs verdes derivando devagar).
 const MeshBG: React.FC<{ dark?: boolean }> = ({ dark }) => {
@@ -134,7 +137,7 @@ const MeshBG: React.FC<{ dark?: boolean }> = ({ dark }) => {
 };
 
 // Partículas com parallax (pequenas = mais lentas).
-const VParticles: React.FC<{ n?: number; color?: string }> = ({
+export const VParticles: React.FC<{ n?: number; color?: string }> = ({
   n = 22,
   color = C.green,
 }) => {
@@ -208,7 +211,7 @@ const VCheck: React.FC<{ size?: number; delay?: number }> = ({
 };
 
 // Count-up elástico (mola), nunca passa do alvo.
-const useCountUp = (to: number, delay = 0) => {
+export const useCountUp = (to: number, delay = 0) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = spring({ frame: frame - delay, fps, config: { damping: 16, stiffness: 120 } });
@@ -216,7 +219,7 @@ const useCountUp = (to: number, delay = 0) => {
 };
 
 // Glow pulsante + respiração (CTAs/logo).
-const useGlow = (color = C.green) => {
+export const useGlow = (color = C.green) => {
   const frame = useCurrentFrame();
   const t = (Math.sin(frame / 14) + 1) / 2;
   return {
@@ -254,7 +257,7 @@ const Tap: React.FC<{ delay: number; left: number | string; top: number | string
 };
 
 // Wrapper de cena: mesh atrás + transição (slide Y + scale 1.05→1 + blur) com overshoot.
-const VScene: React.FC<{
+export const VScene: React.FC<{
   duration: number;
   dark?: boolean;
   children: React.ReactNode;
@@ -297,7 +300,7 @@ const VScene: React.FC<{
   );
 };
 
-const glass: React.CSSProperties = {
+export const glass: React.CSSProperties = {
   background: "rgba(255,255,255,0.72)",
   backdropFilter: "blur(14px)",
   WebkitBackdropFilter: "blur(14px)",
@@ -669,7 +672,7 @@ export const V8: React.FC = () => {
   );
 };
 
-const VGridDark: React.FC = () => {
+export const VGridDark: React.FC = () => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill

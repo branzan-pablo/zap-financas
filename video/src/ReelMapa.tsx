@@ -8,7 +8,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { C } from "./promo/theme";
-import { R1, R2, R3, R4 } from "./promo/scenes-reel";
+import { M1, M2, M3, M4 } from "./promo/scenes-mapa";
 
 const HAS_MUSIC = true;
 
@@ -25,15 +25,15 @@ const Grain: React.FC = () => (
   />
 );
 
-// 4 cenas: 140 + 100 + 140 + 100 = 480 frames (~16s @ 30fps).
+// Hook (100) · Compra esquecida (90) · Mapa de parcelas (130) · CTA (100) = 420 frames.
 const SCENES: { C: React.FC; d: number }[] = [
-  { C: R1, d: 140 },
-  { C: R2, d: 100 },
-  { C: R3, d: 140 },
-  { C: R4, d: 100 },
+  { C: M1, d: 100 },
+  { C: M2, d: 90 },
+  { C: M3, d: 130 },
+  { C: M4, d: 100 },
 ];
 
-export const Reel: React.FC = () => {
+export const ReelMapa: React.FC = () => {
   const { fps, durationInFrames } = useVideoConfig();
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
@@ -56,7 +56,7 @@ export const Reel: React.FC = () => {
           volume={(f) =>
             interpolate(
               f,
-              // fade-in 1s (30f) -> 40% -> fade-out 1.5s (45f)
+              // fade-in 1s, fade-out 1.5s, volume 40%.
               [0, fps, durationInFrames - 1.5 * fps, durationInFrames],
               [0, 0.4, 0.4, 0],
               { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
