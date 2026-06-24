@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Pagamento confirmado · CartãoZap",
+  title: "Pagamento confirmado · Zap Finanças",
   robots: { index: false },
 };
 
@@ -16,7 +16,7 @@ export default function Obrigado() {
           ✓
         </div>
         <h1 className="mt-6 text-3xl font-bold tracking-tight text-ink">
-          Você é fundador do CartãoZap.
+          Você é fundador do Zap Finanças.
         </h1>
         <p className="mt-4 leading-relaxed text-slate">
           Recebemos sua reserva. Seu preço de fundador fica travado pra sempre.

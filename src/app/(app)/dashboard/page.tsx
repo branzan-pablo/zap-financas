@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { trialDaysRemaining } from "@/lib/trial";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -13,11 +14,7 @@ export default async function DashboardPage() {
 
   const nome = profile?.nome ?? user?.email?.split("@")[0] ?? "você";
 
-  // Trial days remaining
-  const trialEnds = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
-  const trialDays = trialEnds
-    ? Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / 86_400_000))
-    : null;
+  const trialDays = trialDaysRemaining(profile?.trial_ends_at ?? null);
   const onTrial = profile?.plano === "trial" && trialDays !== null && trialDays > 0;
 
   return (

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { trialDaysRemaining } from "@/lib/trial";
 import Link from "next/link";
 
 export default async function ConfiguracoesPage() {
@@ -11,10 +12,7 @@ export default async function ConfiguracoesPage() {
     .eq("id", user!.id)
     .single();
 
-  const trialEnds = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
-  const trialDays = trialEnds
-    ? Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / 86_400_000))
-    : null;
+  const trialDays = trialDaysRemaining(profile?.trial_ends_at ?? null);
 
   return (
     <div className="mx-auto max-w-2xl">
