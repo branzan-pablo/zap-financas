@@ -1,33 +1,48 @@
-# BRIEF — CartãoZap *(nome de trabalho, provisório)*
+# BRIEF — Zap Finanças
 
-> Documento vivo. Gerado via framework de validação em fases (ver `specs/02-demand-validation.md`).
-> Status atual: **Fase 2.5 — Validação de Demanda** (build = landing/smoke test, não o app).
+> Documento vivo. Atualizado em 24/06/2026 — pivô de wedge estreito (cartão) para PFM amplo.
+> Status atual: **Fase 3 — Build do produto** (validação de demanda concluída, GO confirmado).
 
 ## Problema (1 frase)
-Quem usa muito o cartão de crédito perde a noção da fatura real e do quanto já comprometeu em parcelas futuras — e toma susto quando a fatura fecha.
+
+Brasileiros perdem o controle financeiro por falta de visibilidade — não sabem onde gasta, quanto deve, quando fecha a fatura ou quanto rende o investimento — e ficam dependentes de planilhas que ninguém mantém.
 
 ## Solução proposta
-App **focado em cartão**, controlado pelo **WhatsApp**: o usuário registra compras (inclusive parceladas) por mensagem e consulta a **fatura projetada** e o **mapa de parcelas futuras** antes do fechamento. PWA como fonte da verdade; WhatsApp como camada de captura/consulta.
+
+Assistente financeiro completo acessível pelo **WhatsApp**: conecta contas via **Open Finance** (100+ bancos), categoriza transações automaticamente com IA, projeta fatura, consolida investimentos, alerta antes de estourar e responde perguntas financeiras em linguagem natural — tudo no app que o usuário já usa todo dia.
 
 ## Público-alvo
-Usuário intenso de cartão (não o endividado pesado), 25–40 anos, mobile-first, que vive no limite e teme perder o controle. *Não* é o público mass-market generalista do Dinzo/Mobills.
+
+Usuário brasileiro 25–40 anos, mobile-first, renda média-alta, que usa cartão de crédito com frequência e tem algum investimento. Cansado de planilha, não quer abrir cinco apps de banco, quer respostas em segundos pelo WhatsApp.
 
 ## Diferencial competitivo
-Os concorrentes tratam cartão como item secundário de um PFM inchado. Aqui o cartão é **o produto inteiro**, e a captura por WhatsApp escopada em cartão reduz o atrito de lançamento — o maior motivo de abandono de apps de finanças.
+
+- **WhatsApp como interface principal** — não só notificação, mas consulta e ação real em linguagem natural (texto + áudio).
+- **Open Finance desde o início** — zero entrada manual, dados reais de 100+ bancos.
+- **IA aplicada a finanças reais** — categorização automática, previsão de fatura, detecção de assinaturas e cobranças duplicadas, consolidação de dividendos para IR.
+- **Foco BR** — Pix, cartão com parcelamento, impostos BR, língua PT-BR nativa.
 
 ## Modelo de negócio
-SaaS lifestyle. Grátis: 1 cartão + fatura projetada + mapa de parcelas (marketing/aquisição). Pago (~R$14,90/mês ou R$119/ano): cartões ilimitados, simulador de quitação, alertas, import. Pagamento PIX + cartão.
+
+SaaS com trial generoso. **Trial:** 14 dias com tudo liberado. **Pago:** R$19,90/mês · R$49,90/trimestre · R$149,90/ano (preço de fundador travado para os primeiros usuários). Pagamento Pix + cartão recorrente (Mercado Pago).
 
 ## Canal de aquisição
-Orgânico: conteúdo curto (Reels/TikTok/Shorts) no tema "o susto das parcelas / juros invisíveis" + SEO. Teste pago pontual (~R$150) para acelerar a validação de demanda.
 
-## Métricas de sucesso (do negócio)
-- Ativação ≥ 40% (cadastro → registra 1 cartão com parcela)
+- Orgânico: conteúdo curto (Reels/TikTok/Shorts) — tema: parcelas escondidas, susto de fatura, dinheiro sumindo.
+- SEO: termos de controle financeiro, assistente financeiro WhatsApp, Open Finance.
+- Leads capturados na landing (waitlist existente) — base para convite de lançamento.
+
+## Métricas de sucesso
+
+- Ativação ≥ 40% (signup → conecta 1 conta Open Finance)
 - Retenção W4 ≥ 25%
-- Conversão free→paid ≥ 3%
-- Meta financeira: R$5–30k/mês recorrente (~1.000–1.500 pagantes)
+- Conversão trial→pago ≥ 15%
+- Meta financeira: R$5–30k/mês recorrente (~500–1.500 pagantes)
 
-## Restrições conscientes
-- **Sem Open Finance no MVP** (agregadores custam ≥ R$540/mês; fora do orçamento). Entrada via manual + OFX.
-- **WhatsApp via Evolution API só na fase de teste**; migrar para Cloud API oficial antes de escalar pagantes.
-- LGPD desde o dia 1; cálculo financeiro no servidor (RLS).
+## Stack e restrições
+
+- **Open Finance:** Pluggy (sandbox disponível; custo por conexão ativa — confirmar contrato).
+- **WhatsApp:** Evolution API (self-hosted Docker) para início; migrar para Cloud API oficial antes de escalar a 1.000+ usuários ativos.
+- **IA/LLM:** Claude (Anthropic) — Haiku 4.5 para categorização/parsing em massa; Sonnet 4.6 para Q&A financeiro complexo.
+- **Pagamentos:** Mercado Pago Assinaturas (Pix + cartão recorrente).
+- **LGPD desde o dia 1** — consentimento, RLS por usuário, export/delete de dados.

@@ -87,9 +87,9 @@ export default function Home() {
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
         <span className="flex items-center gap-2 font-display text-lg font-bold text-ink">
           <span className="grid size-7 place-items-center rounded-lg bg-emerald text-white">
-            C
+            Z
           </span>
-          CartãoZap
+          Zap Finanças
         </span>
         <a
           href="#lista"
@@ -227,11 +227,11 @@ export default function Home() {
             <Eyebrow>Quem está por trás</Eyebrow>
             <figure className="mt-6">
               <blockquote className="text-xl leading-relaxed text-balance text-ink sm:text-2xl sm:leading-relaxed">
-                “Criei o CartãoZap depois de tomar susto com a fatura mais vezes
-                do que admito. Eu não ganhava mal, só não enxergava quanto já
-                tinha comprometido em parcelas. Queria saber a verdade antes da
-                fatura fechar, sem planilha e sem abrir cinco apps. Como não
-                existia do jeito que eu queria, resolvi construir.”
+                “Criei o Zap Finanças depois de tomar susto com a fatura mais
+                vezes do que admito. Eu não ganhava mal, só não enxergava onde
+                o dinheiro estava indo. Queria a verdade das minhas finanças em
+                segundos, pelo WhatsApp que já uso todo dia. Como não existia do
+                jeito que eu queria, resolvi construir.”
               </blockquote>
               <figcaption className="mt-8 flex items-center gap-4">
                 {/* Troque por uma foto real em public/founder.jpg para mais confiança */}
@@ -240,7 +240,7 @@ export default function Home() {
                 </span>
                 <div>
                   <p className="font-semibold text-ink">Pablo</p>
-                  <p className="text-sm text-slate">Fundador do CartãoZap</p>
+                  <p className="text-sm text-slate">Fundador do Zap Finanças</p>
                 </div>
               </figcaption>
             </figure>
@@ -298,7 +298,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="mx-auto w-full max-w-6xl px-6 py-10 text-sm text-slate">
         <div className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-display font-semibold text-ink">CartãoZap</span>
+          <span className="font-display font-semibold text-ink">Zap Finanças</span>
           <p className="max-w-md sm:text-right">
             Produto em validação. Ainda não é um serviço financeiro. Usamos seu
             email apenas para avisar sobre o lançamento.
