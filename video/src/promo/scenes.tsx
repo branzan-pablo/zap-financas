@@ -7,7 +7,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { C, MONO, SANS, fmt } from "./theme";
+import { C, MONO, fmt } from "./theme";
 import {
   Bubble,
   BrowserWindow,

@@ -3,7 +3,6 @@ import {
   AbsoluteFill,
   interpolate,
   interpolateColors,
-  random,
   spring,
   useCurrentFrame,
   useVideoConfig,
@@ -299,7 +298,6 @@ export const R1: React.FC = () => {
   const cps = 0.7;
   const nChars = Math.max(0, Math.floor((frame - typeStart) * cps));
   const typed = MSG.slice(0, Math.min(MSG.length, nChars));
-  const typingDone = nChars >= MSG.length;
   const sendFrame = 70;
   const sent = frame >= sendFrame;
   const botStart = sendFrame + 24;

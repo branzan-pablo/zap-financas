@@ -13,7 +13,6 @@ import { Bubble, PhoneFrame } from "./components";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 // Mola com overshoot (easing principal do vídeo).
 const OVER = { damping: 14, stiffness: 120, mass: 0.9 } as const;
-const SOFT = { damping: 200 } as const;
 
 // Margens seguras p/ UI das plataformas (TikTok/Reels).
 const SAFE_TOP = 200;
