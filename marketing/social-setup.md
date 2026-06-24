@@ -1,4 +1,4 @@
-# Setup de Redes Sociais — CartãoZap
+# Setup de Redes Sociais — Zap Finanças
 
 Estratégia: **foco em 2 plataformas, reaproveitar o mesmo vídeo nas outras.** Conta nova parada não converte.
 
@@ -17,9 +17,9 @@ Estratégia: **foco em 2 plataformas, reaproveitar o mesmo vídeo nas outras.** 
 
 ## Handle (garanta AGORA, mesmo onde não vai usar)
 Mesmo @ em todas para marca consistente e evitar que alguém pegue:
-1. `@cartaozap` (preferido)
-2. `@cartaozap.app`
-3. `@usecartaozap`
+1. `@zapfinancas` (preferido)
+2. `@zapfinancas.app`
+3. `@usezapfinancas`
 
 Crie em TikTok, IG, YouTube e FB hoje, mesmo que só use 2.
 
@@ -28,14 +28,14 @@ Crie em TikTok, IG, YouTube e FB hoje, mesmo que só use 2.
 - IG: Conta Profissional → categoria "Aplicativo" ou "Serviço financeiro".
 
 ## Marca-led vs founder-led
-**Recomendado: founder-led com a marca.** Em fintech, confiança vende. Apareça no vídeo (rosto), falando como quem vive a dor. A conta é @cartaozap, mas você é o rosto. Os 5 roteiros já são face-to-camera.
+**Recomendado: founder-led com a marca.** Em fintech, confiança vende. Apareça no vídeo (rosto), falando como quem vive a dor. A conta é @zapfinancas, mas você é o rosto. Os 5 roteiros já são face-to-camera.
 
 ## Foto de perfil e visual
 - Foto: o "C" branco sobre verde (mesmo do site). Consistente em todas.
 - Nome (campo pesquisável, importante pro algoritmo achar):
-  - IG: `CartãoZap · controle do cartão`
-  - TikTok: `CartãoZap`
-  - YouTube: `CartãoZap`
+  - IG: `Zap Finanças · controle do cartão`
+  - TikTok: `Zap Finanças`
+  - YouTube: `Zap Finanças`
 
 ## Bios (cole pronto)
 
@@ -45,26 +45,26 @@ Crie em TikTok, IG, YouTube e FB hoje, mesmo que só use 2.
 Saiba sua fatura antes dela fechar
 Entre na lista de espera 👇
 ```
-Link: `https://cartao-zap.vercel.app/?utm=ig-bio`
+Link: `https://zapfinancas.app/?utm=ig-bio`
 
 **TikTok:**
 ```
 Controle do cartão pelo WhatsApp 💳
 Sua fatura antes dela fechar 👇
 ```
-Link: `https://cartao-zap.vercel.app/?utm=tiktok-bio`
+Link: `https://zapfinancas.app/?utm=tiktok-bio`
 
 **YouTube (descrição do canal):**
 ```
-CartãoZap: o jeito mais simples de controlar seu cartão de crédito, pelo WhatsApp.
+Zap Finanças: o jeito mais simples de controlar seu cartão de crédito, pelo WhatsApp.
 Saiba sua fatura projetada e quanto você já comprometeu em parcelas antes de fechar.
-Lista de espera: https://cartao-zap.vercel.app/?utm=yt-bio
+Lista de espera: https://zapfinancas.app/?utm=yt-bio
 ```
 
 **Facebook (sobre da página):**
 ```
 Controle seu cartão de crédito pelo WhatsApp. Saiba sua fatura antes dela fechar.
-https://cartao-zap.vercel.app/?utm=fb-bio
+https://zapfinancas.app/?utm=fb-bio
 ```
 
 ## Link na bio (sem Linktree no começo)

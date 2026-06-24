@@ -1,4 +1,4 @@
-# DESIGN-GUIDELINES — CartãoZap
+# DESIGN-GUIDELINES — Zap Finanças
 
 Direção: clean, moderno, light (refs: Linear, Resend, Vercel) — mas com identidade própria. Eixo emocional: **tensão (susto) → controle (clareza)**.
 

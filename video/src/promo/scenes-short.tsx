@@ -116,7 +116,7 @@ export const S3Cta: React.FC = () => {
           boxShadow: `0 0 ${40 + t * 30}px ${C.green}88`,
         }}
       >
-        C
+        Z
       </div>
       <Reveal delay={14}>
         <h1 style={{ fontSize: 64, fontWeight: 800, color: "#fff", marginTop: 48, textShadow: `0 0 ${16 + t * 22}px ${C.green}cc`, transform: `scale(${1 + t * 0.02})` }}>
@@ -125,7 +125,7 @@ export const S3Cta: React.FC = () => {
       </Reveal>
       <Reveal delay={26}>
         <div style={{ marginTop: 30, fontFamily: MONO, fontSize: 32, color: "#E5E7EB", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 16, padding: "18px 34px" }}>
-          cartao-zap.vercel.app
+          zapfinancas.app
         </div>
       </Reveal>
     </VScene>

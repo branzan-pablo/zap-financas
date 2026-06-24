@@ -810,7 +810,7 @@ export const R4: React.FC = () => {
             boxShadow: `0 0 48px ${C.green}77`,
           }}
         >
-          C
+          Z
         </div>
       </div>
 
@@ -846,7 +846,7 @@ export const R4: React.FC = () => {
             ...ctaGlow,
           }}
         >
-          cartao-zap.vercel.app
+          zapfinancas.app
         </div>
       </Reveal>
     </VScene>

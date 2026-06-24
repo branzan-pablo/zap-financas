@@ -51,11 +51,11 @@ export function WhatsappMockup() {
             style={{ backgroundColor: WA_GREEN }}
           >
             <span className="grid size-8 place-items-center rounded-full bg-white/25 font-display text-sm font-bold">
-              C
+              Z
             </span>
             <div className="flex-1 leading-tight">
               <p className="flex items-center gap-1 text-sm font-semibold">
-                CartãoZap
+                Zap Finanças
                 <span className="grid size-3.5 place-items-center rounded-full bg-[#34b7f1] text-[8px] leading-none text-white">
                   ✓
                 </span>

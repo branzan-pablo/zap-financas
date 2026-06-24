@@ -150,7 +150,7 @@ export const Scene1: React.FC = () => {
               {frame >= 42 && (
                 <Pop>
                   <Bubble side="in">
-                    <b>CartãoZap conectado ✓</b>
+                    <b>Zap Finanças conectado ✓</b>
                   </Bubble>
                 </Pop>
               )}
@@ -241,9 +241,9 @@ export const Scene2: React.FC = () => (
                 fontSize: 16,
               }}
             >
-              C
+              Z
             </span>
-            CartãoZap
+            Zap Finanças
           </div>
         </Pop>
         <Pop delay={10}>
@@ -736,7 +736,7 @@ export const Scene6: React.FC = () => {
             boxShadow: "0 20px 50px -16px rgba(37,211,102,.6)",
           }}
         >
-          C
+          Z
         </div>
         <Pop delay={10}>
           <h1
@@ -902,7 +902,7 @@ export const Scene8: React.FC = () => {
             transform: `rotate(${rot}deg) scale(${sp})`,
           }}
         >
-          C
+          Z
         </div>
         <Pop delay={16}>
           <h1
@@ -930,7 +930,7 @@ export const Scene8: React.FC = () => {
               padding: "12px 22px",
             }}
           >
-            cartao-zap.vercel.app
+            zapfinancas.app
           </div>
         </Pop>
       </div>

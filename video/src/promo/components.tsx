@@ -104,7 +104,7 @@ export const BrowserWindow: React.FC<{
   width?: number;
   url?: string;
   children: React.ReactNode;
-}> = ({ width = 940, url = "cartao-zap.vercel.app", children }) => (
+}> = ({ width = 940, url = "zapfinancas.app", children }) => (
   <div
     style={{
       width,
@@ -221,7 +221,7 @@ export const PhoneFrame: React.FC<{
               fontSize: 14,
             }}
           >
-            C
+            Z
           </span>
           <div style={{ flex: 1, lineHeight: 1.15 }}>
             <div
@@ -233,7 +233,7 @@ export const PhoneFrame: React.FC<{
                 gap: 4,
               }}
             >
-              CartãoZap
+              Zap Finanças
               <span
                 style={{
                   width: 13,

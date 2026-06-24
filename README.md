@@ -1,35 +1,110 @@
-# CartãoZap
+# Zap Finanças
 
-> Controle seu cartão de crédito pelo WhatsApp — saiba sua fatura antes dela fechar.
+> Assistente financeiro completo no WhatsApp — Open Finance, IA e controle real do seu dinheiro.
 
-**Status:** Fase 2.5 — Validação de Demanda. Este repositório contém a **landing page de smoke test**, não o app. O MVP só é construído após o GO de demanda (ver `specs/`).
+**Status:** Fase 0 concluída (auth + schema + shell). Fase 1 em andamento (Open Finance / Pluggy).
+
+---
+
+## O que é
+
+Zap Finanças é um gestor financeiro pessoal (PFM) que conecta suas contas bancárias via Open Finance (Pluggy), categoriza transações automaticamente com IA (Claude) e responde perguntas sobre suas finanças no WhatsApp (Evolution API) — sem baixar nada.
+
+Inspirado no [Dinzo](https://dinzo.com.br/), mas com WhatsApp como canal primário e Open Finance nativo desde o início.
+
+---
 
 ## Stack
-- Next.js 16 (App Router) + React 19
-- Tailwind v4 + shadcn/ui
-- Supabase (captura de leads)
+
+| Camada | Tecnologia |
+|---|---|
+| Frontend | Next.js 16 (App Router, Turbopack) · React 19 · Tailwind v4 · shadcn/ui |
+| Auth + DB | Supabase (Postgres, Auth, RLS) · @supabase/ssr |
+| Open Finance | Pluggy |
+| IA | Claude (Haiku 4.5 para categorização · Sonnet 4.6 para Q&A) |
+| WhatsApp | Evolution API (self-hosted Docker) |
+| Pagamentos | Mercado Pago Assinaturas |
+| Deploy | Vercel |
+
+> ⚠️ **Next.js 16 breaking changes:** `params`/`searchParams` são `Promise<>`, `cookies()` é async, `middleware.ts` → `proxy.ts`. Leia `specs/05-architecture.md` antes de codar.
+
+---
+
+## Fases de build
+
+| Fase | Status | Entregável |
+|---|---|---|
+| **0 — Fundação** | ✅ Completa | Auth, schema 12 tabelas + RLS, shell autenticado, trial 14 dias |
+| **1 — Open Finance** | 🔧 Em andamento | Pluggy Connect, sync de contas/transações, categorização IA |
+| **2 — Inteligência** | 📋 Planejada | Motor de fatura projetada, mapa de parcelas, insights, Q&A |
+| **3 — WhatsApp** | 📋 Planejada | Evolution API, parsing de mensagens/áudio, alertas |
+| **4 — Monetização** | 📋 Planejada | Mercado Pago Assinaturas, gating de features, dunning |
+| **5 — Lançamento** | 📋 Planejada | LGPD, security review, polish, landing atualizada |
+
+---
 
 ## Rodar localmente
+
 ```bash
-npm install
-npm run dev
+pnpm install
+cp .env.example .env.local
+# preencher NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+pnpm dev
 ```
-Sem variáveis de ambiente, os leads são salvos em `.data/waitlist.json` (só em dev).
 
-## Produção (captura real de leads)
-1. Crie um projeto grátis no [Supabase](https://supabase.com).
-2. Aplique a migration: `supabase link --project-ref <ref>` e `supabase db push`
-   (ou cole `supabase/migrations/*.sql` no SQL editor).
-3. Copie `.env.example` para `.env.local` e preencha `SUPABASE_URL` e
-   `SUPABASE_SERVICE_ROLE_KEY` (ambas server-only — nunca `NEXT_PUBLIC_`).
-4. Deploy na Vercel (defina as mesmas variáveis no projeto).
+### Aplicar schema no Supabase
 
-## Specs (Spec-Driven Development)
-- `specs/00-brief.md` — resumo executivo
-- `specs/01-mvp-scope.md` — escopo do MVP (pós-validação)
-- `specs/02-demand-validation.md` — contrato de métricas do smoke test
-- `specs/03-landing-spec.md` — estrutura da landing
-- `specs/04-design-guidelines.md` — design system
+```bash
+npx supabase login
+npx supabase link --project-ref <ref>
+npx supabase db push
+```
 
-## Métricas do smoke test
-A landing captura `email`, intenção de pagar (`wants_founder` via fake-door), `price_shown` e `source`. As metas de GO/NO-GO estão em `specs/02-demand-validation.md`.
+Acesse `http://localhost:3000/signup` → confirme email → `/dashboard` com banner de trial de 14 dias.
+
+---
+
+## Variáveis de ambiente
+
+Ver `.env.example` para a lista completa. Mínimo para rodar:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=       # dashboard → Settings → API
+NEXT_PUBLIC_SUPABASE_ANON_KEY=  # anon public key
+SUPABASE_SERVICE_ROLE_KEY=      # service_role (nunca NEXT_PUBLIC_)
+```
+
+---
+
+## Estrutura de rotas
+
+```
+/                     landing (pré-venda)
+/signup               cadastro (trial 14 dias)
+/login                login
+/dashboard            visão geral + banner trial
+/contas               contas bancárias (Fase 1)
+/transacoes           extrato + categorias (Fase 1)
+/cartoes              cartões + fatura projetada (Fase 2)
+/metas                metas financeiras (Fase 2)
+/investimentos        carteira de investimentos (Fase 1)
+/configuracoes        perfil, assinatura, LGPD
+```
+
+---
+
+## Specs
+
+- `specs/00-brief.md` — resumo executivo e posicionamento
+- `specs/01-mvp-scope.md` — escopo por fase (MUST/SHOULD/WONT)
+- `specs/04-design-guidelines.md` — paleta, tipografia, design system
+- `specs/05-architecture.md` — decisões de arquitetura, stack, breaking changes Next.js 16
+
+---
+
+## Segurança
+
+- RLS habilitado em todas as 12 tabelas — dados isolados por `user_id = auth.uid()`
+- `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN` — **nunca** `NEXT_PUBLIC_`
+- Todo cálculo financeiro roda no servidor (Server Components / Route Handlers)
+- Webhooks validados por assinatura (HMAC)

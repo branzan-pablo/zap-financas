@@ -1,8 +1,8 @@
 {
-  "name": "cartao-zap-videos",
+  "name": "zap-financas-videos",
   "version": "1.0.0",
   "private": true,
-  "description": "Videos (Reels) do CartaoZap feitos com Remotion",
+  "description": "Videos (Reels) do Zap Finanças feitos com Remotion",
   "scripts": {
     "dev": "remotion studio",
     "studio": "remotion studio",

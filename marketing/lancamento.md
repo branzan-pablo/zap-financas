@@ -1,6 +1,6 @@
-# Kit de Lançamento — CartãoZap
+# Kit de Lançamento — Zap Finanças
 
-Objetivo: levar tráfego orgânico para **https://cartao-zap.vercel.app** e validar a demanda (metas em `specs/02-demand-validation.md`). O app é a parte fácil; **isto aqui é o trabalho que decide tudo.**
+Objetivo: levar tráfego orgânico para **https://zapfinancas.app** e validar a demanda (metas em `specs/02-demand-validation.md`). O app é a parte fácil; **isto aqui é o trabalho que decide tudo.**
 
 ---
 
@@ -11,7 +11,7 @@ Reels/Short  →  link na bio (com UTM)  →  landing  →  email (waitlist)  �
 ```
 
 - **Bio link:** use sempre a landing com UTM para saber o que converte:
-  `https://cartao-zap.vercel.app/?utm=ig-bio` (Instagram), `?utm=tiktok-bio` (TikTok), `?utm=yt-bio` (Shorts).
+  `https://zapfinancas.app/?utm=ig-bio` (Instagram), `?utm=tiktok-bio` (TikTok), `?utm=yt-bio` (Shorts).
 - Para campanhas específicas, troque o UTM: `?utm=reel-juros`, `?utm=reel-parcelas`, etc. O campo `source` grava isso no Supabase.
 - **Regra de ouro:** 1 vídeo = 1 dor = 1 CTA. Não explique o produto inteiro.
 
@@ -19,7 +19,7 @@ Reels/Short  →  link na bio (com UTM)  →  landing  →  email (waitlist)  �
 
 > **"Você não está duro. Você está parcelado."**
 
-Todo conteúdo gira em torno da dor: o cartão tira sua noção de quanto você realmente tem. O CartãoZap devolve o controle pelo WhatsApp.
+Todo conteúdo gira em torno da dor: o cartão tira sua noção de quanto você realmente tem. O Zap Finanças devolve o controle pelo WhatsApp.
 
 ## 2. Pilares de conteúdo (revezar)
 
@@ -57,7 +57,7 @@ Formato: vertical 9:16, 15–30s, legenda sempre embutida (CapCut), corte rápid
 - **Hook (0–2s):** POV, expressão de choque ao abrir o celular. Texto: *"eu achando que a fatura ia vir R$ 900"*
 - **Desenvolvimento:** corte para o "valor real" R$ 2.180. *"Cadê esses R$ 1.280? Foi o cafezinho? Foi a parcela que eu esqueci? Foi tudo um pouco. E sempre vem maior do que eu lembrava."*
 - **Texto na tela:** "expectativa R$ 900 → realidade R$ 2.180"
-- **CTA:** *"Cansei de ser pego de surpresa. Por isso tô fazendo o CartãoZap. Link na bio."*
+- **CTA:** *"Cansei de ser pego de surpresa. Por isso tô fazendo o Zap Finanças. Link na bio."*
 - **Legenda:** A fatura sempre vem maior do que a gente lembra. 🫠 link na bio.
 - **Hashtags:** #fatura #cartaodecredito #financaspessoais #relatable #vidaadulta
 - **UTM:** `?utm=reel-fechamento`

@@ -352,7 +352,7 @@ export const V1: React.FC = () => {
               {frame >= 42 && (
                 <Reveal>
                   <Bubble side="in" style={{ fontSize: 26, padding: "14px 20px" }}>
-                    <b>CartãoZap conectado ✓</b>
+                    <b>Zap Finanças conectado ✓</b>
                   </Bubble>
                 </Reveal>
               )}
@@ -390,8 +390,8 @@ export const V2: React.FC = () => {
     <VScene duration={150}>
       <Reveal>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 16, fontSize: 46, fontWeight: 800 }}>
-          <span style={{ width: 64, height: 64, borderRadius: 16, background: C.green, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>C</span>
-          <Kinetic text="CartãoZap" delay={4} step={2} />
+          <span style={{ width: 64, height: 64, borderRadius: 16, background: C.green, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>Z</span>
+          <Kinetic text="Zap Finanças" delay={4} step={2} />
         </div>
       </Reveal>
       <h1 style={{ fontSize: 84, fontWeight: 800, letterSpacing: -2, lineHeight: 1.05, margin: "40px 0 0" }}>
@@ -567,7 +567,7 @@ export const V6: React.FC = () => {
       </div>
       <div style={{ position: "relative" }}>
         <div style={{ position: "absolute", left: "50%", top: "50%", width: ring, height: ring, marginLeft: -ring / 2, marginTop: -ring / 2, borderRadius: 999, border: `4px solid ${C.green}`, opacity: ringO }} />
-        <div style={{ width: 180, height: 180, borderRadius: 44, background: C.wa, color: "#fff", fontSize: 100, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", transform: `scale(${sp})`, boxShadow: "0 30px 70px -20px rgba(37,211,102,.6)" }}>C</div>
+        <div style={{ width: 180, height: 180, borderRadius: 44, background: C.wa, color: "#fff", fontSize: 100, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", transform: `scale(${sp})`, boxShadow: "0 30px 70px -20px rgba(37,211,102,.6)" }}>Z</div>
       </div>
       <Reveal delay={10}>
         <h1 style={{ fontSize: 72, fontWeight: 800, letterSpacing: -1.5, marginTop: 44 }}>Seu cartão, direto no WhatsApp</h1>
@@ -660,13 +660,13 @@ export const V8: React.FC = () => {
             </div>
           ))}
         </div>
-        <div style={{ position: "absolute", left: "50%", top: "50%", width: 150, height: 150, marginLeft: -75, marginTop: -75, borderRadius: 36, background: C.green, color: "#fff", fontSize: 80, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", transform: `rotate(${rot}deg) scale(${sp})`, filter: `blur(${moBlur}px)`, boxShadow: `0 0 40px ${C.green}66` }}>C</div>
+        <div style={{ position: "absolute", left: "50%", top: "50%", width: 150, height: 150, marginLeft: -75, marginTop: -75, borderRadius: 36, background: C.green, color: "#fff", fontSize: 80, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", transform: `rotate(${rot}deg) scale(${sp})`, filter: `blur(${moBlur}px)`, boxShadow: `0 0 40px ${C.green}66` }}>Z</div>
       </div>
       <Reveal delay={16}>
         <h1 style={{ fontSize: 60, fontWeight: 800, color: "#fff" }}>Entrar na lista de fundador</h1>
       </Reveal>
       <Reveal delay={26}>
-        <div style={{ marginTop: 34, fontFamily: MONO, fontSize: 32, color: "#E5E7EB", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 16, padding: "18px 34px", ...ctaGlow }}>cartao-zap.vercel.app</div>
+        <div style={{ marginTop: 34, fontFamily: MONO, fontSize: 32, color: "#E5E7EB", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 16, padding: "18px 34px", ...ctaGlow }}>zapfinancas.app</div>
       </Reveal>
     </VScene>
   );
