@@ -8,11 +8,11 @@ import { ReelMapa } from "./ReelMapa";
 export const RemotionRoot = () => {
   return (
     <>
-      {/* Reel vertical para redes (9:16) */}
+      {/* Reel curto vertical (9:16) — 4 cenas, ~16s, para TikTok/Reels */}
       <Composition
         id="Reel1"
         component={Reel}
-        durationInFrames={600} // 20s
+        durationInFrames={480} // 140+100+140+100 = 480 (~16s @ 30fps)
         fps={30}
         width={1080}
         height={1920}
