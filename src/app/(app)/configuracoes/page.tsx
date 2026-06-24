@@ -1,0 +1,113 @@
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+
+export default async function ConfiguracoesPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user!.id)
+    .single();
+
+  const trialEnds = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
+  const trialDays = trialEnds
+    ? Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / 86_400_000))
+    : null;
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-6">
+        <h1 className="font-display text-2xl font-bold text-ink">
+          Configurações
+        </h1>
+        <p className="mt-1 text-slate">Gerencie sua conta e assinatura.</p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Profile */}
+        <section className="rounded-2xl border border-line bg-white p-6">
+          <h2 className="font-semibold text-ink">Perfil</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-slate">Nome</dt>
+              <dd className="font-medium text-ink">{profile?.nome ?? "—"}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-slate">Email</dt>
+              <dd className="font-num font-medium text-ink">{user?.email}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-slate">WhatsApp</dt>
+              <dd className="text-ink">
+                {profile?.telefone ?? (
+                  <Link href="/configuracoes/whatsapp" className="text-emerald hover:underline">
+                    Vincular número
+                  </Link>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* Subscription */}
+        <section className="rounded-2xl border border-line bg-white p-6">
+          <h2 className="font-semibold text-ink">Assinatura</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-slate">Plano atual</dt>
+              <dd className="font-medium text-ink capitalize">
+                {profile?.plano ?? "trial"}
+              </dd>
+            </div>
+            {trialDays !== null && profile?.plano === "trial" && (
+              <div className="flex justify-between">
+                <dt className="text-slate">Trial restante</dt>
+                <dd className="font-num font-medium text-ink">
+                  {trialDays} dia{trialDays !== 1 ? "s" : ""}
+                </dd>
+              </div>
+            )}
+          </dl>
+          {profile?.plano === "trial" && (
+            <div className="mt-5">
+              <Link
+                href="/configuracoes/assinatura"
+                className="inline-flex items-center gap-2 rounded-[10px] bg-emerald px-4 py-2 text-sm font-medium text-white hover:bg-emerald/90"
+              >
+                Ver planos e assinar
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Danger zone */}
+        <section className="rounded-2xl border border-line bg-white p-6">
+          <h2 className="font-semibold text-ink">Dados e privacidade</h2>
+          <p className="mt-2 text-sm text-slate">
+            Em conformidade com a LGPD, você pode exportar ou excluir seus dados
+            a qualquer momento.
+          </p>
+          <div className="mt-4 flex gap-3">
+            <button
+              type="button"
+              className="rounded-[10px] border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-paper"
+            >
+              Exportar dados
+            </button>
+            <button
+              type="button"
+              className="rounded-[10px] border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Excluir conta
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-slate">
+            Exportação e exclusão em desenvolvimento.
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
