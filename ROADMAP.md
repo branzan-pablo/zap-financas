@@ -38,13 +38,16 @@ SHOULD:
 - 💤 Simulador de quitação (bola de neve / avalanche)
 - 💤 Orçamentos por categoria (`budgets`) + alerta de orçamento — falta a UI de definição de orçamento
 
-### Fase 3 — Assistente WhatsApp (Evolution API) 📋
-- 📋 Abstração `src/lib/whatsapp/provider.ts` (mock-first, como em Open Finance)
-- 📋 Self-host Evolution API (Docker) + webhook inbound (`/api/webhooks/whatsapp`)
-- 📋 Vínculo telefone↔usuário (`whatsapp_links` + código de pareamento)
-- 📋 Parsing de mensagens (Claude/Gemini): registrar transação, consultar saldo/fatura
-- 📋 Alertas outbound (orçamento, pré-fechamento, parcelas)
-- 💤 Parsing de áudio · respostas ricas
+### Fase 3 — Assistente WhatsApp ✅ (MUST, mock-first)
+- ✅ Abstração `src/lib/whatsapp/` (provider interface + mock + stub Evolution + factory)
+- ✅ Webhook inbound (`/api/webhooks/whatsapp`) — aceita formato Evolution e formato simples de teste
+- ✅ Vínculo telefone↔usuário (`whatsapp_links` + código de pareamento; UI em `/configuracoes/whatsapp`)
+- ✅ Interpretação de mensagens (`src/lib/whatsapp/intent.ts`, testado): saldo, fatura, gastos, registrar gasto
+- ✅ Roteador (`handler.ts`) + categorização (regras + fallback IA, igual ao sync)
+- ✅ Alertas outbound (`/api/cron/whatsapp-alerts`) com dedup 24h via tabela `alerts`
+- ✅ Resumo financeiro compartilhado (`src/lib/finance-summary.ts`) — dashboard e alertas usam a mesma fonte
+- 📋 **Pendente p/ produção:** implementar `EvolutionWhatsAppProvider` real + self-host Evolution (Docker); NLU por Gemini para frases livres
+- 💤 Parsing de áudio · respostas ricas (listas/botões)
 
 ### Fase 4 — Monetização (Mercado Pago) 📋
 - 📋 Planos + checkout (Pix + cartão recorrente)
