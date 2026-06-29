@@ -212,7 +212,7 @@ function TrialBanner({ trialDays }: { trialDays: number }) {
         {trialDays !== 1 ? "s" : ""} restante{trialDays !== 1 ? "s" : ""}
       </p>
       <Link
-        href="/configuracoes"
+        href="/assinar"
         className="shrink-0 rounded-[10px] bg-emerald px-4 py-2 text-sm font-medium text-white hover:bg-emerald/90"
       >
         Assinar

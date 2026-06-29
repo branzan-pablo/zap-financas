@@ -69,7 +69,7 @@ export default async function ConfiguracoesPage() {
           {profile?.plano === "trial" && (
             <div className="mt-5">
               <Link
-                href="/configuracoes/assinatura"
+                href="/assinar"
                 className="inline-flex items-center gap-2 rounded-[10px] bg-emerald px-4 py-2 text-sm font-medium text-white hover:bg-emerald/90"
               >
                 Ver planos e assinar

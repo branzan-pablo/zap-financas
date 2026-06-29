@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/app/sidebar";
 import { MobileNav } from "@/components/app/mobile-nav";
+import { avaliarAcesso } from "@/lib/payments/access";
 
 /**
  * Authenticated app shell layout.
@@ -20,12 +21,21 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  // Fetch profile for display name
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  // Perfil (nome + trial) e assinatura para o gating de acesso.
+  const [{ data: profile }, { data: sub }] = await Promise.all([
+    supabase.from("profiles").select("nome, trial_ends_at").eq("id", user.id).single(),
+    supabase.from("subscriptions").select("status, periodo_fim").maybeSingle(),
+  ]);
+
+  // Gate: sem trial vigente e sem assinatura ativa → paywall.
+  const acesso = avaliarAcesso({
+    trialEndsAt: profile?.trial_ends_at ?? null,
+    status: sub?.status ?? null,
+    periodoFim: sub?.periodo_fim ?? null,
+  });
+  if (!acesso.liberado) {
+    redirect("/assinar");
+  }
 
   const userName = profile?.nome ?? user.email?.split("@")[0] ?? null;
 
