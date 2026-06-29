@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- stub: params entram quando os métodos forem implementados (Fase 4 real). */
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   CheckoutInput,
   CheckoutResultado,
@@ -7,19 +7,28 @@ import type {
 } from "./provider";
 
 /**
- * Provider Mercado Pago — STUB.
+ * Provider Mercado Pago — Assinaturas (preapproval).
  *
- * Integração real de assinaturas (Pix + cartão recorrente) via Mercado Pago
- * Assinaturas/Preapproval. Será preenchido com:
- *   • criarCheckout → POST /preapproval (devolve init_point)
- *   • cancelar      → PUT /preapproval/{id} { status: "cancelled" }
- *   • parseWebhook  → valida x-signature (HMAC) e consulta o recurso na API
- *
- * Enquanto não há credenciais, `getPaymentsProvider()` devolve o mock; este
- * provider só entra com PAYMENTS_PROVIDER=mercadopago.
+ * ⚠️ NÃO TESTADO CONTRA SANDBOX. Implementado conforme a API documentada do
+ * Mercado Pago, mas a documentação oficial é uma SPA que não foi possível ler
+ * integralmente pelas ferramentas. ANTES DE PRODUÇÃO, validar contra o sandbox:
+ *   1. o template EXATO do manifest da assinatura x-signature (abaixo);
+ *   2. os campos do corpo do preapproval e os status retornados;
+ *   3. se a recorrência por Pix (Pix Automático) está disponível ou se a
+ *      recorrência é só cartão (ver nota em README/ROADMAP).
  *
  * Docs: https://www.mercadopago.com.br/developers/pt/docs/subscriptions
  */
+
+const API = "https://api.mercadopago.com";
+
+type MPPreapproval = { status?: string; next_payment_date?: string };
+type MPAuthorizedPayment = {
+  preapproval_id?: string;
+  status?: string;
+  payment?: { status?: string };
+};
+
 export class MercadoPagoProvider implements PaymentsProvider {
   readonly nome = "mercadopago";
 
@@ -28,23 +37,166 @@ export class MercadoPagoProvider implements PaymentsProvider {
     private readonly webhookSecret: string | undefined
   ) {}
 
-  private naoImplementado(metodo: string): never {
-    throw new Error(
-      `MercadoPagoProvider.${metodo} ainda não implementado — ` +
-        `pendente de credenciais Mercado Pago (Fase 4 real).`
-    );
+  private async mpFetch(
+    path: string,
+    init: RequestInit & { idempotencyKey?: string } = {}
+  ): Promise<Response> {
+    const { idempotencyKey, ...rest } = init;
+    return fetch(`${API}${path}`, {
+      ...rest,
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "Content-Type": "application/json",
+        ...(idempotencyKey ? { "X-Idempotency-Key": idempotencyKey } : {}),
+        ...(rest.headers ?? {}),
+      },
+    });
+  }
+
+  /** Credenciais de teste começam com "TEST-" → usar sandbox_init_point. */
+  private get sandbox(): boolean {
+    return this.accessToken.startsWith("TEST-");
   }
 
   async criarCheckout(input: CheckoutInput): Promise<CheckoutResultado> {
-    return this.naoImplementado("criarCheckout");
+    const { plano, userId, payerEmail, urlSucesso } = input;
+
+    const res = await this.mpFetch("/preapproval", {
+      method: "POST",
+      // Idempotência: mesma tentativa de checkout não cria duas assinaturas.
+      idempotencyKey: `preapproval_${userId}_${plano.id}`,
+      body: JSON.stringify({
+        reason: `Zap Finanças — ${plano.nome}`,
+        external_reference: userId, // mapeia a assinatura ao nosso usuário
+        payer_email: payerEmail,
+        back_url: urlSucesso,
+        auto_recurring: {
+          frequency: plano.meses,
+          frequency_type: "months",
+          transaction_amount: plano.preco,
+          currency_id: "BRL",
+        },
+        status: "pending",
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Mercado Pago preapproval falhou: ${res.status} ${await res.text()}`);
+    }
+
+    const data = (await res.json()) as {
+      id: string;
+      init_point?: string;
+      sandbox_init_point?: string;
+    };
+    const url = (this.sandbox ? data.sandbox_init_point : data.init_point) ?? data.init_point;
+    if (!url) throw new Error("Mercado Pago não retornou init_point.");
+
+    return { url, externalId: data.id };
   }
+
   async cancelar(externalId: string): Promise<void> {
-    return this.naoImplementado("cancelar");
+    const res = await this.mpFetch(`/preapproval/${externalId}`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+    if (!res.ok) {
+      throw new Error(`Mercado Pago cancelar falhou: ${res.status} ${await res.text()}`);
+    }
   }
-  async parseWebhook(
-    rawBody: string,
-    headers: Headers
-  ): Promise<WebhookEvento | null> {
-    return this.naoImplementado("parseWebhook");
+
+  // --- Webhook ---------------------------------------------------------------
+
+  /**
+   * Valida a assinatura `x-signature` e resolve o status real consultando a API.
+   *
+   * ⚠️ TEMPLATE DO MANIFEST — confirmar no sandbox antes de produção:
+   *     id:{data.id};request-id:{x-request-id};ts:{ts};
+   * onde data.id vem do query param `data.id` da URL (minúsculo se alfanumérico),
+   * x-request-id e ts vêm dos headers. HMAC-SHA256(manifest, webhookSecret) em
+   * hex, comparado com `v1` do header x-signature.
+   */
+  async parseWebhook(rawBody: string, request: Request): Promise<WebhookEvento | null> {
+    if (!this.assinaturaValida(request)) return null;
+
+    let body: { type?: string; topic?: string; action?: string; data?: { id?: string } };
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return null;
+    }
+
+    const topic = body.type ?? body.topic ?? "";
+    const dataId = body.data?.id ?? new URL(request.url).searchParams.get("data.id") ?? "";
+    if (!dataId) return null;
+
+    try {
+      // subscription_authorized_payment: cobrança recorrente (sucesso/recusa).
+      if (topic.includes("authorized_payment")) {
+        const ap = await this.mpGet<MPAuthorizedPayment>(`/authorized_payments/${dataId}`);
+        const preapprovalId = String(ap?.preapproval_id ?? "");
+        const statusPagamento = ap?.payment?.status ?? ap?.status ?? "";
+        if (!preapprovalId) return null;
+        if (statusPagamento === "approved" || statusPagamento === "processed") {
+          const pre = await this.mpGet<MPPreapproval>(`/preapproval/${preapprovalId}`);
+          return {
+            tipo: "aprovado",
+            externalId: preapprovalId,
+            periodoFim: pre?.next_payment_date,
+          };
+        }
+        return { tipo: "falha_pagamento", externalId: preapprovalId };
+      }
+
+      // subscription_preapproval: estado da assinatura mudou.
+      if (topic.includes("preapproval")) {
+        const pre = await this.mpGet<MPPreapproval>(`/preapproval/${dataId}`);
+        const status = pre?.status ?? "";
+        if (status === "authorized") {
+          return { tipo: "aprovado", externalId: dataId, periodoFim: pre?.next_payment_date };
+        }
+        if (status === "cancelled") {
+          return { tipo: "cancelado", externalId: dataId };
+        }
+        return null; // pending/paused → sem ação
+      }
+
+      return null;
+    } catch {
+      // Falha ao consultar a API → não age (MP reenvia o webhook depois).
+      return null;
+    }
+  }
+
+  private async mpGet<T>(path: string): Promise<T | null> {
+    const res = await this.mpFetch(path);
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  }
+
+  private assinaturaValida(request: Request): boolean {
+    if (!this.webhookSecret) return false; // sem secret não há como validar
+    const xSignature = request.headers.get("x-signature");
+    const xRequestId = request.headers.get("x-request-id") ?? "";
+    if (!xSignature) return false;
+
+    // x-signature: "ts=...,v1=..."
+    const partes = Object.fromEntries(
+      xSignature.split(",").map((kv) => {
+        const [k, v] = kv.split("=");
+        return [k?.trim(), v?.trim()];
+      })
+    );
+    const ts = partes["ts"];
+    const v1 = partes["v1"];
+    if (!ts || !v1) return false;
+
+    const dataId = (new URL(request.url).searchParams.get("data.id") ?? "").toLowerCase();
+    const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+    const esperado = createHmac("sha256", this.webhookSecret).update(manifest).digest("hex");
+
+    const a = Buffer.from(esperado);
+    const b = Buffer.from(v1);
+    return a.length === b.length && timingSafeEqual(a, b);
   }
 }

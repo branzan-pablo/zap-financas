@@ -19,13 +19,21 @@ export async function ativarAssinatura(
   userId: string,
   planoId: PlanoId,
   externalId: string,
-  agora: Date = new Date()
+  agora: Date = new Date(),
+  periodoFimIso?: string
 ): Promise<void> {
   const plano = getPlano(planoId);
   if (!plano) throw new Error(`Plano desconhecido: ${planoId}`);
 
-  const fim = new Date(agora);
-  fim.setMonth(fim.getMonth() + plano.meses);
+  // O fim do ciclo é, idealmente, o informado pelo provider (fonte da verdade);
+  // só calculamos localmente (now + meses) quando ele não vem (ex.: mock).
+  const fim = periodoFimIso
+    ? new Date(periodoFimIso)
+    : (() => {
+        const d = new Date(agora);
+        d.setMonth(d.getMonth() + plano.meses);
+        return d;
+      })();
 
   const { error } = await db.from("subscriptions").upsert(
     {
