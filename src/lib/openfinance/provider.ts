@@ -1,5 +1,6 @@
 import type {
   OFAccount,
+  OFCard,
   OFConnectToken,
   OFInstitution,
   OFInvestment,
@@ -37,5 +38,6 @@ export interface OpenFinanceProvider {
   fetchAccounts(itemId: string): Promise<OFAccount[]>;
   /** `since` (YYYY-MM-DD) permite sync incremental; omitido = histórico completo. */
   fetchTransactions(itemId: string, since?: string): Promise<OFTransaction[]>;
+  fetchCards(itemId: string): Promise<OFCard[]>;
   fetchInvestments(itemId: string): Promise<OFInvestment[]>;
 }

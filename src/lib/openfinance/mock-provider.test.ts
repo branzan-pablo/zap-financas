@@ -56,6 +56,20 @@ describe("MockOpenFinanceProvider", () => {
     expect(txs.some((t) => t.parcela && t.parcela.total > 1)).toBe(true);
   });
 
+  it("gera um cartão por conta do tipo cartao, determinístico", async () => {
+    const a = await provider.fetchCards("mock-item-nubank");
+    const b = await provider.fetchCards("mock-item-nubank");
+    expect(a).toEqual(b);
+    expect(a).toHaveLength(1);
+    expect(a[0].diaFechamento).toBeGreaterThanOrEqual(1);
+    expect(a[0].diaFechamento).toBeLessThanOrEqual(28);
+    expect(a[0].limite).toBeGreaterThan(0);
+    // o cardId referencia a conta cartao
+    const contas = await provider.fetchAccounts("mock-item-nubank");
+    const cartao = contas.find((c) => c.tipo === "cartao");
+    expect(a[0].accountId).toBe(cartao?.accountId);
+  });
+
   it("filtro `since` remove transações anteriores à data", async () => {
     const todas = await provider.fetchTransactions("mock-item-nubank");
     const corte = todas[Math.floor(todas.length / 2)].data;

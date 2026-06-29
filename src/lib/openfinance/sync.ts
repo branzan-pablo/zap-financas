@@ -10,8 +10,11 @@ import {
  * Pipeline de sincronização Open Finance → Supabase.
  *
  * Coração da Fase 1. É IDEMPOTENTE:
- *   • contas → upsert por (user_id, pluggy_account_id);
- *   • transações → upsert por pluggy_tx_id (constraint única no schema).
+ *   • contas       → upsert por (user_id, pluggy_account_id);
+ *   • transações   → upsert por pluggy_tx_id (único);
+ *   • cartões      → upsert por pluggy_card_id (único);
+ *   • parcelas     → upsert por transaction_id (único);
+ *   • investimentos→ upsert por pluggy_inv_id (único).
  * Rodar N vezes não duplica nada.
  *
  * Recebe o client do Supabase como parâmetro (injeção de dependência), seguindo
@@ -24,18 +27,25 @@ import {
  * ([categorization/rules.ts](../categorization/rules.ts)); só os casos sem
  * match caem no fallback de IA ([../ai](../ai/index.ts)), com cache por
  * descrição para minimizar chamadas.
- *
- * NOTA: investimentos e detecção de parcelas entram na etapa 1E — os ganchos
- * (`provider.fetchInvestments`, `tx.parcela`) já existem.
  */
 
 export type SyncResult = {
   itemId: string;
   contas: number;
   transacoes: number;
+  cartoes: number;
+  parcelas: number;
+  investimentos: number;
   categorizadasPorRegra: number;
   categorizadasPorIA: number;
 };
+
+/** Data da 1ª parcela = data da transação menos (parcelaAtual-1) meses. */
+function primeiraParcela(dataTx: string, parcelaAtual: number): string {
+  const d = new Date(dataTx + "T12:00:00");
+  d.setMonth(d.getMonth() - (parcelaAtual - 1));
+  return d.toISOString().slice(0, 10);
+}
 
 export async function syncItem(
   db: SupabaseClient,
@@ -132,12 +142,111 @@ export async function syncItem(
     });
   }
 
+  // pluggy_tx_id → uuid da transação (necessário p/ vincular parcelas)
+  const txIdMap = new Map<string, string>();
   if (txRows.length > 0) {
-    const { error: txErr } = await db
+    const { data: txUpserted, error: txErr } = await db
       .from("transactions")
-      .upsert(txRows, { onConflict: "pluggy_tx_id" });
+      .upsert(txRows, { onConflict: "pluggy_tx_id" })
+      .select("id, pluggy_tx_id");
     if (txErr) {
       throw new Error(`Falha ao sincronizar transações: ${txErr.message}`);
+    }
+    for (const row of txUpserted ?? []) {
+      if (row.pluggy_tx_id) txIdMap.set(row.pluggy_tx_id, row.id);
+    }
+  }
+
+  // 4. Cartões ----------------------------------------------------------------
+  const ofCards = await provider.fetchCards(itemId);
+  const cardByAccountUuid = new Map<string, string>(); // account uuid → card uuid
+  if (ofCards.length > 0) {
+    const cardRows = ofCards
+      .map((c) => {
+        const accountUuid = accountIdMap.get(c.accountId);
+        if (!accountUuid) return null;
+        return {
+          user_id: userId,
+          account_id: accountUuid,
+          nome: c.nome,
+          bandeira: c.bandeira,
+          limite: c.limite,
+          dia_fechamento: c.diaFechamento,
+          dia_vencimento: c.diaVencimento,
+          ativo: true,
+          pluggy_card_id: c.cardId,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    if (cardRows.length > 0) {
+      const { data: cardUpserted, error: cardErr } = await db
+        .from("cards")
+        .upsert(cardRows, { onConflict: "pluggy_card_id" })
+        .select("id, account_id");
+      if (cardErr) {
+        throw new Error(`Falha ao sincronizar cartões: ${cardErr.message}`);
+      }
+      for (const row of cardUpserted ?? []) {
+        if (row.account_id) cardByAccountUuid.set(row.account_id, row.id);
+      }
+    }
+  }
+
+  // 5. Parcelas (transações com metadados de parcelamento) --------------------
+  const installmentRows = [];
+  for (const t of ofTxs) {
+    if (!t.parcela) continue;
+    const txUuid = txIdMap.get(t.transactionId);
+    const accountUuid = accountIdMap.get(t.accountId);
+    if (!txUuid) continue;
+    installmentRows.push({
+      user_id: userId,
+      card_id: accountUuid ? cardByAccountUuid.get(accountUuid) ?? null : null,
+      transaction_id: txUuid,
+      descricao: t.descricao,
+      valor_parcela: Math.abs(t.valor),
+      total_parcelas: t.parcela.total,
+      parcela_atual: t.parcela.atual,
+      primeira_parcela: primeiraParcela(t.data, t.parcela.atual),
+    });
+  }
+  if (installmentRows.length > 0) {
+    const { error: instErr } = await db
+      .from("installments")
+      .upsert(installmentRows, { onConflict: "transaction_id" });
+    if (instErr) {
+      throw new Error(`Falha ao sincronizar parcelas: ${instErr.message}`);
+    }
+  }
+
+  // 6. Investimentos ----------------------------------------------------------
+  const ofInvestments = await provider.fetchInvestments(itemId);
+  const investmentRows = ofInvestments
+    .map((inv) => {
+      const accountUuid = accountIdMap.get(inv.accountId);
+      if (!accountUuid) return null;
+      return {
+        user_id: userId,
+        account_id: accountUuid,
+        nome: inv.nome,
+        tipo: inv.tipo,
+        valor_aplicado: inv.valorAplicado,
+        valor_atual: inv.valorAtual,
+        rendimento_pct: inv.rendimentoPct,
+        data_aplicacao: inv.dataAplicacao ?? null,
+        data_vencimento: inv.dataVencimento ?? null,
+        pluggy_inv_id: inv.investmentId,
+        ultimo_sync: agora,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+  if (investmentRows.length > 0) {
+    const { error: invErr } = await db
+      .from("investments")
+      .upsert(investmentRows, { onConflict: "pluggy_inv_id" });
+    if (invErr) {
+      throw new Error(`Falha ao sincronizar investimentos: ${invErr.message}`);
     }
   }
 
@@ -145,6 +254,9 @@ export async function syncItem(
     itemId,
     contas: accountRows.length,
     transacoes: txRows.length,
+    cartoes: ofCards.length,
+    parcelas: installmentRows.length,
+    investimentos: investmentRows.length,
     categorizadasPorRegra: porRegra,
     categorizadasPorIA: porIA,
   };

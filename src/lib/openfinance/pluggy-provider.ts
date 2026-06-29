@@ -2,6 +2,7 @@
 import type { OpenFinanceProvider } from "./provider";
 import type {
   OFAccount,
+  OFCard,
   OFConnectToken,
   OFInstitution,
   OFInvestment,
@@ -57,6 +58,9 @@ export class PluggyOpenFinanceProvider implements OpenFinanceProvider {
     _since?: string
   ): Promise<OFTransaction[]> {
     return this.naoImplementado("fetchTransactions");
+  }
+  async fetchCards(_itemId: string): Promise<OFCard[]> {
+    return this.naoImplementado("fetchCards");
   }
   async fetchInvestments(_itemId: string): Promise<OFInvestment[]> {
     return this.naoImplementado("fetchInvestments");

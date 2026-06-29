@@ -119,6 +119,7 @@ export type Database = {
           dia_fechamento: number | null;
           dia_vencimento: number | null;
           ativo: boolean;
+          pluggy_card_id: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["cards"]["Row"], "id" | "created_at"> & {

@@ -55,6 +55,17 @@ export type OFTransaction = {
   parcela?: { atual: number; total: number };
 };
 
+/** Cartão de crédito vinculado a uma conta do tipo 'cartao'. */
+export type OFCard = {
+  cardId: string; // id estável do cartão no provider → idempotência
+  accountId: string; // conta (tipo cartao) à qual o cartão pertence
+  nome: string;
+  bandeira: string; // 'visa' | 'mastercard' | 'elo' | ...
+  limite: number;
+  diaFechamento: number; // 1..31
+  diaVencimento: number; // 1..31
+};
+
 /** Posição de investimento dentro de um item. */
 export type OFInvestment = {
   investmentId: string;

@@ -1,6 +1,7 @@
 import type { OpenFinanceProvider } from "./provider";
 import type {
   OFAccount,
+  OFCard,
   OFConnectToken,
   OFInstitution,
   OFInvestment,
@@ -267,6 +268,25 @@ export class MockOpenFinanceProvider implements OpenFinanceProvider {
           new Date(b.data).getTime() - new Date(a.data).getTime() ||
           a.transactionId.localeCompare(b.transactionId)
       );
+  }
+
+  async fetchCards(itemId: string): Promise<OFCard[]> {
+    const accounts = await this.fetchAccounts(itemId);
+    const bandeiras = ["visa", "mastercard", "elo"] as const;
+    return accounts
+      .filter((a) => a.tipo === "cartao")
+      .map((a) => {
+        const r = rng(hash(`${a.accountId}-card`));
+        return {
+          cardId: `${a.accountId}-card`,
+          accountId: a.accountId,
+          nome: a.nome,
+          bandeira: pick(r, bandeiras),
+          limite: money(r, 2000, 20000),
+          diaFechamento: 1 + Math.floor(r() * 28),
+          diaVencimento: 1 + Math.floor(r() * 28),
+        };
+      });
   }
 
   async fetchInvestments(itemId: string): Promise<OFInvestment[]> {
