@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { trialDaysRemaining } from "@/lib/trial";
 import Link from "next/link";
+import { DangerZone } from "@/components/app/danger-zone";
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient();
@@ -85,23 +86,7 @@ export default async function ConfiguracoesPage() {
             Em conformidade com a LGPD, você pode exportar ou excluir seus dados
             a qualquer momento.
           </p>
-          <div className="mt-4 flex gap-3">
-            <button
-              type="button"
-              className="rounded-[10px] border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-paper"
-            >
-              Exportar dados
-            </button>
-            <button
-              type="button"
-              className="rounded-[10px] border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-            >
-              Excluir conta
-            </button>
-          </div>
-          <p className="mt-3 text-xs text-slate">
-            Exportação e exclusão em desenvolvimento.
-          </p>
+          <DangerZone />
         </section>
       </div>
     </div>
