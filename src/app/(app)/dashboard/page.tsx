@@ -8,9 +8,11 @@ import {
   diasRestantesNoMes,
 } from "@/lib/safe-limit";
 import { detectarAssinaturas, detectarDuplicatas } from "@/lib/recurring";
+import { gerarAlertas, type FaturaResumo, type Severidade } from "@/lib/alerts";
 
 type Conta = { id: string; tipo: string; saldo: number | null };
 type Cartao = {
+  nome: string;
   account_id: string | null;
   dia_fechamento: number | null;
   dia_vencimento: number | null;
@@ -29,6 +31,12 @@ const STATUS_UI = {
   atencao: { cor: "text-[#9a6a00]", bg: "bg-amber-soft", label: "Atenção" },
   estouro: { cor: "text-red-600", bg: "bg-red-50", label: "No vermelho" },
 } as const;
+
+const ALERTA_UI: Record<Severidade, string> = {
+  critico: "border-red-200 bg-red-50",
+  atencao: "border-amber/40 bg-amber-soft",
+  info: "border-line bg-white",
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -50,7 +58,7 @@ export default async function DashboardPage() {
   const [{ data: accData }, { data: cardData }, { data: invData }, { data: txData }] =
     await Promise.all([
       supabase.from("accounts").select("id, tipo, saldo").eq("ativo", true),
-      supabase.from("cards").select("account_id, dia_fechamento, dia_vencimento").eq("ativo", true),
+      supabase.from("cards").select("nome, account_id, dia_fechamento, dia_vencimento").eq("ativo", true),
       supabase.from("investments").select("valor_atual"),
       supabase
         .from("transactions")
@@ -84,18 +92,18 @@ export default async function DashboardPage() {
     arr.push({ valor: t.valor, data: t.data });
     txPorConta.set(t.account_id, arr);
   }
-  const faturaTotal = cartoes.reduce((s, c) => {
-    if (!c.account_id || !c.dia_fechamento || !c.dia_vencimento) return s;
-    return (
-      s +
-      faturaAtual(
-        txPorConta.get(c.account_id) ?? [],
-        c.dia_fechamento,
-        c.dia_vencimento,
-        hoje
-      ).total
+  const faturas: FaturaResumo[] = [];
+  for (const c of cartoes) {
+    if (!c.account_id || !c.dia_fechamento || !c.dia_vencimento) continue;
+    const f = faturaAtual(
+      txPorConta.get(c.account_id) ?? [],
+      c.dia_fechamento,
+      c.dia_vencimento,
+      hoje
     );
-  }, 0);
+    faturas.push({ nome: c.nome, fechamento: f.fechamento, total: f.total });
+  }
+  const faturaTotal = faturas.reduce((s, f) => s + f.total, 0);
 
   // Movimento do mês corrente.
   const txMes = txs.filter((t) => t.data.slice(0, 7) === mesAtual);
@@ -138,6 +146,16 @@ export default async function DashboardPage() {
   );
   const ui = STATUS_UI[limite.status];
 
+  // Alertas in-app derivados do estado.
+  const alertas = gerarAlertas({
+    faturas,
+    limiteStatus: limite.status,
+    limiteDisponivel: limite.disponivel,
+    duplicatas,
+    hoje,
+    fmt: formatBRL,
+  });
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
@@ -166,6 +184,26 @@ export default async function DashboardPage() {
             : `Cerca de ${formatBRL(limite.porDia)} por dia até o fim do mês.`}
         </p>
       </div>
+
+      {/* Alertas in-app */}
+      {alertas.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {alertas.map((a, i) => (
+            <div
+              key={i}
+              className={`flex items-start gap-3 rounded-xl border p-3 ${ALERTA_UI[a.severidade]}`}
+            >
+              <span aria-hidden className="mt-0.5 text-base">
+                {a.severidade === "critico" ? "⛔" : "⚠️"}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ink">{a.titulo}</p>
+                <p className="text-sm text-slate">{a.detalhe}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Resumo */}
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
