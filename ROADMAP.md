@@ -31,11 +31,12 @@ MUST entregues:
 - ✅ Detecção de assinaturas e cobranças duplicadas (`src/lib/recurring.ts`, testado)
 - ✅ Limite seguro do mês (`src/lib/safe-limit.ts`, testado)
 
-SHOULD adiados conscientemente (💤 — não esquecer):
+SHOULD:
+- ✅ Alertas in-app (`src/lib/alerts.ts`, testado): limite estourado/atenção, fatura prestes a fechar, cobrança duplicada — derivados do estado, exibidos no dashboard
 - 💤 Previsão de fatura por IA
 - 💤 Consolidação de dividendos/rendimentos para IR
 - 💤 Simulador de quitação (bola de neve / avalanche)
-- 💤 Alertas in-app (orçamento perto do limite, fatura prestes a fechar) — tabela `alerts` já existe no schema
+- 💤 Orçamentos por categoria (`budgets`) + alerta de orçamento — falta a UI de definição de orçamento
 
 ### Fase 3 — Assistente WhatsApp (Evolution API) 📋
 - 📋 Abstração `src/lib/whatsapp/provider.ts` (mock-first, como em Open Finance)
@@ -58,10 +59,10 @@ SHOULD adiados conscientemente (💤 — não esquecer):
 
 ## Dívida técnica & qualidade (transversal — não deixar acumular)
 
-- 📋 **Tipagem do Supabase**: hoje `createClient()` omite o generic `Database` e `types.ts` é mantido à mão (risco de divergir do schema). Gerar via `supabase gen types typescript` e plugar o generic → erros de query em tempo de compilação.
-- 📋 **CI**: GitHub Actions rodando `lint` + `test` + `build` a cada push/PR.
-- 📋 **Testes de integração** dos route handlers (webhook/cron) e server actions, hoje validados só manualmente.
-- 📋 **Auditoria de segurança**: garantir `PLUGGY_WEBHOOK_SECRET`/`CRON_SECRET` obrigatórios em produção; nenhum dado financeiro em logs (`console.error`); revisão de uso do service_role.
+- ✅ **Tipagem do Supabase**: `types.ts` gerado do schema real (`supabase gen types`) + generic `Database` plugado em todos os clients; upserts do sync validados contra os tipos `Insert`.
+- ✅ **CI**: GitHub Actions (`.github/workflows/ci.yml`) roda `lint` + `test` + `build` a cada push/PR.
+- ✅ **Segurança (hardening)**: webhook Pluggy e cron fazem *fail closed* em produção sem segredo; logs sem valores financeiros; `service_role` só em route handlers server-side. Revisão ampla de segurança fica para a Fase 5.
+- 📋 **Testes de integração** dos route handlers (webhook/cron) e server actions em CI — hoje validados manualmente via script.
 - 📋 **Observabilidade**: Sentry (citado na arquitetura, ainda não instalado).
 - 📋 **Performance**: dashboard recomputa sobre ~800 transações a cada load; avaliar agregação no Postgres / cache quando o volume crescer.
 - 📋 **Mobile**: navegação mobile-first feita; falta uma passada de QA visual em device real (375px) e estados de toque.
