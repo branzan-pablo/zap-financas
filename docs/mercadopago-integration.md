@@ -33,10 +33,14 @@
 3. **Status retornados** — mapear corretamente `authorized`/`paused`/`cancelled`
    (preapproval) e `approved`/`processed`/`rejected` (authorized_payment).
 4. **`next_payment_date`** — confirmar que é a fonte do fim do ciclo (periodoFim).
-5. **Pix recorrente** — CONFIRMAR se o preapproval cobra recorrência via Pix
-   (Pix Automático) ou **somente cartão**. Se for só cartão, ajustar a copy de
-   `/assinar` e o ROADMAP. A 1ª cobrança pode ser Pix; a recorrência automática
-   historicamente é cartão.
+5. **Pix Automático (Pix recorrente)** — DISPONÍVEL no Mercado Pago (confirmado
+   pelo cliente). Estratégia: oferecer Pix Automático **e** cartão no checkout
+   hospedado (`init_point`), deixando o usuário escolher. No sandbox, validar:
+   (a) habilitar Pix Automático na conta MP para ele aparecer no checkout;
+   (b) se o `preapproval` precisa de algum campo extra (ex.: `payment_methods`)
+   para surfacar o Pix, ou se basta a configuração da conta;
+   (c) que a renovação via Pix dispara `subscription_authorized_payment` (o
+   webhook já trata). A 1ª autorização do Pix Automático é feita no app do banco.
 6. **Idempotência** — `X-Idempotency-Key` já enviado no `criarCheckout`. Garantir
    que reentregas de webhook não dupliquem efeito (ativar = upsert idempotente;
    evitar reextensão de período em reentrega — periodoFim vem do MP, não recalcula).

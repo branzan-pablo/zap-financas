@@ -112,8 +112,8 @@ export default async function AssinarPage() {
         )}
 
         <p className="mt-8 text-center text-xs text-slate">
-          Pagamento via Pix ou cartão recorrente · cancele quando quiser · preço de
-          fundador travado.
+          Pix Automático ou cartão · renovação automática · cancele quando quiser ·
+          preço de fundador travado.
         </p>
       </div>
     </div>
