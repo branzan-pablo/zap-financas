@@ -18,7 +18,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
+  if (!secret) {
+    // Fail closed em produção: sem CRON_SECRET, recusa (evita endpoint aberto).
+    if (process.env.NODE_ENV === "production") {
+      return Response.json(
+        { ok: false, error: "Cron não configurado." },
+        { status: 503 }
+      );
+    }
+  } else {
     const auth = request.headers.get("authorization");
     if (auth !== `Bearer ${secret}`) {
       return Response.json({ ok: false, error: "Não autorizado." }, { status: 401 });

@@ -18,7 +18,11 @@ import { syncItem } from "@/lib/openfinance/sync";
 
 function assinaturaValida(rawBody: string, header: string | null): boolean {
   const secret = process.env.PLUGGY_WEBHOOK_SECRET;
-  if (!secret) return true; // dev/mock: sem secret configurado
+  if (!secret) {
+    // Fail closed em produção: sem segredo configurado, recusa. Em dev (mock),
+    // aceita para facilitar os testes locais.
+    return process.env.NODE_ENV !== "production";
+  }
   if (!header) return false;
 
   const esperado = createHmac("sha256", secret).update(rawBody).digest("hex");
