@@ -59,9 +59,13 @@ SHOULD:
 - 📋 **Pendente p/ produção:** implementar `MercadoPagoProvider` real (Pix Automático + cartão recorrente) + validar webhook x-signature
 - 💤 Portal avançado (trocar de plano sem cancelar), cupons
 
-### Fase 5 — Lançamento 📋
-- 📋 LGPD: consentimento, export/delete de dados
-- 📋 Security review · performance · polish · landing atualizada
+### Fase 5 — Lançamento 🔧
+- ✅ LGPD: consentimento ativo no signup (`lgpd_consent_at`) + página `/privacidade`
+- ✅ LGPD: export de dados (`/api/conta/exportar`) + exclusão de conta (cascade)
+- ✅ Security review (1ª rodada): corrigidos bypass do checkout mock em produção,
+  confused-deputy no `data.id` do webhook MP, código de pareamento via CSPRNG,
+  conteúdo financeiro fora de logs
+- 📋 Performance · polish · landing atualizada · 2ª security review pós-providers reais
 
 ---
 
