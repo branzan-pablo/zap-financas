@@ -127,7 +127,11 @@ export class MercadoPagoProvider implements PaymentsProvider {
     }
 
     const topic = body.type ?? body.topic ?? "";
-    const dataId = body.data?.id ?? new URL(request.url).searchParams.get("data.id") ?? "";
+    // SEGURANÇA: usar o data.id da QUERY (o valor que foi assinado em
+    // `assinaturaValida`), não o do corpo (não coberto pela assinatura). Caso
+    // contrário um atacante poderia manter a assinatura válida e trocar o
+    // body.data.id para agir sobre outro recurso (confused deputy).
+    const dataId = new URL(request.url).searchParams.get("data.id") ?? body.data?.id ?? "";
     if (!dataId) return null;
 
     try {

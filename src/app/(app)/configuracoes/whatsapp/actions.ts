@@ -1,5 +1,6 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,9 +15,10 @@ const CODIGO_TTL_MIN = 10;
 const ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 function gerarCodigo(): string {
+  // randomInt (CSPRNG) — código de pareamento não deve ser previsível.
   let c = "";
   for (let i = 0; i < 6; i++) {
-    c += ALFABETO[Math.floor(Math.random() * ALFABETO.length)];
+    c += ALFABETO[randomInt(ALFABETO.length)];
   }
   return c;
 }

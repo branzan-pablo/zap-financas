@@ -12,8 +12,8 @@ export class MockWhatsAppProvider implements WhatsAppProvider {
 
   async enviar(msg: MensagemEnviar): Promise<{ ok: boolean }> {
     if (process.env.NODE_ENV !== "production") {
-      // Sem dados financeiros sensíveis além do que o próprio usuário pediu.
-      console.log(`[whatsapp:mock] → ${msg.telefone}: ${msg.texto.slice(0, 80)}`);
+      // Não logar o conteúdo (pode conter saldo/fatura) — só metadados.
+      console.log(`[whatsapp:mock] → ${msg.telefone} (${msg.texto.length} chars)`);
     }
     return { ok: true };
   }

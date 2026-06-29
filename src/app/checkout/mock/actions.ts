@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { getPaymentsProvider } from "@/lib/payments";
 import { ativarAssinatura } from "@/lib/payments/subscription";
 import type { PlanoId } from "@/lib/payments/plans";
 
@@ -12,6 +13,13 @@ import type { PlanoId } from "@/lib/payments/plans";
  * o caminho de ativação é idêntico — só a origem do gatilho muda.
  */
 export async function confirmarPagamento(formData: FormData) {
+  // Trava de segurança: o checkout simulado SÓ pode ativar assinatura no modo
+  // mock. Com um provider real (Mercado Pago), a ativação vem do webhook
+  // assinado — nunca desta ação. Impede ativar assinatura sem pagar em produção.
+  if (getPaymentsProvider().nome !== "mock") {
+    redirect("/assinar");
+  }
+
   const planoId = String(formData.get("plano") ?? "") as PlanoId;
   const externalId = String(formData.get("ext") ?? "");
 
