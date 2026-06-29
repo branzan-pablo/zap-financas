@@ -39,11 +39,9 @@ export default async function ConfiguracoesPage() {
             <div className="flex justify-between">
               <dt className="text-slate">WhatsApp</dt>
               <dd className="text-ink">
-                {profile?.telefone ?? (
-                  <Link href="/configuracoes/whatsapp" className="text-emerald hover:underline">
-                    Vincular número
-                  </Link>
-                )}
+                <Link href="/configuracoes/whatsapp" className="text-emerald hover:underline">
+                  Gerenciar
+                </Link>
               </dd>
             </div>
           </dl>
