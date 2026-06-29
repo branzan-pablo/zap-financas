@@ -2,29 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { trialDaysRemaining } from "@/lib/trial";
 import { formatBRL } from "@/lib/format";
-import { faturaAtual, type FaturaTransacao } from "@/lib/fatura";
-import {
-  calcularLimiteSeguro,
-  diasRestantesNoMes,
-} from "@/lib/safe-limit";
-import { detectarAssinaturas, detectarDuplicatas } from "@/lib/recurring";
-import { gerarAlertas, type FaturaResumo, type Severidade } from "@/lib/alerts";
-
-type Conta = { id: string; tipo: string; saldo: number | null };
-type Cartao = {
-  nome: string;
-  account_id: string | null;
-  dia_fechamento: number | null;
-  dia_vencimento: number | null;
-};
-type Categoria = { nome: string; cor: string | null; icone: string | null };
-type Tx = {
-  valor: number;
-  data: string;
-  descricao: string;
-  account_id: string;
-  categories: Categoria | null;
-};
+import { gerarAlertas, type Severidade } from "@/lib/alerts";
+import { resumoFinanceiro } from "@/lib/finance-summary";
 
 const STATUS_UI = {
   folga: { cor: "text-emerald", bg: "bg-emerald-soft", label: "No azul" },
@@ -54,96 +33,27 @@ export default async function DashboardPage() {
   const trialDays = trialDaysRemaining(profile?.trial_ends_at ?? null);
   const onTrial = profile?.plano === "trial" && trialDays !== null && trialDays > 0;
 
-  // --- Dados ----------------------------------------------------------------
-  const [{ data: accData }, { data: cardData }, { data: invData }, { data: txData }] =
-    await Promise.all([
-      supabase.from("accounts").select("id, tipo, saldo").eq("ativo", true),
-      supabase.from("cards").select("nome, account_id, dia_fechamento, dia_vencimento").eq("ativo", true),
-      supabase.from("investments").select("valor_atual"),
-      supabase
-        .from("transactions")
-        .select("valor, data, descricao, account_id, categories(nome, cor, icone)")
-        .order("data", { ascending: false })
-        .limit(800),
-    ]);
+  // --- Resumo financeiro consolidado (mesma fonte do job de alertas) --------
+  const hoje = new Date();
+  const resumo = await resumoFinanceiro(supabase, user!.id, hoje);
 
-  const contas = (accData ?? []) as Conta[];
-  const cartoes = (cardData ?? []) as Cartao[];
-  const investimentos = (invData ?? []) as { valor_atual: number | null }[];
-  const txs = (txData ?? []) as unknown as Tx[];
-
-  if (contas.length === 0) {
+  if (resumo.numContas === 0) {
     return <ConectarVazio nome={nome} onTrial={onTrial} trialDays={trialDays} />;
   }
 
-  const hoje = new Date();
-  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-
-  // Saldo em contas (corrente/poupança) e investimentos consolidados.
-  const saldoContas = contas
-    .filter((c) => c.tipo === "corrente" || c.tipo === "poupanca")
-    .reduce((s, c) => s + (c.saldo ?? 0), 0);
-  const totalInvestido = investimentos.reduce((s, i) => s + (i.valor_atual ?? 0), 0);
-
-  // Fatura aberta somada de todos os cartões.
-  const txPorConta = new Map<string, FaturaTransacao[]>();
-  for (const t of txs) {
-    const arr = txPorConta.get(t.account_id) ?? [];
-    arr.push({ valor: t.valor, data: t.data });
-    txPorConta.set(t.account_id, arr);
-  }
-  const faturas: FaturaResumo[] = [];
-  for (const c of cartoes) {
-    if (!c.account_id || !c.dia_fechamento || !c.dia_vencimento) continue;
-    const f = faturaAtual(
-      txPorConta.get(c.account_id) ?? [],
-      c.dia_fechamento,
-      c.dia_vencimento,
-      hoje
-    );
-    faturas.push({ nome: c.nome, fechamento: f.fechamento, total: f.total });
-  }
-  const faturaTotal = faturas.reduce((s, f) => s + f.total, 0);
-
-  // Movimento do mês corrente.
-  const txMes = txs.filter((t) => t.data.slice(0, 7) === mesAtual);
-  const rendaMes = txMes.filter((t) => t.valor > 0).reduce((s, t) => s + t.valor, 0);
-  const gastoMes = txMes.filter((t) => t.valor < 0).reduce((s, t) => s - t.valor, 0);
-
-  // Gastos por categoria (mês corrente).
-  const porCategoria = new Map<string, { total: number; cat: Categoria }>();
-  for (const t of txMes) {
-    if (t.valor >= 0) continue;
-    const cat = t.categories ?? { nome: "Sem categoria", cor: "#94a3b8", icone: "📌" };
-    const cur = porCategoria.get(cat.nome) ?? { total: 0, cat };
-    cur.total += -t.valor;
-    porCategoria.set(cat.nome, cur);
-  }
-  const categorias = [...porCategoria.values()].sort((a, b) => b.total - a.total).slice(0, 6);
-  const maxCat = Math.max(1, ...categorias.map((c) => c.total));
-
-  // Insights: assinaturas e duplicatas (histórico carregado).
-  const insightTxs = txs.map((t) => ({ descricao: t.descricao, valor: t.valor, data: t.data }));
-  const assinaturas = detectarAssinaturas(insightTxs);
-  const duplicatas = detectarDuplicatas(insightTxs);
-  const custoAssinaturas = assinaturas.reduce((s, a) => s + a.valorMedio, 0);
-
-  // Comprometido a vencer: assinaturas que ainda não foram lançadas neste mês
-  // (evita contar duas vezes o que já está em `gastoMes`).
-  const jaLancadoMes = new Set(
-    txMes.filter((t) => t.valor < 0).map((t) => t.descricao.toLowerCase())
-  );
-  const comprometidoRestante = assinaturas
-    .filter((a) => !jaLancadoMes.has(a.descricao.toLowerCase()))
-    .reduce((s, a) => s + a.valorMedio, 0);
-
-  // Limite seguro do mês.
-  const limite = calcularLimiteSeguro(
-    rendaMes,
+  const {
+    saldoContas,
+    totalInvestido,
+    faturaTotal,
     gastoMes,
-    comprometidoRestante,
-    diasRestantesNoMes(hoje)
-  );
+    assinaturas,
+    custoAssinaturas,
+    duplicatas,
+    limite,
+    faturas,
+  } = resumo;
+  const categorias = resumo.gastosPorCategoria.slice(0, 6);
+  const maxCat = Math.max(1, ...categorias.map((c) => c.total));
   const ui = STATUS_UI[limite.status];
 
   // Alertas in-app derivados do estado.
@@ -220,22 +130,22 @@ export default async function DashboardPage() {
             Gastos por categoria
           </h2>
           <div className="space-y-3">
-            {categorias.map(({ total, cat }) => (
-              <div key={cat.nome} className="flex items-center gap-3">
+            {categorias.map((c) => (
+              <div key={c.nome} className="flex items-center gap-3">
                 <span className="w-32 shrink-0 truncate text-sm text-ink">
-                  {cat.icone} {cat.nome}
+                  {c.icone} {c.nome}
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper">
                   <div
                     className="h-full rounded-full"
                     style={{
-                      width: `${(total / maxCat) * 100}%`,
-                      backgroundColor: cat.cor ?? "#10b981",
+                      width: `${(c.total / maxCat) * 100}%`,
+                      backgroundColor: c.cor ?? "#10b981",
                     }}
                   />
                 </div>
                 <span className="w-24 shrink-0 text-right font-num text-sm font-semibold text-ink">
-                  {formatBRL(total)}
+                  {formatBRL(c.total)}
                 </span>
               </div>
             ))}
