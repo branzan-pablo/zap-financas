@@ -24,12 +24,18 @@ export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const nome = String(formData.get("nome") ?? "").trim();
+  const consentiu = formData.get("lgpd_consent") === "on";
+
+  if (!consentiu) {
+    return { error: "É preciso aceitar a Política de Privacidade para continuar." };
+  }
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { full_name: nome },
+      // lgpd_consent é lido pelo trigger handle_new_user para registrar o consentimento.
+      data: { full_name: nome, lgpd_consent: "true" },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },
   });

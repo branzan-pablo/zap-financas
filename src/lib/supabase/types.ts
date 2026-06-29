@@ -382,6 +382,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          lgpd_consent_at: string | null
           nome: string | null
           plano: string
           telefone: string | null
@@ -392,6 +393,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id: string
+          lgpd_consent_at?: string | null
           nome?: string | null
           plano?: string
           telefone?: string | null
@@ -402,6 +404,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          lgpd_consent_at?: string | null
           nome?: string | null
           plano?: string
           telefone?: string | null

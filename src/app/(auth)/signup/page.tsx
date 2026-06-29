@@ -143,6 +143,23 @@ export default function SignupPage() {
             />
           </div>
 
+          <label className="flex items-start gap-2.5 text-xs text-slate">
+            <input
+              type="checkbox"
+              name="lgpd_consent"
+              required
+              disabled={isPending}
+              className="mt-0.5 size-4 shrink-0 rounded border-line text-emerald focus:ring-emerald/30"
+            />
+            <span>
+              Li e aceito a{" "}
+              <Link href="/privacidade" className="text-emerald hover:underline">
+                Política de Privacidade
+              </Link>{" "}
+              e autorizo o tratamento dos meus dados conforme a LGPD.
+            </span>
+          </label>
+
           <button
             type="submit"
             disabled={isPending}
@@ -154,14 +171,6 @@ export default function SignupPage() {
           >
             {isPending ? "Criando conta…" : "Criar conta grátis"}
           </button>
-
-          <p className="text-center text-xs text-slate">
-            Ao criar conta, você concorda com nossa{" "}
-            <Link href="/privacidade" className="hover:underline">
-              Política de Privacidade
-            </Link>
-            .
-          </p>
         </form>
 
         <div className="relative my-6">
