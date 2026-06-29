@@ -18,9 +18,17 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const provider = getPaymentsProvider();
 
-  const evento = await provider.parseWebhook(rawBody, request.headers);
+  // Fail closed: em produção o webhook NÃO pode rodar com o provider mock
+  // (que não valida assinatura) — evita aceitar eventos forjados.
+  if (process.env.NODE_ENV === "production" && provider.nome === "mock") {
+    return Response.json({ ok: false, error: "Pagamentos não configurados." }, { status: 503 });
+  }
+
+  const evento = await provider.parseWebhook(rawBody, request);
   if (!evento) {
-    return Response.json({ ok: false, error: "Evento inválido." }, { status: 400 });
+    // Assinatura inválida ou evento ignorável → 200 para o MP não reenviar em loop,
+    // mas sem efeito colateral.
+    return Response.json({ ok: true, ignored: "evento inválido ou ignorável" });
   }
 
   const db = createAdminClient();
@@ -37,7 +45,14 @@ export async function POST(request: Request) {
   try {
     switch (evento.tipo) {
       case "aprovado":
-        await ativarAssinatura(db, sub.user_id, sub.plano as PlanoId, evento.externalId);
+        await ativarAssinatura(
+          db,
+          sub.user_id,
+          sub.plano as PlanoId,
+          evento.externalId,
+          undefined,
+          evento.periodoFim
+        );
         break;
       case "cancelado":
         await cancelarAssinatura(db, sub.user_id);

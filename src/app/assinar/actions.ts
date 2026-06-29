@@ -29,6 +29,7 @@ export async function iniciarCheckout(formData: FormData) {
   const provider = getPaymentsProvider();
   const { url, externalId } = await provider.criarCheckout({
     userId: user.id,
+    payerEmail: user.email ?? "",
     plano,
     urlSucesso: `${appUrl}/dashboard`,
     urlCancelamento: `${appUrl}/assinar`,
@@ -58,6 +59,18 @@ export async function cancelarMinhaAssinatura() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  await cancelarAssinatura(createAdminClient(), user.id);
+  const admin = createAdminClient();
+  const { data: sub } = await admin
+    .from("subscriptions")
+    .select("mp_subscription_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  // Cancela PRIMEIRO no provider; só atualiza local se isso suceder — senão o
+  // MP continuaria cobrando enquanto o usuário acha que cancelou.
+  if (sub?.mp_subscription_id) {
+    await getPaymentsProvider().cancelar(sub.mp_subscription_id);
+  }
+  await cancelarAssinatura(admin, user.id);
   revalidatePath("/assinar");
 }
