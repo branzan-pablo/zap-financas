@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, formatData } from "@/lib/format";
 import { mapaParcelas, type ParcelaInput } from "@/lib/installments";
+import { faturaAtual, type FaturaTransacao } from "@/lib/fatura";
 
 type Cartao = {
   id: string;
+  account_id: string | null;
   nome: string;
   bandeira: string | null;
   limite: number | null;
@@ -28,7 +30,7 @@ export default async function CartoesPage() {
   const [{ data: cardsData }, { data: instData }] = await Promise.all([
     supabase
       .from("cards")
-      .select("id, nome, bandeira, limite, dia_fechamento, dia_vencimento")
+      .select("id, account_id, nome, bandeira, limite, dia_fechamento, dia_vencimento")
       .eq("ativo", true)
       .order("created_at", { ascending: true }),
     supabase
@@ -39,8 +41,41 @@ export default async function CartoesPage() {
   const cartoes = (cardsData ?? []) as Cartao[];
   const parcelas = (instData ?? []) as ParcelaInput[];
 
+  // Transações das contas dos cartões → base p/ a fatura aberta de cada cartão.
+  const contaIds = cartoes
+    .map((c) => c.account_id)
+    .filter((id): id is string => id !== null);
+  const { data: txData } = contaIds.length
+    ? await supabase
+        .from("transactions")
+        .select("account_id, valor, data")
+        .in("account_id", contaIds)
+    : { data: [] };
+  const txPorConta = new Map<string, FaturaTransacao[]>();
+  for (const t of (txData ?? []) as { account_id: string; valor: number; data: string }[]) {
+    const arr = txPorConta.get(t.account_id) ?? [];
+    arr.push({ valor: t.valor, data: t.data });
+    txPorConta.set(t.account_id, arr);
+  }
+
+  const hoje = new Date();
+  // Fatura aberta por cartão (cálculo server-side).
+  const faturaPorCartao = new Map(
+    cartoes.map((c) => [
+      c.id,
+      c.dia_fechamento && c.dia_vencimento
+        ? faturaAtual(
+            c.account_id ? txPorConta.get(c.account_id) ?? [] : [],
+            c.dia_fechamento,
+            c.dia_vencimento,
+            hoje
+          )
+        : null,
+    ])
+  );
+
   // Mapa de parcelas a partir do mês atual (cálculo server-side).
-  const mapa = mapaParcelas(parcelas, new Date(), 12);
+  const mapa = mapaParcelas(parcelas, hoje, 12);
   const comprometidoTotal = mapa.reduce((s, m) => s + m.total, 0);
   const maxMes = Math.max(1, ...mapa.map((m) => m.total));
 
@@ -73,23 +108,50 @@ export default async function CartoesPage() {
 
       {/* Cartões */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2">
-        {cartoes.map((c) => (
-          <div key={c.id} className="rounded-2xl border border-line bg-white p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-semibold text-ink">{c.nome}</p>
-                <p className="text-xs text-slate capitalize">{c.bandeira}</p>
+        {cartoes.map((c) => {
+          const fatura = faturaPorCartao.get(c.id);
+          const usoPct =
+            fatura && c.limite && c.limite > 0
+              ? Math.min(100, (fatura.total / c.limite) * 100)
+              : 0;
+          return (
+            <div key={c.id} className="rounded-2xl border border-line bg-white p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-ink">{c.nome}</p>
+                  <p className="text-xs text-slate capitalize">{c.bandeira}</p>
+                </div>
+                {fatura && (
+                  <span className="rounded-md bg-paper px-2 py-0.5 text-xs text-slate">
+                    fecha {formatData(fatura.fechamento)} · vence{" "}
+                    {formatData(fatura.vencimento)}
+                  </span>
+                )}
               </div>
-              <span className="rounded-md bg-paper px-2 py-0.5 text-xs text-slate">
-                fecha dia {c.dia_fechamento} · vence dia {c.dia_vencimento}
-              </span>
+
+              <p className="mt-4 text-xs text-slate">Fatura aberta</p>
+              <p className="font-num text-xl font-bold text-ink">
+                {formatBRL(fatura?.total ?? 0)}
+              </p>
+
+              {/* Uso do limite */}
+              <div className="mt-3">
+                <div className="h-1.5 overflow-hidden rounded-full bg-paper">
+                  <div
+                    className={`h-full rounded-full ${
+                      usoPct >= 80 ? "bg-amber" : "bg-emerald"
+                    }`}
+                    style={{ width: `${usoPct}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-slate">
+                  {formatBRL(fatura?.total ?? 0)} de {formatBRL(c.limite)} ·{" "}
+                  {usoPct.toFixed(0)}% do limite
+                </p>
+              </div>
             </div>
-            <p className="mt-3 text-xs text-slate">Limite</p>
-            <p className="font-num font-semibold text-ink">
-              {formatBRL(c.limite)}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Mapa de parcelas */}
