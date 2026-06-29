@@ -49,10 +49,15 @@ SHOULD:
 - 📋 **Pendente p/ produção:** implementar `EvolutionWhatsAppProvider` real + self-host Evolution (Docker); NLU por Gemini para frases livres
 - 💤 Parsing de áudio · respostas ricas (listas/botões)
 
-### Fase 4 — Monetização (Mercado Pago) 📋
-- 📋 Planos + checkout (Pix + cartão recorrente)
-- 📋 Webhook de pagamento → estado de assinatura → gating de features
-- 📋 Dunning / retry · portal de gerenciamento
+### Fase 4 — Monetização (Mercado Pago) ✅ (MUST, mock-first)
+- ✅ Abstração `src/lib/payments/` (provider mock + stub Mercado Pago + factory por `PAYMENTS_PROVIDER`)
+- ✅ Planos (`plans.ts`, preço de fundador) + UI `/assinar` (paywall + planos + gestão)
+- ✅ Checkout mock (`/checkout/mock`) → ativação (mesma função do webhook)
+- ✅ Webhook (`/api/webhooks/mercadopago`) → ativar/cancelar/inadimplente
+- ✅ Gating de acesso (`src/lib/payments/access.ts`, testado) no layout `(app)` → bloqueado redireciona p/ `/assinar`
+- ✅ Dunning (`/api/cron/dunning`): ativo vencido → inadimplente → expirado (com carência)
+- 📋 **Pendente p/ produção:** implementar `MercadoPagoProvider` real (Pix Automático + cartão recorrente) + validar webhook x-signature
+- 💤 Portal avançado (trocar de plano sem cancelar), cupons
 
 ### Fase 5 — Lançamento 📋
 - 📋 LGPD: consentimento, export/delete de dados
