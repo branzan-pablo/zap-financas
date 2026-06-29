@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 import { getOpenFinanceProvider } from "./index";
 import { getAIProvider } from "@/lib/ai";
 import {
@@ -48,7 +49,7 @@ function primeiraParcela(dataTx: string, parcelaAtual: number): string {
 }
 
 export async function syncItem(
-  db: SupabaseClient,
+  db: SupabaseClient<Database>,
   userId: string,
   itemId: string
 ): Promise<SyncResult> {

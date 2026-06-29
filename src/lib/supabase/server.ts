@@ -1,21 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
-// NOTE: We intentionally omit the Database generic here.
-// Proper typed Database will be generated via `supabase gen types typescript`
-// once the project is linked. Until then, queries return `any` which avoids
-// manual-type inference failures in the Supabase SDK.
+import type { Database } from "./types";
 
 /**
  * Server-side Supabase client using the anon key + user session cookie.
  * Respects RLS — use this in Server Components, Route Handlers, and Server Functions.
+ * Tipado pelo schema real ([types.ts](./types.ts), gerado via supabase gen types).
  *
  * ⚠️ Next.js 16: cookies() is async — always await.
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -45,7 +42,7 @@ export async function createClient() {
  * NEVER expose this key to the browser.
  */
 export function createAdminClient() {
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { cookies: { getAll: () => [], setAll: () => {} } }
