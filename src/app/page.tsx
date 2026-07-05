@@ -8,67 +8,70 @@ import { Pricing } from "@/components/landing/pricing";
 
 const SUSTOS = [
   {
-    kicker: "a armadilha",
-    titulo: "Parcelas escondidas",
+    kicker: "o dia a dia",
+    titulo: "Dinheiro sumindo",
     texto:
-      "Aquele “10x sem juros” de meses atrás ainda está comendo sua fatura, e você nem lembra dele.",
+      "No fim do mês o saldo não fecha e você não faz ideia de onde o dinheiro foi parar.",
   },
   {
     kicker: "o susto",
-    titulo: "O fechamento",
+    titulo: "A fatura fecha maior",
     texto:
-      "Você só descobre o tamanho real da fatura quando ela fecha. Aí já não dá pra fazer nada.",
+      "Parcelas escondidas de meses atrás ainda comendo sua fatura — e você só vê o tamanho real quando fecha.",
   },
   {
-    kicker: "o futuro",
-    titulo: "Sem visibilidade",
+    kicker: "o caos",
+    titulo: "Cinco apps abertos",
     texto:
-      "Quanto dos seus próximos 6 meses você já comprometeu em parcelas? A maioria não faz ideia.",
+      "Conta num banco, cartão em outro, investimento num terceiro. Ninguém tem o número real na mão.",
   },
 ];
 
 const PASSOS = [
   {
     n: "01",
-    titulo: "Manda no zap",
-    texto: "“Comprei uma TV em 10x de 300.” Pronto. Registrado, com as parcelas.",
+    titulo: "Conecte seus bancos",
+    texto:
+      "Via Open Finance: 100+ bancos, só leitura, sem dar senha pra ninguém. Zero digitação.",
   },
   {
     n: "02",
-    titulo: "Vê a fatura projetada",
-    texto: "Pergunte a qualquer momento como está sua fatura. Em tempo real.",
+    titulo: "A IA organiza tudo",
+    texto:
+      "Transações categorizadas sozinhas, fatura projetada, parcelas futuras e investimentos consolidados.",
   },
   {
     n: "03",
-    titulo: "É avisado antes de fechar",
-    texto: "Um alerta dias antes do fechamento. Tempo de respirar e ajustar.",
+    titulo: "Pergunte no WhatsApp",
+    texto:
+      "“Qual meu saldo?”, “Como está a fatura?” — resposta em segundos, e alertas antes de estourar.",
   },
 ];
 
 const FAQ = [
   {
+    q: "Como funciona a conexão com o banco?",
+    a: "Via Open Finance — o mesmo padrão regulado pelo Banco Central que os próprios bancos usam. A conexão é somente leitura: você nunca compartilha a senha do banco conosco, e autoriza (ou revoga) o acesso quando quiser.",
+  },
+  {
     q: "Meus dados financeiros estão seguros?",
-    a: "Sim. Tratamos seus dados com cuidado de banco: tudo criptografado, acesso restrito e nunca vendemos nem compartilhamos suas informações. Você controla o que registra.",
+    a: "Sim. Dados isolados por usuário e criptografados, acesso apenas por leitura via Open Finance, e nunca vendemos nem compartilhamos suas informações. Todo cálculo financeiro roda no nosso servidor, não no seu aparelho.",
   },
   {
-    q: "Preciso conectar a conta do meu banco?",
-    a: "Não. Você registra suas compras pelo WhatsApp ou importa a fatura. Sem dar a senha do seu banco pra ninguém.",
+    q: "Funciona com o meu banco?",
+    a: "Mais de 100 bancos e cartões via Open Finance — Nubank, Itaú, Bradesco, Inter, C6, Santander e muitos outros. Contas, cartões e investimentos, tudo em um lugar só.",
   },
   {
-    q: "Funciona com qualquer cartão?",
-    a: "Sim. Como é você quem registra as compras, funciona com qualquer cartão, de qualquer banco.",
-  },
-  {
-    q: "É seguro usar pelo WhatsApp?",
-    a: "Sim. Você compartilha só o que quiser, na conversa que já usa todo dia, e seus dados ficam protegidos do nosso lado.",
+    q: "Preciso baixar algum app?",
+    a: "Não. Funciona no navegador e responde pelo WhatsApp que você já usa todo dia. Sem loja de aplicativos, sem planilha.",
   },
   {
     q: "Quando vou ter acesso?",
-    a: "Estamos finalizando os últimos detalhes. Quem entra como fundador é avisado primeiro, por email, assim que o acesso abrir.",
+    a: "Estamos finalizando os últimos detalhes. Quem entra na lista é avisado primeiro, por email, e garante o preço de fundador travado.",
   },
   {
     q: "Posso cancelar?",
-    a: "Pode, quando quiser. E você tem 7 dias de garantia: se não curtir, devolvemos seu dinheiro.",
+    a: "Pode, quando quiser. E você começa com 14 dias grátis, com tudo liberado — sem precisar de cartão para testar.",
   },
 ];
 
@@ -112,16 +115,16 @@ export default function Home() {
                 variant="secondary"
                 className="bg-emerald-soft font-num text-xs tracking-wide text-[#0a6e44]"
               >
-                Controle de cartão simplificado
+                Open Finance · IA · WhatsApp
               </Badge>
               <h1 className="mt-6 text-[2.6rem] leading-[1.04] font-bold tracking-tight text-balance text-ink sm:text-6xl">
-                Seu assistente de cartão no{" "}
+                Suas finanças inteiras, no{" "}
                 <span className="text-emerald">WhatsApp</span>.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-slate">
-                Registre compras por mensagem, acompanhe a fatura projetada e
-                seja avisado antes de fechar. Sem planilha, sem baixar nenhum
-                app.
+                Conecte seus bancos via Open Finance, deixe a IA categorizar
+                tudo e entenda para onde vai seu dinheiro — em segundos, pela
+                conversa que você já usa todo dia.
               </p>
 
               <div id="lista" className="mt-8 max-w-md scroll-mt-24">
@@ -143,7 +146,7 @@ export default function Home() {
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
             <Eyebrow>O problema</Eyebrow>
             <h2 className="mt-4 max-w-2xl text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
-              A fatura sempre vem maior do que você lembrava.
+              No fim do mês, o dinheiro some e ninguém sabe por quê.
             </h2>
             <div className="mt-14 grid gap-y-10 sm:grid-cols-3 sm:gap-x-0">
               {SUSTOS.map((s, i) => (
@@ -193,7 +196,7 @@ export default function Home() {
             <div>
               <Eyebrow>Na palma da mão</Eyebrow>
               <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-ink sm:text-[2.5rem] sm:leading-[1.1]">
-                Tudo que importa do seu cartão, num lugar só.
+                Todas as suas finanças, num lugar só.
               </h2>
               <p className="mt-4 max-w-sm leading-relaxed text-slate">
                 Sem abrir cinco apps de banco. Sem somar parcela na cabeça. O
@@ -201,9 +204,9 @@ export default function Home() {
               </p>
               <ul className="mt-6 space-y-3">
                 {[
-                  "Fatura projetada em tempo real",
-                  "Mapa das parcelas dos próximos meses",
-                  "Alerta no WhatsApp antes de fechar",
+                  "Saldo, fatura projetada e investimentos consolidados",
+                  "Categorização automática por IA e mapa de parcelas",
+                  "Limite seguro do mês e alertas no WhatsApp",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-ink">
                     <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-soft text-xs text-emerald">
