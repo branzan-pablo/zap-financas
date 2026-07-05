@@ -1,18 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- stub: params entram quando o método for implementado (Fase 3 real). */
 import type { MensagemEnviar, WhatsAppProvider } from "./provider";
 
 /**
- * Provider Evolution API — STUB.
+ * Provider Evolution API — envio de WhatsApp (self-hosted via Docker).
  *
- * Integração real de WhatsApp (Evolution API self-hosted via Docker, Fase 3
- * real). Será preenchido com a chamada de envio:
+ * ⚠️ NÃO TESTADO — depende de uma instância Evolution de pé (infra Docker + número
+ * pareado por QR). Implementado conforme a API documentada do Evolution v2:
  *   POST {EVOLUTION_API_URL}/message/sendText/{EVOLUTION_INSTANCE}
  *   header: apikey: {EVOLUTION_API_KEY}
+ *   body:   { number: "5511999999999", text: "..." }
  *
- * Enquanto não há instância de pé, `getWhatsAppProvider()` devolve o mock; este
- * provider só entra com WHATSAPP_PROVIDER=evolution.
+ * Só entra com WHATSAPP_PROVIDER=evolution. O webhook inbound da Evolution deve
+ * apontar para /api/webhooks/whatsapp (o roteador já lê o formato Evolution).
  *
- * Docs: https://doc.evolution-api.com/
+ * Docs: https://docs.evolutionfoundation.com.br/evolution-api
  */
 export class EvolutionWhatsAppProvider implements WhatsAppProvider {
   readonly nome = "evolution";
@@ -23,10 +23,25 @@ export class EvolutionWhatsAppProvider implements WhatsAppProvider {
     private readonly instance: string
   ) {}
 
-  async enviar(_msg: MensagemEnviar): Promise<{ ok: boolean; erro?: string }> {
-    throw new Error(
-      "EvolutionWhatsAppProvider.enviar ainda não implementado — " +
-        "pendente de instância Evolution API (Fase 3 real)."
-    );
+  async enviar(msg: MensagemEnviar): Promise<{ ok: boolean; erro?: string }> {
+    // Evolution espera o número só com dígitos (código do país incluso).
+    const number = msg.telefone.replace(/\D/g, "");
+    try {
+      const res = await fetch(
+        `${this.apiUrl.replace(/\/$/, "")}/message/sendText/${this.instance}`,
+        {
+          method: "POST",
+          headers: { apikey: this.apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ number, text: msg.texto }),
+        }
+      );
+      if (!res.ok) {
+        return { ok: false, erro: `Evolution ${res.status}` };
+      }
+      return { ok: true };
+    } catch (e) {
+      // Contrato: não lançar por falha de entrega.
+      return { ok: false, erro: e instanceof Error ? e.message : "erro de rede" };
+    }
   }
 }
