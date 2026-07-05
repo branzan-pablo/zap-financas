@@ -71,6 +71,10 @@ SHOULD:
 - ✅ Security review (1ª rodada): corrigidos bypass do checkout mock em produção,
   confused-deputy no `data.id` do webhook MP, código de pareamento via CSPRNG,
   conteúdo financeiro fora de logs
+- ✅ **Deploy na Vercel (produção LIVE)**: env vars (Supabase/Gemini/Pluggy/CRON_SECRET)
+  configuradas via API, Deployment Protection desligado, crons ativos. Supabase Auth
+  redirect URLs configuradas. Webhook Pluggy registrado + validado (token na URL, pois
+  o Pluggy não usa HMAC). URL provisória `.vercel.app` até o domínio do Registro.br.
 - 📋 Performance · polish · landing atualizada · 2ª security review pós-providers reais
 
 ---
