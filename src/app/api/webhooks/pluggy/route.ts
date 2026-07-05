@@ -1,42 +1,43 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/server";
 import { syncItem } from "@/lib/openfinance/sync";
 
 /**
  * Webhook do Pluggy (Open Finance) — eventos de atualização de item.
  *
- * Fluxo: valida a assinatura → extrai o itemId → descobre o(s) usuário(s)
- * dono(s) daquele item (via accounts.pluggy_item_id) → re-sincroniza.
- * Roda sem sessão de usuário, então usa o admin client (service_role).
+ * Fluxo: valida o token → extrai o itemId → descobre o(s) usuário(s) dono(s)
+ * daquele item (via accounts.pluggy_item_id) → re-sincroniza. Roda sem sessão
+ * de usuário, então usa o admin client (service_role).
  *
- * Segurança: se PLUGGY_WEBHOOK_SECRET estiver definido, exige HMAC-SHA256 do
- * corpo bruto no header `x-pluggy-signature`. Sem secret (dev/mock), aceita —
- * mas em produção o secret é obrigatório.
+ * Segurança: o Pluggy NÃO assina os webhooks com HMAC (o modelo dele é
+ * re-consultar o recurso na API autenticada — que o sync já faz). Validamos um
+ * token compartilhado na querystring da URL registrada
+ * (`/api/webhooks/pluggy?token=PLUGGY_WEBHOOK_SECRET`). Mesmo sem o token, um
+ * evento forjado só conseguiria forçar um re-sync de um item já conectado
+ * (nenhum dado é injetado — tudo é buscado autenticado no Pluggy).
  *
  * Docs Pluggy: https://docs.pluggy.ai/docs/webhooks
  */
 
-function assinaturaValida(rawBody: string, header: string | null): boolean {
+function autorizado(request: Request): boolean {
   const secret = process.env.PLUGGY_WEBHOOK_SECRET;
   if (!secret) {
-    // Fail closed em produção: sem segredo configurado, recusa. Em dev (mock),
-    // aceita para facilitar os testes locais.
+    // Fail closed em produção; dev aceita para facilitar os testes locais.
     return process.env.NODE_ENV !== "production";
   }
-  if (!header) return false;
-
-  const esperado = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const a = Buffer.from(esperado);
-  const b = Buffer.from(header);
+  const token = new URL(request.url).searchParams.get("token");
+  if (!token) return false;
+  const a = Buffer.from(token);
+  const b = Buffer.from(secret);
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
 export async function POST(request: Request) {
-  const rawBody = await request.text();
-
-  if (!assinaturaValida(rawBody, request.headers.get("x-pluggy-signature"))) {
-    return Response.json({ ok: false, error: "Assinatura inválida." }, { status: 401 });
+  if (!autorizado(request)) {
+    return Response.json({ ok: false, error: "Não autorizado." }, { status: 401 });
   }
+
+  const rawBody = await request.text();
 
   let payload: { event?: string; itemId?: string; data?: { item?: { id?: string } } };
   try {
