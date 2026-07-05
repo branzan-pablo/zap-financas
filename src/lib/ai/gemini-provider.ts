@@ -18,7 +18,9 @@ export class GeminiAIProvider implements AIProvider {
 
   constructor(
     private readonly apiKey: string,
-    private readonly model: string = "gemini-2.0-flash"
+    // `gemini-flash-latest` acompanha o modelo flash atual e tem cota do free
+    // tier (o `gemini-2.0-flash` fixo pode retornar 429 por quota).
+    private readonly model: string = "gemini-flash-latest"
   ) {}
 
   async categorize(
