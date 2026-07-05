@@ -62,7 +62,11 @@ SHOULD:
 - ✅ Webhook (`/api/webhooks/mercadopago`) → ativar/cancelar/inadimplente
 - ✅ Gating de acesso (`src/lib/payments/access.ts`, testado) no layout `(app)` → bloqueado redireciona p/ `/assinar`
 - ✅ Dunning (`/api/cron/dunning`): ativo vencido → inadimplente → expirado (com carência)
-- 📋 **Pendente p/ produção:** implementar `MercadoPagoProvider` real (Pix Automático + cartão recorrente) + validar webhook x-signature
+- ✅ **Mercado Pago real ligado (sandbox) e validado em produção**: app "Assinaturas"
+  criada, credenciais de teste na Vercel, preapproval cria (init_point), webhook
+  registrado e **validação x-signature confirmada** (200 real / 401 forjada). Webhook
+  retorna 401 p/ assinatura inválida (WebhookSignatureError). Falta só o **Modo de
+  produção** do MP (credenciais de produção) quando for cobrar de verdade.
 - 💤 Portal avançado (trocar de plano sem cancelar), cupons
 
 ### Fase 5 — Lançamento 🔧
