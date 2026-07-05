@@ -222,26 +222,22 @@ export async function syncItem(
   }
 
   // 6. Investimentos ----------------------------------------------------------
+  // account_id é opcional: alguns providers (Pluggy) devolvem investimentos no
+  // nível do item, sem conta transacional de origem → gravamos com account_id null.
   const ofInvestments = await provider.fetchInvestments(itemId);
-  const investmentRows = ofInvestments
-    .map((inv) => {
-      const accountUuid = accountIdMap.get(inv.accountId);
-      if (!accountUuid) return null;
-      return {
-        user_id: userId,
-        account_id: accountUuid,
-        nome: inv.nome,
-        tipo: inv.tipo,
-        valor_aplicado: inv.valorAplicado,
-        valor_atual: inv.valorAtual,
-        rendimento_pct: inv.rendimentoPct,
-        data_aplicacao: inv.dataAplicacao ?? null,
-        data_vencimento: inv.dataVencimento ?? null,
-        pluggy_inv_id: inv.investmentId,
-        ultimo_sync: agora,
-      };
-    })
-    .filter((r): r is NonNullable<typeof r> => r !== null);
+  const investmentRows = ofInvestments.map((inv) => ({
+    user_id: userId,
+    account_id: accountIdMap.get(inv.accountId) ?? null,
+    nome: inv.nome,
+    tipo: inv.tipo,
+    valor_aplicado: inv.valorAplicado,
+    valor_atual: inv.valorAtual,
+    rendimento_pct: inv.rendimentoPct,
+    data_aplicacao: inv.dataAplicacao ?? null,
+    data_vencimento: inv.dataVencimento ?? null,
+    pluggy_inv_id: inv.investmentId,
+    ultimo_sync: agora,
+  }));
   if (investmentRows.length > 0) {
     const { error: invErr } = await db
       .from("investments")
