@@ -55,6 +55,14 @@ export async function resumoFinanceiro(
   userId: string,
   hoje: Date = new Date()
 ): Promise<ResumoFinanceiro> {
+  // Janela de ~5 meses: suficiente p/ fatura do ciclo atual, gastos do mês e
+  // detecção de recorrências (meses distintos), e bem menor/previsível que um
+  // limit fixo. Usa o índice (user_id, data desc). O teto de 1500 é só rede de
+  // segurança para contas hiperativas.
+  const desde = new Date(hoje);
+  desde.setDate(desde.getDate() - 150);
+  const desdeStr = `${desde.getFullYear()}-${String(desde.getMonth() + 1).padStart(2, "0")}-${String(desde.getDate()).padStart(2, "0")}`;
+
   const [{ data: accData }, { data: cardData }, { data: invData }, { data: txData }] =
     await Promise.all([
       db.from("accounts").select("tipo, saldo").eq("user_id", userId).eq("ativo", true),
@@ -68,8 +76,9 @@ export async function resumoFinanceiro(
         .from("transactions")
         .select("valor, data, descricao, account_id, categories(nome, cor, icone)")
         .eq("user_id", userId)
+        .gte("data", desdeStr)
         .order("data", { ascending: false })
-        .limit(800),
+        .limit(1500),
     ]);
 
   const contas = accData ?? [];
