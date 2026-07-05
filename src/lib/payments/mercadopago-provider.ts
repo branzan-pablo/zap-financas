@@ -201,6 +201,15 @@ export class MercadoPagoProvider implements PaymentsProvider {
 
     const a = Buffer.from(esperado);
     const b = Buffer.from(v1);
-    return a.length === b.length && timingSafeEqual(a, b);
+    const ok = a.length === b.length && timingSafeEqual(a, b);
+    if (!ok) {
+      // Observabilidade: se a assinatura não confere, logamos os componentes
+      // (nada sensível) para diagnosticar formato do manifest vs. o que o MP envia.
+      console.warn(
+        `mercadopago webhook: x-signature não confere ` +
+          `(dataId="${dataId}" reqId="${xRequestId}" tsPresente=${!!ts})`
+      );
+    }
+    return ok;
   }
 }
