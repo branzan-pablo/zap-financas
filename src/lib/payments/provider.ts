@@ -26,6 +26,14 @@ export type CheckoutResultado = {
   externalId: string; // id da assinatura/preapproval no provider
 };
 
+/** Lançado quando a assinatura do webhook é inválida (→ 401 no route). */
+export class WebhookSignatureError extends Error {
+  constructor() {
+    super("Assinatura de webhook inválida.");
+    this.name = "WebhookSignatureError";
+  }
+}
+
 /** Evento normalizado vindo do webhook do provider. */
 export type WebhookEvento = {
   tipo: "aprovado" | "cancelado" | "falha_pagamento";

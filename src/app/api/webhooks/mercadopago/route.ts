@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { getPaymentsProvider } from "@/lib/payments";
+import { WebhookSignatureError } from "@/lib/payments/provider";
 import {
   ativarAssinatura,
   cancelarAssinatura,
@@ -24,11 +25,20 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "Pagamentos não configurados." }, { status: 503 });
   }
 
-  const evento = await provider.parseWebhook(rawBody, request);
+  let evento;
+  try {
+    evento = await provider.parseWebhook(rawBody, request);
+  } catch (e) {
+    if (e instanceof WebhookSignatureError) {
+      // Assinatura forjada/incorreta → rejeita. As notificações reais do MP são
+      // assinadas corretamente, então nunca caem aqui.
+      return Response.json({ ok: false, error: "Assinatura inválida." }, { status: 401 });
+    }
+    throw e;
+  }
   if (!evento) {
-    // Assinatura inválida ou evento ignorável → 200 para o MP não reenviar em loop,
-    // mas sem efeito colateral.
-    return Response.json({ ok: true, ignored: "evento inválido ou ignorável" });
+    // Evento ignorável (tópico não tratado, recurso inexistente) → 200 ack.
+    return Response.json({ ok: true, ignored: "evento ignorável" });
   }
 
   const db = createAdminClient();

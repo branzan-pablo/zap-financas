@@ -5,6 +5,7 @@ import type {
   PaymentsProvider,
   WebhookEvento,
 } from "./provider";
+import { WebhookSignatureError } from "./provider";
 
 /**
  * Provider Mercado Pago — Assinaturas (preapproval).
@@ -117,7 +118,7 @@ export class MercadoPagoProvider implements PaymentsProvider {
    * hex, comparado com `v1` do header x-signature.
    */
   async parseWebhook(rawBody: string, request: Request): Promise<WebhookEvento | null> {
-    if (!this.assinaturaValida(request)) return null;
+    if (!this.assinaturaValida(request)) throw new WebhookSignatureError();
 
     let body: { type?: string; topic?: string; action?: string; data?: { id?: string } };
     try {
