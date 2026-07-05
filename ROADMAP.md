@@ -20,8 +20,12 @@ Auth (signup/login/reset/OAuth), proxy de rotas, schema 12 tabelas + RLS, shell 
 - ✅ Categorização: regras determinísticas + fallback IA (Gemini/mock, `AI_PROVIDER`)
 - ✅ Telas com dados reais: contas, transações, cartões, investimentos
 - ✅ Webhook Pluggy (`/api/webhooks/pluggy`) + cron de sync (`/api/cron/sync`)
-- 📋 **Pendente p/ produção:** implementar `PluggyOpenFinanceProvider` real (hoje é stub) quando houver contrato/sandbox Pluggy
-- 📋 **Pendente p/ produção:** ligar Gemini real (basta `GEMINI_API_KEY`); validar custo/qualidade
+- ✅ **Pluggy real** implementado e testado contra o sandbox (auth, connectors, items,
+  accounts, `/v2/transactions` com cursor, investments). Fix: investimentos gravam com
+  `account_id` null (Pluggy os devolve no nível do item). Produção: falta o widget
+  Pluggy Connect no frontend (hoje `createItem` usa credenciais de teste sandbox).
+- ✅ **Gemini real** ligado (`gemini-flash-latest`) — validado ao vivo (fallback de
+  categorização funcionando: sync Pluggy → 8 tx categorizadas pela IA).
 
 ### Fase 2 — Inteligência financeira ✅ (MUST) / 💤 (SHOULD)
 MUST entregues:
@@ -46,7 +50,9 @@ SHOULD:
 - ✅ Roteador (`handler.ts`) + categorização (regras + fallback IA, igual ao sync)
 - ✅ Alertas outbound (`/api/cron/whatsapp-alerts`) com dedup 24h via tabela `alerts`
 - ✅ Resumo financeiro compartilhado (`src/lib/finance-summary.ts`) — dashboard e alertas usam a mesma fonte
-- 📋 **Pendente p/ produção:** implementar `EvolutionWhatsAppProvider` real + self-host Evolution (Docker); NLU por Gemini para frases livres
+- ✅ `EvolutionWhatsAppProvider.enviar` implementado (Evolution API v2) — ⚠️ NÃO testado
+  (falta instância Docker + número pareado). Webhook inbound já lê o formato Evolution.
+- 📋 **Pendente p/ produção:** self-host Evolution (Docker) + número; NLU por Gemini p/ frases livres
 - 💤 Parsing de áudio · respostas ricas (listas/botões)
 
 ### Fase 4 — Monetização (Mercado Pago) ✅ (MUST, mock-first)
