@@ -79,7 +79,14 @@ SHOULD:
   configuradas via API, Deployment Protection desligado, crons ativos. Supabase Auth
   redirect URLs configuradas. Webhook Pluggy registrado + validado (token na URL, pois
   o Pluggy não usa HMAC). URL provisória `.vercel.app` até o domínio do Registro.br.
-- 📋 Performance · polish · landing atualizada · 2ª security review pós-providers reais
+- ✅ **2ª security review** (pós-providers reais): sem vuln de código; achados operacionais
+  (revogar token Vercel, remover user demo antes do launch, widget Pluggy Connect p/
+  Open Finance real, religar protection com domínio custom, MP em modo teste)
+- ✅ **Performance**: dashboard busca transações por janela de data (~5 meses) em vez de limit fixo
+- ✅ **Landing atualizada**: reposicionada para PFM (Open Finance + IA + WhatsApp), FAQ corrigido
+- ✅ Validação E2E em produção (signup → Pluggy real → dashboard → /assinar) — tudo funcionando
+- 📋 Restante p/ launch público: widget Pluggy Connect (produção real), MP modo produção,
+  Evolution/WhatsApp, domínio Registro.br, remover user demo
 
 ---
 
