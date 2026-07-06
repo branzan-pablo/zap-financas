@@ -40,6 +40,28 @@ export async function conectarConta(
   }
 }
 
+/**
+ * Gera um connect token para abrir o widget Pluggy Connect no frontend.
+ * O usuário conclui o consentimento dentro do iframe do Pluggy; o widget devolve
+ * o `itemId`, que o cliente sincroniza via `sincronizar`.
+ */
+export async function criarConnectToken(): Promise<
+  { ok: true; token: string } | { ok: false; erro: string }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, erro: "Sessão expirada. Faça login novamente." };
+
+  try {
+    const { token } = await getOpenFinanceProvider().createConnectToken();
+    return { ok: true, token };
+  } catch (e) {
+    return { ok: false, erro: e instanceof Error ? e.message : "Erro ao iniciar conexão." };
+  }
+}
+
 /** Re-sincroniza um item já conectado. Idempotente — não duplica transações. */
 export async function sincronizar(itemId: string): Promise<AcaoResultado> {
   const supabase = await createClient();

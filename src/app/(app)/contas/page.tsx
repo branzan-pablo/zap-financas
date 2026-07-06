@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getOpenFinanceProvider } from "@/lib/openfinance";
 import { ConnectModal } from "@/components/app/connect-modal";
+import { PluggyConnectButton } from "@/components/app/pluggy-connect-button";
 import { SyncButton } from "@/components/app/sync-button";
 import { formatBRL, formatData } from "@/lib/format";
 
@@ -33,7 +34,11 @@ export default async function ContasPage() {
     .order("created_at", { ascending: true });
   const contas = (data ?? []) as Conta[];
 
-  const institutions = await getOpenFinanceProvider().listInstitutions();
+  const provider = getOpenFinanceProvider();
+  const modoPluggy = provider.nome === "pluggy";
+  // No modo Pluggy real, o próprio widget mostra a lista de bancos; só o mock
+  // precisa que a gente liste instituições aqui.
+  const institutions = modoPluggy ? [] : await provider.listInstitutions();
 
   // Agrupa contas por item (uma conexão Pluggy pode ter várias contas).
   const grupos = new Map<string, Conta[]>();
@@ -52,7 +57,13 @@ export default async function ContasPage() {
             Conecte e gerencie suas contas bancárias via Open Finance.
           </p>
         </div>
-        <ConnectModal institutions={institutions} />
+        {modoPluggy ? (
+          <PluggyConnectButton
+            includeSandbox={process.env.PLUGGY_INCLUDE_SANDBOX !== "false"}
+          />
+        ) : (
+          <ConnectModal institutions={institutions} />
+        )}
       </div>
 
       {contas.length === 0 ? (
