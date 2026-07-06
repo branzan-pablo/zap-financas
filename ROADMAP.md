@@ -2,7 +2,7 @@
 
 > Rastreador vivo de progresso. Fonte única de "feito / em aberto / adiado".
 > Atualizar a cada entrega. Visão e escopo originais: [`specs/`](specs/).
-> Última atualização: 2026-06-29.
+> Última atualização: 2026-07-05.
 
 Legenda: ✅ feito · 🔧 em andamento · 📋 planejado · 💤 adiado conscientemente
 
@@ -50,9 +50,12 @@ SHOULD:
 - ✅ Roteador (`handler.ts`) + categorização (regras + fallback IA, igual ao sync)
 - ✅ Alertas outbound (`/api/cron/whatsapp-alerts`) com dedup 24h via tabela `alerts`
 - ✅ Resumo financeiro compartilhado (`src/lib/finance-summary.ts`) — dashboard e alertas usam a mesma fonte
-- ✅ `EvolutionWhatsAppProvider.enviar` implementado (Evolution API v2) — ⚠️ NÃO testado
-  (falta instância Docker + número pareado). Webhook inbound já lê o formato Evolution.
-- 📋 **Pendente p/ produção:** self-host Evolution (Docker) + número; NLU por Gemini p/ frases livres
+- ✅ **Evolution API LIVE em produção** (Railway, build **do fonte** — a imagem Docker pré-buildada
+  falha na Railway com "Failed to create deployment"; buildar do repo `EvolutionAPI/evolution-api`
+  resolve). Instância `zapfinancas` pareada; webhook Evolution → `/api/webhooks/whatsapp` (header
+  `apikey`); env na Vercel (`WHATSAPP_PROVIDER=evolution` + `EVOLUTION_API_URL/KEY/INSTANCE`).
+  **Pipeline validado E2E com dados reais**: pareamento → `saldo` → resposta com o valor real da conta.
+- 📋 **Pendente p/ produção:** número dedicado pro bot (hoje usa número pessoal); NLU por Gemini p/ frases livres
 - 💤 Parsing de áudio · respostas ricas (listas/botões)
 
 ### Fase 4 — Monetização (Mercado Pago) ✅ (MUST, mock-first)
@@ -86,7 +89,7 @@ SHOULD:
 - ✅ **Landing atualizada**: reposicionada para PFM (Open Finance + IA + WhatsApp), FAQ corrigido
 - ✅ Validação E2E em produção (signup → Pluggy real → dashboard → /assinar) — tudo funcionando
 - 📋 Restante p/ launch público: widget Pluggy Connect (produção real), MP modo produção,
-  Evolution/WhatsApp, domínio Registro.br, remover user demo
+  domínio Registro.br, remover user demo
 
 ---
 
