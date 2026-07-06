@@ -42,6 +42,9 @@ function extrair(payload: unknown): { telefone: string; texto: string } | null {
   const message = data?.message as Record<string, unknown> | undefined;
   if (key?.fromMe === true) return null; // ignora mensagens enviadas por nós
   const jid = typeof key?.remoteJid === "string" ? key.remoteJid : "";
+  // Só atendemos conversas 1:1 — nunca grupos (@g.us) nem status/broadcast.
+  // (O número do bot pode receber mensagens de grupos; responder neles é spam.)
+  if (!jid || jid.includes("@g.us") || jid.includes("@broadcast")) return null;
   const texto =
     (typeof message?.conversation === "string" && message.conversation) ||
     ((message?.extendedTextMessage as Record<string, unknown> | undefined)?.text as string) ||
@@ -114,9 +117,11 @@ export async function POST(request: Request) {
     .eq("status", "ativo")
     .maybeSingle();
   if (!link) {
-    return responder(
-      "Seu número não está vinculado. Gere um código em Configurações → WhatsApp e me envie aqui."
-    );
+    // Remetente não vinculado e o texto não é um código de pareamento válido →
+    // SILÊNCIO. Nunca respondemos a números desconhecidos: o número do bot recebe
+    // mensagens de qualquer contato, e responder a todos vira spam. O onboarding
+    // acontece pelo código gerado no app (fluxo de pareamento acima).
+    return Response.json({ ok: true, ignored: "remetente não vinculado" });
   }
 
   // 3. Interpreta e responde.
