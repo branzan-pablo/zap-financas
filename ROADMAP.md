@@ -2,7 +2,7 @@
 
 > Rastreador vivo de progresso. Fonte única de "feito / em aberto / adiado".
 > Atualizar a cada entrega. Visão e escopo originais: [`specs/`](specs/).
-> Última atualização: 2026-07-05.
+> Última atualização: 2026-07-27.
 
 Legenda: ✅ feito · 🔧 em andamento · 📋 planejado · 💤 adiado conscientemente
 
@@ -55,8 +55,14 @@ SHOULD:
   resolve). Instância `zapfinancas` pareada; webhook Evolution → `/api/webhooks/whatsapp` (header
   `apikey`); env na Vercel (`WHATSAPP_PROVIDER=evolution` + `EVOLUTION_API_URL/KEY/INSTANCE`).
   **Pipeline validado E2E com dados reais**: pareamento → `saldo` → resposta com o valor real da conta.
-- 📋 **Pendente p/ produção:** número dedicado pro bot (hoje usa número pessoal); NLU por Gemini p/ frases livres
-- 💤 Parsing de áudio · respostas ricas (listas/botões)
+- ✅ **WhatsApp multimodal (P0 da Fase 6)**: NLU por Gemini p/ frases livres (regex continua
+  como caminho rápido; IA só no "desconhecido" — validada ao vivo, inclusive multi-gasto com
+  gíria), **áudio** (Evolution `getBase64FromMediaMessage` → Gemini interpreta voz como gasto
+  OU pergunta) e **foto de nota fiscal** (Gemini Vision extrai estabelecimento/total/itens →
+  registra categorizado e detalha os itens). Mídia só é baixada APÓS vínculo confirmado.
+- 📋 **Pendente p/ produção:** número dedicado pro bot (webhook e instância seguem desligados
+  desde o incidente; religar só com número dedicado — ver docs/evolution-whatsapp.md)
+- 💤 Respostas ricas (listas/botões)
 
 ### Fase 4 — Monetização (Mercado Pago) ✅ (MUST, mock-first)
 - ✅ Abstração `src/lib/payments/` (provider mock + stub Mercado Pago + factory por `PAYMENTS_PROVIDER`)
@@ -90,6 +96,18 @@ SHOULD:
 - ✅ Validação E2E em produção (signup → Pluggy real → dashboard → /assinar) — tudo funcionando
 - 📋 Restante p/ launch público: widget Pluggy Connect (produção real), MP modo produção,
   domínio Registro.br, remover user demo
+
+### Fase 6 — Paridade competitiva 🔧 (benchmark: Dinzo; análise 2026-07-27)
+Concorrência direta (Open Finance + WhatsApp + web): só o Dinzo. POQT/Financinha não têm
+Open Finance; Mobills/Organizze não têm WhatsApp. Ganhamos em: inteligência do WhatsApp,
+qualidade (parcelas do Dinzo bugam nas reviews) e preço (R$12,49/mês anual vs R$20,82+).
+
+- ✅ **P0 — WhatsApp multimodal**: NLU livre (Gemini) + áudio + foto de nota fiscal
+- 📋 **P1 — Retenção**: orçamentos por categoria + alertas (tabela `budgets` já existe;
+  falta UI + cron) · fechamento mensal (resumo do mês via WhatsApp/web) · contas manuais (CRUD)
+- 📋 **P2 — Diferenciais**: score de saúde financeira · categorias personalizadas ·
+  gamificação leve (streak) · PWA instalável
+- 💤 **P3 — Expansão**: multi CPF/CNPJ (PJ, ângulo do Dinzo Ultra) · compartilhamento familiar
 
 ---
 
