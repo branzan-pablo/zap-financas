@@ -103,8 +103,12 @@ Open Finance; Mobills/Organizze não têm WhatsApp. Ganhamos em: inteligência d
 qualidade (parcelas do Dinzo bugam nas reviews) e preço (R$12,49/mês anual vs R$20,82+).
 
 - ✅ **P0 — WhatsApp multimodal**: NLU livre (Gemini) + áudio + foto de nota fiscal
-- 📋 **P1 — Retenção**: orçamentos por categoria + alertas (tabela `budgets` já existe;
-  falta UI + cron) · fechamento mensal (resumo do mês via WhatsApp/web) · contas manuais (CRUD)
+- ✅ **P1a — Orçamentos por categoria** (`src/lib/budgets.ts` testado + `/orcamentos`):
+  limite mensal com carry-over (vale até ser substituído; 0 desliga), barra de progresso,
+  alertas `orcamento_atencao` (≥80%)/`orcamento_estouro` no dashboard E no cron de WhatsApp
+  (mesma fonte: resumoFinanceiro)
+- 📋 **P1 — Retenção (restante)**: fechamento mensal (resumo do mês via WhatsApp/web) ·
+  contas manuais (CRUD)
 - 📋 **P2 — Diferenciais**: score de saúde financeira · categorias personalizadas ·
   gamificação leve (streak) · PWA instalável
 - 💤 **P3 — Expansão**: multi CPF/CNPJ (PJ, ângulo do Dinzo Ultra) · compartilhamento familiar
