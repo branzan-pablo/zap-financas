@@ -5,6 +5,7 @@ import {
   CreditCard,
   Target,
   TrendingUp,
+  Wallet,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -24,6 +25,7 @@ export const NAV: NavItem[] = [
   { href: "/cartoes", label: "Cartões", Icon: CreditCard },
   { href: "/metas", label: "Metas", Icon: Target },
   { href: "/investimentos", label: "Investimentos", Icon: TrendingUp },
+  { href: "/orcamentos", label: "Orçamentos", Icon: Wallet },
 ];
 
 export const CONFIG: NavItem = {

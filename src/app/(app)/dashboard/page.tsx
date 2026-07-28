@@ -62,6 +62,7 @@ export default async function DashboardPage() {
     limiteStatus: limite.status,
     limiteDisponivel: limite.disponivel,
     duplicatas,
+    orcamentos: resumo.orcamentos,
     hoje,
     fmt: formatBRL,
   });

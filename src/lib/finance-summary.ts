@@ -8,6 +8,11 @@ import {
   type Assinatura,
   type Duplicata,
 } from "./recurring";
+import {
+  orcamentosVigentes,
+  statusOrcamentos,
+  type OrcamentoStatus,
+} from "./budgets";
 import type { FaturaResumo } from "./alerts";
 
 /**
@@ -20,6 +25,7 @@ import type { FaturaResumo } from "./alerts";
  */
 
 export type CategoriaGasto = {
+  id: string | null;
   nome: string;
   cor: string | null;
   icone: string | null;
@@ -39,9 +45,10 @@ export type ResumoFinanceiro = {
   custoAssinaturas: number;
   duplicatas: Duplicata[];
   limite: LimiteSeguro;
+  orcamentos: OrcamentoStatus[];
 };
 
-type Categoria = { nome: string; cor: string | null; icone: string | null };
+type Categoria = { id: string; nome: string; cor: string | null; icone: string | null };
 type Tx = {
   valor: number;
   data: string;
@@ -63,23 +70,32 @@ export async function resumoFinanceiro(
   desde.setDate(desde.getDate() - 150);
   const desdeStr = `${desde.getFullYear()}-${String(desde.getMonth() + 1).padStart(2, "0")}-${String(desde.getDate()).padStart(2, "0")}`;
 
-  const [{ data: accData }, { data: cardData }, { data: invData }, { data: txData }] =
-    await Promise.all([
-      db.from("accounts").select("tipo, saldo").eq("user_id", userId).eq("ativo", true),
-      db
-        .from("cards")
-        .select("nome, account_id, dia_fechamento, dia_vencimento")
-        .eq("user_id", userId)
-        .eq("ativo", true),
-      db.from("investments").select("valor_atual").eq("user_id", userId),
-      db
-        .from("transactions")
-        .select("valor, data, descricao, account_id, categories(nome, cor, icone)")
-        .eq("user_id", userId)
-        .gte("data", desdeStr)
-        .order("data", { ascending: false })
-        .limit(1500),
-    ]);
+  const [
+    { data: accData },
+    { data: cardData },
+    { data: invData },
+    { data: txData },
+    { data: budData },
+  ] = await Promise.all([
+    db.from("accounts").select("tipo, saldo").eq("user_id", userId).eq("ativo", true),
+    db
+      .from("cards")
+      .select("nome, account_id, dia_fechamento, dia_vencimento")
+      .eq("user_id", userId)
+      .eq("ativo", true),
+    db.from("investments").select("valor_atual").eq("user_id", userId),
+    db
+      .from("transactions")
+      .select("valor, data, descricao, account_id, categories(id, nome, cor, icone)")
+      .eq("user_id", userId)
+      .gte("data", desdeStr)
+      .order("data", { ascending: false })
+      .limit(1500),
+    db
+      .from("budgets")
+      .select("category_id, limite, mes_referencia")
+      .eq("user_id", userId),
+  ]);
 
   const contas = accData ?? [];
   const cartoes = cardData ?? [];
@@ -116,12 +132,23 @@ export async function resumoFinanceiro(
   const porCategoria = new Map<string, CategoriaGasto>();
   for (const t of txMes) {
     if (t.valor >= 0) continue;
-    const cat = t.categories ?? { nome: "Sem categoria", cor: "#94a3b8", icone: "📌" };
-    const cur = porCategoria.get(cat.nome) ?? { ...cat, total: 0 };
+    const cat =
+      t.categories ?? { id: null, nome: "Sem categoria", cor: "#94a3b8", icone: "📌" };
+    const chave = cat.id ?? cat.nome;
+    const cur = porCategoria.get(chave) ?? { ...cat, total: 0 };
     cur.total += -t.valor;
-    porCategoria.set(cat.nome, cur);
+    porCategoria.set(chave, cur);
   }
   const gastosPorCategoria = [...porCategoria.values()].sort((a, b) => b.total - a.total);
+
+  // Orçamentos por categoria: linhas vigentes × gasto do mês corrente.
+  const vigentes = orcamentosVigentes(budData ?? [], mesAtual);
+  const orcamentos = statusOrcamentos(
+    vigentes,
+    gastosPorCategoria
+      .filter((c): c is CategoriaGasto & { id: string } => c.id != null)
+      .map((c) => ({ categoriaId: c.id, nome: c.nome, total: c.total }))
+  );
 
   // Insights.
   const insightTxs = txs.map((t) => ({ descricao: t.descricao, valor: t.valor, data: t.data }));
@@ -151,5 +178,6 @@ export async function resumoFinanceiro(
     custoAssinaturas,
     duplicatas,
     limite,
+    orcamentos,
   };
 }

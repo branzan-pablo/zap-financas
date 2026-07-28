@@ -57,6 +57,22 @@ describe("gerarAlertas", () => {
     expect(a).toEqual([]);
   });
 
+  it("orçamento estourado gera alerta crítico; em atenção gera atenção", () => {
+    const a = gerarAlertas({
+      ...base,
+      orcamentos: [
+        { categoria: "Transporte", limite: 100, gasto: 150, status: "estouro" },
+        { categoria: "Lazer", limite: 200, gasto: 180, status: "atencao" },
+        { categoria: "Mercado", limite: 500, gasto: 100, status: "ok" },
+      ],
+    });
+    expect(a).toHaveLength(2);
+    expect(a[0]).toMatchObject({ tipo: "orcamento_estouro", severidade: "critico" });
+    expect(a[0].titulo).toContain("Transporte");
+    expect(a[1]).toMatchObject({ tipo: "orcamento_atencao", severidade: "atencao" });
+    expect(a[1].titulo).toContain("Lazer");
+  });
+
   it("duplicata gera alerta", () => {
     const a = gerarAlertas({
       ...base,

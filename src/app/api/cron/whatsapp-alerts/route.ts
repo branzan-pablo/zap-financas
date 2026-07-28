@@ -55,6 +55,7 @@ export async function GET(request: Request) {
       limiteStatus: resumo.limite.status,
       limiteDisponivel: resumo.limite.disponivel,
       duplicatas: resumo.duplicatas,
+      orcamentos: resumo.orcamentos,
       hoje,
       fmt: formatBRL,
     });

@@ -14,7 +14,9 @@ export type Alerta = {
     | "fatura_fechando"
     | "limite_atencao"
     | "limite_estouro"
-    | "cobranca_duplicada";
+    | "cobranca_duplicada"
+    | "orcamento_atencao"
+    | "orcamento_estouro";
   severidade: Severidade;
   titulo: string;
   detalhe: string;
@@ -35,6 +37,13 @@ export function gerarAlertas(input: {
   limiteStatus: "folga" | "atencao" | "estouro";
   limiteDisponivel: number;
   duplicatas: { descricao: string; valor: number }[];
+  /** Status dos orçamentos por categoria (Fase 6 P1). Opcional p/ compat. */
+  orcamentos?: {
+    categoria: string;
+    limite: number;
+    gasto: number;
+    status: "ok" | "atencao" | "estouro";
+  }[];
   hoje: Date;
   diasAviso?: number; // janela p/ "fatura fechando" (default 3)
   fmt: (v: number) => string; // formatador de moeda (injetado)
@@ -69,6 +78,25 @@ export function gerarAlertas(input: {
         severidade: "atencao",
         titulo: `Fatura do ${f.nome} fecha ${dias === 0 ? "hoje" : `em ${dias} dia${dias > 1 ? "s" : ""}`}`,
         detalhe: `Valor parcial de ${fmt(f.total)}. Revise antes do fechamento.`,
+      });
+    }
+  }
+
+  // Orçamentos por categoria.
+  for (const o of input.orcamentos ?? []) {
+    if (o.status === "estouro") {
+      alertas.push({
+        tipo: "orcamento_estouro",
+        severidade: "critico",
+        titulo: `Orçamento de ${o.categoria} estourado`,
+        detalhe: `Você já gastou ${fmt(o.gasto)} de um limite de ${fmt(o.limite)}.`,
+      });
+    } else if (o.status === "atencao") {
+      alertas.push({
+        tipo: "orcamento_atencao",
+        severidade: "atencao",
+        titulo: `Orçamento de ${o.categoria} quase no fim`,
+        detalhe: `Já foram ${fmt(o.gasto)} de ${fmt(o.limite)}. Vá com calma.`,
       });
     }
   }

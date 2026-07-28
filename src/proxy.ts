@@ -52,6 +52,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/cartoes") ||
     pathname.startsWith("/metas") ||
     pathname.startsWith("/investimentos") ||
+    pathname.startsWith("/orcamentos") ||
     pathname.startsWith("/configuracoes");
 
   // Auth routes: redirect away if already logged in
