@@ -1,4 +1,4 @@
-import type { MensagemEnviar, WhatsAppProvider } from "./provider";
+import type { MensagemEnviar, MidiaBase64, WhatsAppProvider } from "./provider";
 
 /**
  * Provider de WhatsApp MOCK — não envia de verdade.
@@ -16,5 +16,10 @@ export class MockWhatsAppProvider implements WhatsAppProvider {
       console.log(`[whatsapp:mock] → ${msg.telefone} (${msg.texto.length} chars)`);
     }
     return { ok: true };
+  }
+
+  // Sem infraestrutura real não há mídia para baixar.
+  async obterMidiaBase64(): Promise<MidiaBase64 | null> {
+    return null;
   }
 }

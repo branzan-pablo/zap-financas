@@ -15,8 +15,16 @@ export type MensagemEnviar = {
   texto: string;
 };
 
+export type MidiaBase64 = { base64: string; mimeType: string };
+
 export interface WhatsAppProvider {
   readonly nome: string;
   /** Envia uma mensagem de texto. Não deve lançar por falha de entrega: retorna ok=false. */
   enviar(msg: MensagemEnviar): Promise<{ ok: boolean; erro?: string }>;
+  /**
+   * Baixa o conteúdo (base64) de uma mensagem de mídia recebida (áudio/foto).
+   * Retorna null se indisponível — o chamador degrada com mensagem amigável.
+   * ⚠️ Só chamar APÓS confirmar que o remetente está vinculado (custo/abuso).
+   */
+  obterMidiaBase64(messageId: string): Promise<MidiaBase64 | null>;
 }

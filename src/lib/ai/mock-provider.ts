@@ -1,4 +1,10 @@
-import type { AIProvider, CategoriaCandidata, CategorizacaoIA } from "./provider";
+import type {
+  AIProvider,
+  CategoriaCandidata,
+  CategorizacaoIA,
+  InterpretacaoIA,
+  NotaFiscalIA,
+} from "./provider";
 import { normalizar } from "../categorization/rules";
 
 /**
@@ -25,5 +31,20 @@ export class MockAIProvider implements AIProvider {
       }
     }
     return { categoriaId: null, confianca: 0 };
+  }
+
+  // NLU e multimodal exigem IA real. O mock devolve null e o chamador degrada
+  // com mensagem amigável — o caminho determinístico (regex) segue funcionando
+  // offline, então dev local não perde os comandos básicos.
+  async interpretar(): Promise<InterpretacaoIA | null> {
+    return null;
+  }
+
+  async interpretarAudio(): Promise<InterpretacaoIA | null> {
+    return null;
+  }
+
+  async extrairNotaFiscal(): Promise<NotaFiscalIA | null> {
+    return null;
   }
 }

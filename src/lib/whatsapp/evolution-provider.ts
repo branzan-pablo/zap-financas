@@ -1,4 +1,4 @@
-import type { MensagemEnviar, WhatsAppProvider } from "./provider";
+import type { MensagemEnviar, MidiaBase64, WhatsAppProvider } from "./provider";
 
 /**
  * Provider Evolution API — envio de WhatsApp (self-hosted via Docker).
@@ -42,6 +42,33 @@ export class EvolutionWhatsAppProvider implements WhatsAppProvider {
     } catch (e) {
       // Contrato: não lançar por falha de entrega.
       return { ok: false, erro: e instanceof Error ? e.message : "erro de rede" };
+    }
+  }
+
+  /**
+   * Baixa o base64 de uma mensagem de mídia recebida (áudio/imagem):
+   *   POST {url}/chat/getBase64FromMediaMessage/{instance}
+   *   body { message: { key: { id } }, convertToMp4: false }
+   */
+  async obterMidiaBase64(messageId: string): Promise<MidiaBase64 | null> {
+    try {
+      const res = await fetch(
+        `${this.apiUrl.replace(/\/$/, "")}/chat/getBase64FromMediaMessage/${this.instance}`,
+        {
+          method: "POST",
+          headers: { apikey: this.apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: { key: { id: messageId } },
+            convertToMp4: false,
+          }),
+        }
+      );
+      if (!res.ok) return null;
+      const data = (await res.json()) as { base64?: string; mimetype?: string };
+      if (!data.base64) return null;
+      return { base64: data.base64, mimeType: data.mimetype ?? "" };
+    } catch {
+      return null;
     }
   }
 }

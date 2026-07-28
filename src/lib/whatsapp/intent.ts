@@ -14,6 +14,7 @@ export type Intent =
   | { tipo: "fatura" }
   | { tipo: "gastos" }
   | { tipo: "registrar"; valor: number; descricao: string }
+  | { tipo: "registrar_lote"; itens: { valor: number; descricao: string }[] }
   | { tipo: "ajuda" }
   | { tipo: "desconhecido" };
 

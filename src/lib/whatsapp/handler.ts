@@ -21,7 +21,9 @@ const AJUDA =
   "• *saldo* — saldo nas suas contas\n" +
   "• *fatura* — fatura aberta dos cartões\n" +
   "• *gastos* — quanto você gastou no mês\n" +
-  "• *gastei 50 no mercado* — registro um gasto";
+  "• *gastei 50 no mercado* — registro um gasto\n" +
+  "• mande um *áudio* falando seus gastos\n" +
+  "• mande a *foto da nota fiscal* que eu registro";
 
 export async function responderIntent(
   db: SupabaseClient<Database>,
@@ -37,7 +39,14 @@ export async function responderIntent(
     case "gastos":
       return gastos(db, userId, hoje);
     case "registrar":
-      return registrar(db, userId, intent.valor, intent.descricao, hoje);
+      return registrarLote(
+        db,
+        userId,
+        [{ valor: intent.valor, descricao: intent.descricao }],
+        hoje
+      );
+    case "registrar_lote":
+      return registrarLote(db, userId, intent.itens, hoje);
     case "ajuda":
       return AJUDA;
     default:
@@ -119,11 +128,14 @@ async function gastos(
   return `Você gastou *${formatBRL(total)}* este mês.${extra}`;
 }
 
-async function registrar(
+/**
+ * Registra um ou mais gastos (texto "gastei X", NLU multi-gasto, áudio, nota
+ * fiscal). Uma leitura de contas/categorias, um insert em lote, resposta única.
+ */
+async function registrarLote(
   db: SupabaseClient<Database>,
   userId: string,
-  valor: number,
-  descricao: string,
+  itens: { valor: number; descricao: string }[],
   hoje: Date
 ): Promise<string> {
   // Conta de destino: a primeira conta ativa (preferindo corrente).
@@ -147,30 +159,40 @@ async function registrar(
     nome: c.nome,
     regras: Array.isArray(c.regras) ? (c.regras as string[]) : null,
   }));
-  // Regras determinísticas primeiro; fallback de IA p/ casos ambíguos (igual ao sync).
-  let categoryId = categorizarPorRegras(descricao, categorias);
-  if (!categoryId) {
-    const r = await getAIProvider().categorize(
-      descricao,
-      categorias.map((c) => ({ id: c.id, nome: c.nome }))
-    );
-    categoryId = r.categoriaId;
-  }
-  const catNome = categorias.find((c) => c.id === categoryId)?.nome;
 
   const data = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
-  const { error } = await db.from("transactions").insert({
-    user_id: userId,
-    account_id: conta.id,
-    category_id: categoryId,
-    valor: -Math.abs(valor),
-    descricao,
-    data,
-    tipo: "debito",
-    origem: "whatsapp",
-  });
+  const linhas: string[] = [];
+  const rows = [];
+  for (const item of itens) {
+    // Regras determinísticas primeiro; fallback de IA p/ casos ambíguos (igual ao sync).
+    let categoryId = categorizarPorRegras(item.descricao, categorias);
+    if (!categoryId) {
+      const r = await getAIProvider().categorize(
+        item.descricao,
+        categorias.map((c) => ({ id: c.id, nome: c.nome }))
+      );
+      categoryId = r.categoriaId;
+    }
+    const catNome = categorias.find((c) => c.id === categoryId)?.nome;
+    rows.push({
+      user_id: userId,
+      account_id: conta.id,
+      category_id: categoryId,
+      valor: -Math.abs(item.valor),
+      descricao: item.descricao,
+      data,
+      tipo: "debito",
+      origem: "whatsapp",
+    });
+    linhas.push(
+      `• *${formatBRL(Math.abs(item.valor))}*${catNome ? ` em *${catNome}*` : ""} — ${item.descricao}`
+    );
+  }
+
+  const { error } = await db.from("transactions").insert(rows);
   if (error) return "Não consegui registrar agora. Tente de novo em instantes.";
 
-  const cat = catNome ? ` em *${catNome}*` : "";
-  return `Anotado: *${formatBRL(Math.abs(valor))}*${cat} — ${descricao}. ✅`;
+  if (itens.length === 1) return `Anotado: ${linhas[0].slice(2)}. ✅`;
+  const total = itens.reduce((s, i) => s + Math.abs(i.valor), 0);
+  return `Anotado ✅\n${linhas.join("\n")}\nTotal: *${formatBRL(total)}*`;
 }

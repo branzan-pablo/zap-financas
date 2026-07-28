@@ -19,10 +19,47 @@ export type CategorizacaoIA = {
   confianca: number;
 };
 
+/** Um gasto extraído de linguagem natural (texto ou áudio). */
+export type GastoExtraido = { valor: number; descricao: string };
+
+/**
+ * Resultado da NLU sobre uma mensagem livre do usuário (texto ou áudio).
+ * `null` (no retorno dos métodos) = IA indisponível/erro — o chamador degrada.
+ */
+export type InterpretacaoIA =
+  | { tipo: "consulta"; alvo: "saldo" | "fatura" | "gastos" | "ajuda" }
+  | { tipo: "registrar"; gastos: GastoExtraido[] }
+  | { tipo: "nenhum" };
+
+/** Nota fiscal extraída de uma foto (cupom/NFC-e). */
+export type NotaFiscalIA = {
+  estabelecimento: string;
+  /** Total da compra em reais (> 0). */
+  total: number;
+  /** YYYY-MM-DD quando visível na nota. */
+  data?: string;
+  itens: { descricao: string; valor: number }[];
+};
+
 export interface AIProvider {
   readonly nome: string;
   categorize(
     descricao: string,
     candidatas: CategoriaCandidata[]
   ): Promise<CategorizacaoIA>;
+
+  /** NLU de mensagem livre (WhatsApp). Chamado só quando o regex não resolve. */
+  interpretar(texto: string): Promise<InterpretacaoIA | null>;
+
+  /** Interpreta uma mensagem de voz (pode ser gasto OU pergunta). */
+  interpretarAudio(
+    base64: string,
+    mimeType: string
+  ): Promise<InterpretacaoIA | null>;
+
+  /** Extrai estabelecimento/total/itens de uma foto de nota fiscal. */
+  extrairNotaFiscal(
+    base64: string,
+    mimeType: string
+  ): Promise<NotaFiscalIA | null>;
 }
