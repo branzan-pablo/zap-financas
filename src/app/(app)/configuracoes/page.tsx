@@ -45,6 +45,14 @@ export default async function ConfiguracoesPage() {
                 </Link>
               </dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-slate">Categorias</dt>
+              <dd className="text-ink">
+                <Link href="/configuracoes/categorias" className="text-emerald hover:underline">
+                  Personalizar
+                </Link>
+              </dd>
+            </div>
           </dl>
         </section>
 
