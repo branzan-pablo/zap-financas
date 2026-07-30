@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import { formatBRL, formatData } from "@/lib/format";
+import { criarLancamento, excluirLancamento } from "./actions";
 
 type Categoria = { id: string; nome: string; icone: string | null; cor: string | null };
 
@@ -10,6 +12,7 @@ type Transacao = {
   descricao: string;
   data: string;
   tipo: string;
+  origem: string | null;
   categories: Categoria | null;
 };
 
@@ -29,16 +32,27 @@ export default async function TransacoesPage({
     .order("nome", { ascending: true });
   const categorias = (cats ?? []) as Categoria[];
 
+  // Contas ativas — destino dos lançamentos manuais.
+  const { data: accs } = await supabase
+    .from("accounts")
+    .select("id, nome")
+    .eq("ativo", true)
+    .order("created_at", { ascending: true });
+  const contas = (accs ?? []) as { id: string; nome: string }[];
+
   // Extrato (RLS limita ao usuário); filtro opcional por categoria.
   let query = supabase
     .from("transactions")
-    .select("id, valor, descricao, data, tipo, categories(id, nome, icone, cor)")
+    .select("id, valor, descricao, data, tipo, origem, categories(id, nome, icone, cor)")
     .order("data", { ascending: false })
     .limit(200);
   if (categoria) query = query.eq("category_id", categoria);
 
   const { data } = await query;
   const transacoes = (data ?? []) as unknown as Transacao[];
+
+  const hoje = new Date();
+  const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -48,6 +62,95 @@ export default async function TransacoesPage({
           Seu extrato consolidado, categorizado automaticamente.
         </p>
       </div>
+
+      {/* Lançamento manual — o que o Open Finance não traz (dinheiro, VR). */}
+      {contas.length > 0 && (
+        <details className="mb-5 rounded-2xl border border-line bg-white p-5">
+          <summary className="cursor-pointer font-medium text-ink">
+            + Novo lançamento
+          </summary>
+          <form action={criarLancamento} className="mt-4 flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Descrição</span>
+              <input
+                type="text"
+                name="descricao"
+                required
+                maxLength={120}
+                placeholder="Pão na padaria"
+                className="w-48 rounded-lg border border-line px-3 py-1.5 text-ink"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Valor</span>
+              <input
+                type="number"
+                name="valor"
+                step="0.01"
+                min="0.01"
+                required
+                placeholder="0,00"
+                className="w-28 rounded-lg border border-line px-3 py-1.5 text-ink"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Tipo</span>
+              <select
+                name="tipo"
+                defaultValue="gasto"
+                className="rounded-lg border border-line px-3 py-1.5 text-ink"
+              >
+                <option value="gasto">Gasto</option>
+                <option value="entrada">Entrada</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Data</span>
+              <input
+                type="date"
+                name="data"
+                defaultValue={hojeStr}
+                className="rounded-lg border border-line px-3 py-1.5 text-ink"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Conta</span>
+              <select
+                name="conta"
+                className="max-w-40 rounded-lg border border-line px-3 py-1.5 text-ink"
+              >
+                {contas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-slate">Categoria</span>
+              <select
+                name="categoria"
+                defaultValue=""
+                className="max-w-40 rounded-lg border border-line px-3 py-1.5 text-ink"
+              >
+                <option value="">Automática (IA)</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {`${c.icone ?? ""} ${c.nome}`.trim()}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button type="submit" size="sm">
+              Lançar
+            </Button>
+          </form>
+          <p className="mt-3 text-xs leading-relaxed text-slate">
+            Em contas manuais o saldo é ajustado automaticamente. Em contas
+            conectadas, o saldo continua vindo do banco.
+          </p>
+        </details>
+      )}
 
       {/* Filtro por categoria */}
       {categorias.length > 0 && (
@@ -106,14 +209,31 @@ export default async function TransacoesPage({
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`shrink-0 font-num font-semibold ${
-                      credito ? "text-emerald" : "text-ink"
-                    }`}
-                  >
-                    {credito ? "+" : ""}
-                    {formatBRL(t.valor)}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span
+                      className={`font-num font-semibold ${
+                        credito ? "text-emerald" : "text-ink"
+                      }`}
+                    >
+                      {credito ? "+" : ""}
+                      {formatBRL(t.valor)}
+                    </span>
+                    {/* Só lançamentos manuais/WhatsApp podem ser excluídos —
+                        os do Open Finance voltariam no próximo sync. */}
+                    {t.origem !== "openfinance" && (
+                      <form action={excluirLancamento}>
+                        <input type="hidden" name="id" value={t.id} />
+                        <button
+                          type="submit"
+                          aria-label={`Excluir ${t.descricao}`}
+                          title="Excluir lançamento"
+                          className="text-sm text-slate transition-colors hover:text-red-600"
+                        >
+                          ✕
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </li>
               );
             })}

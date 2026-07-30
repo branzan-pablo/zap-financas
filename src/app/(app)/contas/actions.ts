@@ -62,6 +62,79 @@ export async function criarConnectToken(): Promise<
   }
 }
 
+/** Tipos aceitos numa conta manual (sem Open Finance). */
+const TIPOS_MANUAIS = ["corrente", "poupanca", "outro"] as const;
+
+/**
+ * Cria uma conta MANUAL — dinheiro na carteira, VR/VA, poupança de outro banco:
+ * qualquer coisa que o Open Finance não traz.
+ *
+ * Fica sem `pluggy_item_id`/`pluggy_account_id`. O sync faz upsert por
+ * (user_id, pluggy_account_id) e nunca deleta, e no Postgres valores NULL são
+ * distintos numa constraint única — então contas manuais nunca colidem com as
+ * conectadas nem são sobrescritas.
+ */
+export async function criarContaManual(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const nome = String(formData.get("nome") ?? "").trim().slice(0, 60);
+  const tipoBruto = String(formData.get("tipo") ?? "outro");
+  const tipo = (TIPOS_MANUAIS as readonly string[]).includes(tipoBruto)
+    ? tipoBruto
+    : "outro";
+  const saldoBruto = String(formData.get("saldo") ?? "").trim().replace(",", ".");
+  const saldo = saldoBruto === "" ? 0 : Number(saldoBruto);
+
+  if (!nome || !Number.isFinite(saldo) || Math.abs(saldo) > 99_999_999) return;
+
+  const { error } = await supabase.from("accounts").insert({
+    user_id: user.id,
+    nome,
+    banco: null,
+    tipo,
+    saldo: Math.round(saldo * 100) / 100,
+    moeda: "BRL",
+    ativo: true,
+  });
+  if (error) throw new Error(`Falha ao criar conta: ${error.message}`);
+
+  revalidatePath("/contas");
+  revalidatePath("/dashboard");
+}
+
+/**
+ * Arquiva uma conta manual (`ativo = false`) preservando o histórico de
+ * transações — deletar a conta cascatearia e apagaria o extrato.
+ *
+ * Só vale para contas manuais: uma conta do Open Finance voltaria a `ativo=true`
+ * no próximo sync, o que seria confuso para o usuário.
+ */
+export async function arquivarContaManual(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({ ativo: false })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .is("pluggy_account_id", null);
+  if (error) throw new Error(`Falha ao arquivar conta: ${error.message}`);
+
+  revalidatePath("/contas");
+  revalidatePath("/dashboard");
+}
+
 /** Re-sincroniza um item já conectado. Idempotente — não duplica transações. */
 export async function sincronizar(itemId: string): Promise<AcaoResultado> {
   const supabase = await createClient();
