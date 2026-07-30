@@ -157,10 +157,16 @@ async function score(
   const emoji = { excelente: "💚", bom: "🙂", atencao: "😐", critico: "🔴" }[s.nivel];
   const linhas = [`${emoji} *Saúde financeira: ${s.score}/100* — ${NIVEL_LABEL[s.nivel]}`];
 
-  // Os dois componentes mais fracos explicam a nota sem virar um relatório.
-  const fracos = [...s.componentes].sort((a, b) => a.nota - b.nota).slice(0, 2);
+  // Explica a nota pelos pontos que realmente pesam contra — um componente em
+  // 100% não é "ponto fraco" e não deve aparecer como se fosse.
+  const fracos = [...s.componentes]
+    .filter((c) => c.nota < 0.95)
+    .sort((a, b) => (1 - b.nota) * b.peso - (1 - a.nota) * a.peso)
+    .slice(0, 2);
   if (fracos.length) {
     linhas.push("", ...fracos.map((c) => `• ${c.nome}: ${c.detalhe}`));
+  } else {
+    linhas.push("", "Tudo em ordem nos pontos que eu acompanho. 👏");
   }
   if (s.dicas.length) {
     linhas.push("", "*Para melhorar:*", ...s.dicas.slice(0, 2).map((d) => `• ${d}`));
