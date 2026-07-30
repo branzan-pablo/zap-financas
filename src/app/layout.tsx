@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ServiceWorker } from "@/components/app/service-worker";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -35,6 +36,9 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     type: "website",
   },
+  // PWA: ícone da tela inicial no iOS (Android usa o manifest).
+  appleWebApp: { capable: true, title: "Zap Finanças", statusBarStyle: "default" },
+  icons: { apple: "/apple-icon.png" },
 };
 
 export const viewport: Viewport = {
@@ -53,6 +57,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
         {children}
+        <ServiceWorker />
         <Analytics />
       </body>
     </html>
