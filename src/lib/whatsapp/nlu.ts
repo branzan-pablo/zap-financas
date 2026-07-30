@@ -24,6 +24,8 @@ export function mapearInterpretacao(r: InterpretacaoIA | null): Intent | null {
         return { tipo: "gastos" };
       case "fechamento":
         return { tipo: "fechamento" };
+      case "score":
+        return { tipo: "score" };
       case "ajuda":
         return { tipo: "ajuda" };
     }

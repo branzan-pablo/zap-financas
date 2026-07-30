@@ -3,7 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { trialDaysRemaining } from "@/lib/trial";
 import { formatBRL } from "@/lib/format";
 import { gerarAlertas, type Severidade } from "@/lib/alerts";
+import { NIVEL_LABEL, type NivelSaude } from "@/lib/health-score";
 import { resumoFinanceiro } from "@/lib/finance-summary";
+
+const SCORE_UI: Record<NivelSaude, { cor: string; bg: string; barra: string }> = {
+  excelente: { cor: "text-emerald", bg: "bg-emerald-soft", barra: "bg-emerald" },
+  bom: { cor: "text-emerald", bg: "bg-emerald-soft", barra: "bg-emerald" },
+  atencao: { cor: "text-[#9a6a00]", bg: "bg-amber-soft", barra: "bg-[#d99a00]" },
+  critico: { cor: "text-red-600", bg: "bg-red-50", barra: "bg-red-500" },
+};
 
 const STATUS_UI = {
   folga: { cor: "text-emerald", bg: "bg-emerald-soft", label: "No azul" },
@@ -115,6 +123,67 @@ export default async function DashboardPage() {
           ))}
         </div>
       )}
+
+      {/* Score de saúde financeira */}
+      <div className="mb-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-slate">Saúde financeira</p>
+            <p className="mt-1 flex items-baseline gap-2">
+              <span className={`font-num text-4xl font-bold ${SCORE_UI[resumo.score.nivel].cor}`}>
+                {resumo.score.score}
+              </span>
+              <span className="text-sm text-slate">/ 100</span>
+            </p>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${SCORE_UI[resumo.score.nivel].bg} ${SCORE_UI[resumo.score.nivel].cor}`}
+          >
+            {NIVEL_LABEL[resumo.score.nivel]}
+          </span>
+        </div>
+
+        {/* Barra do score */}
+        <div
+          className="mt-4 h-2 overflow-hidden rounded-full bg-paper"
+          role="progressbar"
+          aria-valuenow={resumo.score.score}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={`h-full rounded-full ${SCORE_UI[resumo.score.nivel].barra}`}
+            style={{ width: `${resumo.score.score}%` }}
+          />
+        </div>
+
+        <ul className="mt-4 space-y-1.5">
+          {resumo.score.componentes.map((c) => (
+            <li key={c.chave} className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="truncate text-slate">{c.nome}</span>
+              <span className="shrink-0 font-num text-ink">
+                {Math.round(c.nota * c.peso)}
+                <span className="text-slate">/{Math.round(c.peso)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {resumo.score.dicas.length > 0 && (
+          <div className="mt-4 border-t border-line pt-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate">
+              Para melhorar
+            </p>
+            <ul className="mt-1.5 space-y-1">
+              {resumo.score.dicas.map((d, i) => (
+                <li key={i} className="text-sm leading-relaxed text-ink">
+                  • {d}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* Resumo */}
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">

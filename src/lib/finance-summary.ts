@@ -13,6 +13,7 @@ import {
   statusOrcamentos,
   type OrcamentoStatus,
 } from "./budgets";
+import { calcularScore, type ScoreSaude } from "./health-score";
 import type { FaturaResumo } from "./alerts";
 
 /**
@@ -46,6 +47,7 @@ export type ResumoFinanceiro = {
   duplicatas: Duplicata[];
   limite: LimiteSeguro;
   orcamentos: OrcamentoStatus[];
+  score: ScoreSaude;
 };
 
 type Categoria = { id: string; nome: string; cor: string | null; icone: string | null };
@@ -165,6 +167,18 @@ export async function resumoFinanceiro(
     .reduce((s, a) => s + a.valorMedio, 0);
   const limite = calcularLimiteSeguro(rendaMes, gastoMes, comprometido, diasRestantesNoMes(hoje));
 
+  // Score de saúde financeira — derivado de tudo o que já foi calculado acima.
+  const score = calcularScore({
+    rendaMes,
+    gastoMes,
+    saldoContas,
+    totalInvestido,
+    faturaTotal,
+    custoAssinaturas,
+    numDuplicatas: duplicatas.length,
+    orcamentos: orcamentos.map((o) => ({ status: o.status })),
+  });
+
   return {
     numContas: contas.length,
     saldoContas,
@@ -179,5 +193,6 @@ export async function resumoFinanceiro(
     duplicatas,
     limite,
     orcamentos,
+    score,
   };
 }

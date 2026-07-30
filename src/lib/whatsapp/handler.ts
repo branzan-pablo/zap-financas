@@ -9,6 +9,8 @@ import {
 import { getAIProvider } from "@/lib/ai";
 import { carregarFechamento } from "@/lib/monthly-close-data";
 import { mensagemFechamento, mesAFechar } from "@/lib/monthly-close";
+import { resumoFinanceiro } from "@/lib/finance-summary";
+import { NIVEL_LABEL } from "@/lib/health-score";
 import type { Intent } from "./intent";
 
 /**
@@ -24,6 +26,7 @@ const AJUDA =
   "• *fatura* — fatura aberta dos cartões\n" +
   "• *gastos* — quanto você gastou no mês\n" +
   "• *fechamento* — o resumo do mês passado\n" +
+  "• *score* — sua saúde financeira de 0 a 100\n" +
   "• *gastei 50 no mercado* — registro um gasto\n" +
   "• mande um *áudio* falando seus gastos\n" +
   "• mande a *foto da nota fiscal* que eu registro";
@@ -46,6 +49,8 @@ export async function responderIntent(
         await carregarFechamento(db, userId, mesAFechar(hoje)),
         formatBRL
       );
+    case "score":
+      return score(db, userId, hoje);
     case "registrar":
       return registrarLote(
         db,
@@ -134,6 +139,31 @@ async function gastos(
   const top = [...porCat.entries()].sort((a, b) => b[1] - a[1])[0];
   const extra = top ? `\nMaior categoria: ${top[0]} (${formatBRL(top[1])}).` : "";
   return `Você gastou *${formatBRL(total)}* este mês.${extra}`;
+}
+
+/** Score de saúde financeira + o que mais pesa contra, em formato de WhatsApp. */
+async function score(
+  db: SupabaseClient<Database>,
+  userId: string,
+  hoje: Date
+): Promise<string> {
+  const { score: s, numContas } = await resumoFinanceiro(db, userId, hoje);
+  if (numContas === 0) {
+    return "Ainda não consigo avaliar: conecte uma conta no app primeiro.";
+  }
+
+  const emoji = { excelente: "💚", bom: "🙂", atencao: "😐", critico: "🔴" }[s.nivel];
+  const linhas = [`${emoji} *Saúde financeira: ${s.score}/100* — ${NIVEL_LABEL[s.nivel]}`];
+
+  // Os dois componentes mais fracos explicam a nota sem virar um relatório.
+  const fracos = [...s.componentes].sort((a, b) => a.nota - b.nota).slice(0, 2);
+  if (fracos.length) {
+    linhas.push("", ...fracos.map((c) => `• ${c.nome}: ${c.detalhe}`));
+  }
+  if (s.dicas.length) {
+    linhas.push("", "*Para melhorar:*", ...s.dicas.slice(0, 2).map((d) => `• ${d}`));
+  }
+  return linhas.join("\n");
 }
 
 /**

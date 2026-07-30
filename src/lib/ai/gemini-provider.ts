@@ -206,7 +206,8 @@ const PROMPT_NLU =
   "Interprete a mensagem do usuário e devolva JSON:\n" +
   '- Pergunta sobre saldo → {tipo:"consulta", alvo:"saldo"}; fatura do cartão → alvo:"fatura"; ' +
   'gastos do mês corrente/extrato → alvo:"gastos"; balanço/resumo/fechamento do MÊS PASSADO → ' +
-  'alvo:"fechamento"; pedido de ajuda ou cumprimento sem pedido claro → alvo:"ajuda".\n' +
+  'alvo:"fechamento"; avaliação geral da situação financeira ("como estou?", "minha nota") → ' +
+  'alvo:"score"; pedido de ajuda ou cumprimento sem pedido claro → alvo:"ajuda".\n' +
   "- Relato de um ou MAIS gastos (ex.: \"gastei 50 no mercado e 30 de uber ontem\") → " +
   '{tipo:"registrar", gastos:[{valor: em reais, descricao: curta, ex. "mercado"}]}.\n' +
   '- Nada disso → {tipo:"nenhum"}. Nunca invente valores.';
@@ -217,7 +218,7 @@ const SCHEMA_NLU = {
     tipo: { type: "string", enum: ["consulta", "registrar", "nenhum"] },
     alvo: {
       type: "string",
-      enum: ["saldo", "fatura", "gastos", "fechamento", "ajuda"],
+      enum: ["saldo", "fatura", "gastos", "fechamento", "score", "ajuda"],
       nullable: true,
     },
     gastos: {
@@ -270,6 +271,7 @@ function normalizarInterpretacao(raw: unknown): InterpretacaoIA | null {
       r.alvo === "fatura" ||
       r.alvo === "gastos" ||
       r.alvo === "fechamento" ||
+      r.alvo === "score" ||
       r.alvo === "ajuda")
   ) {
     return { tipo: "consulta", alvo: r.alvo };

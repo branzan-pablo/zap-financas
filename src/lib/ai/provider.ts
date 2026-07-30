@@ -27,7 +27,10 @@ export type GastoExtraido = { valor: number; descricao: string };
  * `null` (no retorno dos métodos) = IA indisponível/erro — o chamador degrada.
  */
 export type InterpretacaoIA =
-  | { tipo: "consulta"; alvo: "saldo" | "fatura" | "gastos" | "fechamento" | "ajuda" }
+  | {
+      tipo: "consulta";
+      alvo: "saldo" | "fatura" | "gastos" | "fechamento" | "score" | "ajuda";
+    }
   | { tipo: "registrar"; gastos: GastoExtraido[] }
   | { tipo: "nenhum" };
 
