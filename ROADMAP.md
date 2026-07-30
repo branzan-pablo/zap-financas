@@ -94,8 +94,16 @@ SHOULD:
 - ✅ **Performance**: dashboard busca transações por janela de data (~5 meses) em vez de limit fixo
 - ✅ **Landing atualizada**: reposicionada para PFM (Open Finance + IA + WhatsApp), FAQ corrigido
 - ✅ Validação E2E em produção (signup → Pluggy real → dashboard → /assinar) — tudo funcionando
-- 📋 Restante p/ launch público: widget Pluggy Connect (produção real), MP modo produção,
-  domínio Registro.br, remover user demo
+- ✅ **User demo removido** (verificado 2026-07-28: não existe mais em auth.users)
+- ✅ **Testes de integração do webhook do WhatsApp** (20 testes): payloads Evolution
+  (texto/áudio/imagem), silêncio (grupo/desconhecido/fromMe), pareamento, regex-antes-da-IA
+  e a ordem de segurança (mídia só após vínculo)
+- ✅ **Leitura de nota fiscal validada contra o Gemini real**: cupom NFC-e renderizado →
+  estabelecimento, total (R$ 78,05), data e 5 itens extraídos com exatidão; controle
+  negativo (imagem que não é nota) rejeitado sem inventar dados
+- 📋 Restante p/ launch público — **todos externos**, ver [`docs/launch-runbook.md`](docs/launch-runbook.md):
+  domínio Registro.br → credenciais de produção Pluggy → MP modo produção → número
+  dedicado do WhatsApp. Nessa ordem (webhooks e redirect URLs dependem do domínio final).
 
 ### Fase 6 — Paridade competitiva 🔧 (benchmark: Dinzo; análise 2026-07-27)
 Concorrência direta (Open Finance + WhatsApp + web): só o Dinzo. POQT/Financinha não têm
