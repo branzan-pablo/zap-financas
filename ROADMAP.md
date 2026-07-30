@@ -120,9 +120,24 @@ qualidade (parcelas do Dinzo bugam nas reviews) e preço (R$12,49/mês anual vs 
   participação, maior gasto e variação vs. mês anterior. Chega sozinho no WhatsApp no dia 1º
   (dedup por mês via `alerts`) e responde ao comando *fechamento*; web tem navegação por mês.
   Fonte única (`carregarFechamento`) para WhatsApp e web.
-- 📋 **P1 — Retenção (restante)**: contas manuais (CRUD, p/ dinheiro/VR fora do Open Finance)
-- 📋 **P2 — Diferenciais**: score de saúde financeira · categorias personalizadas ·
-  gamificação leve (streak) · PWA instalável
+- ✅ **P1c — Contas manuais + lançamento manual**: conta sem `pluggy_account_id` (o sync
+  nunca a toca, pois NULLs são distintos na constraint única); arquivar preserva o extrato;
+  lançamento avulso com categoria escolhida ou automática; saldo ajustado **só** em contas
+  manuais (nas conectadas quem manda é o banco)
+- ✅ **P2 — Score de saúde financeira** (`health-score.ts`, 10 testes): 0-100 a partir de
+  sobra do mês, reserva, peso da fatura, orçamentos, assinaturas e duplicatas. Componente
+  não avaliável (sem renda/sem orçamento) **sai da conta** com peso redistribuído — a nota
+  nunca pune informação que o usuário não deu. Dashboard + comando `score` no WhatsApp
+- ✅ **P2 — Categorias personalizadas** (`/configuracoes/categorias`): CRUD próprio com
+  ícone, cor, tipo e **palavras-chave** que alimentam a categorização determinística
+  (antes da IA). Sem migration — as policies de RLS já cobriam
+- ✅ **P2 — Gamificação leve** (`streak.ts`, 11 testes): sequência derivada dos próprios
+  lançamentos (sem tabela de pontos); viva se houve registro hoje **ou** ontem; comemora
+  só em marcos (3/7/14/30/60/100/365) para não virar spam
+- ✅ **P2 — PWA instalável**: `manifest.ts` + ícones gerados + service worker
+  **deliberadamente conservador** — cacheia apenas `/_next/static/*` (imutável, versionado);
+  nenhuma resposta de página/API é cacheada, porque servir saldo velho num app financeiro
+  é pior que não funcionar
 - 💤 **P3 — Expansão**: multi CPF/CNPJ (PJ, ângulo do Dinzo Ultra) · compartilhamento familiar
 
 ---
