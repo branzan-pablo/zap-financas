@@ -4,6 +4,7 @@ import { trialDaysRemaining } from "@/lib/trial";
 import { formatBRL } from "@/lib/format";
 import { gerarAlertas, type Severidade } from "@/lib/alerts";
 import { NIVEL_LABEL, type NivelSaude } from "@/lib/health-score";
+import { carregarStreak } from "@/lib/streak-data";
 import { resumoFinanceiro } from "@/lib/finance-summary";
 
 const SCORE_UI: Record<NivelSaude, { cor: string; bg: string; barra: string }> = {
@@ -43,7 +44,10 @@ export default async function DashboardPage() {
 
   // --- Resumo financeiro consolidado (mesma fonte do job de alertas) --------
   const hoje = new Date();
-  const resumo = await resumoFinanceiro(supabase, user!.id, hoje);
+  const [resumo, streak] = await Promise.all([
+    resumoFinanceiro(supabase, user!.id, hoje),
+    carregarStreak(supabase, user!.id, hoje),
+  ]);
 
   if (resumo.numContas === 0) {
     return <ConectarVazio nome={nome} onTrial={onTrial} trialDays={trialDays} />;
@@ -136,11 +140,26 @@ export default async function DashboardPage() {
               <span className="text-sm text-slate">/ 100</span>
             </p>
           </div>
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${SCORE_UI[resumo.score.nivel].bg} ${SCORE_UI[resumo.score.nivel].cor}`}
-          >
-            {NIVEL_LABEL[resumo.score.nivel]}
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${SCORE_UI[resumo.score.nivel].bg} ${SCORE_UI[resumo.score.nivel].cor}`}
+            >
+              {NIVEL_LABEL[resumo.score.nivel]}
+            </span>
+            {/* Sequência de dias registrando — incentivo ao hábito. */}
+            {streak.atual > 1 && (
+              <span
+                className="rounded-full bg-amber-soft px-2.5 py-0.5 text-xs font-semibold text-[#9a6a00]"
+                title={
+                  streak.recorde > streak.atual
+                    ? `Seu recorde é de ${streak.recorde} dias`
+                    : "Este é o seu recorde!"
+                }
+              >
+                🔥 {streak.atual} dias seguidos
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Barra do score */}

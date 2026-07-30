@@ -11,6 +11,8 @@ import { carregarFechamento } from "@/lib/monthly-close-data";
 import { mensagemFechamento, mesAFechar } from "@/lib/monthly-close";
 import { resumoFinanceiro } from "@/lib/finance-summary";
 import { NIVEL_LABEL } from "@/lib/health-score";
+import { carregarStreak } from "@/lib/streak-data";
+import { mensagemStreak } from "@/lib/streak";
 import type { Intent } from "./intent";
 
 /**
@@ -230,7 +232,14 @@ async function registrarLote(
   const { error } = await db.from("transactions").insert(rows);
   if (error) return "Não consegui registrar agora. Tente de novo em instantes.";
 
-  if (itens.length === 1) return `Anotado: ${linhas[0].slice(2)}. ✅`;
-  const total = itens.reduce((s, i) => s + Math.abs(i.valor), 0);
-  return `Anotado ✅\n${linhas.join("\n")}\nTotal: *${formatBRL(total)}*`;
+  const base =
+    itens.length === 1
+      ? `Anotado: ${linhas[0].slice(2)}. ✅`
+      : `Anotado ✅\n${linhas.join("\n")}\nTotal: *${formatBRL(
+          itens.reduce((s, i) => s + Math.abs(i.valor), 0)
+        )}*`;
+
+  // Incentivo ao hábito: só em marcos da sequência, para não virar spam.
+  const comemoracao = mensagemStreak(await carregarStreak(db, userId, hoje));
+  return comemoracao ? `${base}\n\n${comemoracao}` : base;
 }
