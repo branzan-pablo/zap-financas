@@ -3,6 +3,7 @@
   "crons": [
     { "path": "/api/cron/sync", "schedule": "0 6 * * *" },
     { "path": "/api/cron/dunning", "schedule": "0 8 * * *" },
-    { "path": "/api/cron/whatsapp-alerts", "schedule": "0 9 * * *" }
+    { "path": "/api/cron/whatsapp-alerts", "schedule": "0 9 * * *" },
+    { "path": "/api/cron/monthly-close", "schedule": "0 12 1 * *" }
   ]
 }

@@ -22,6 +22,8 @@ export function mapearInterpretacao(r: InterpretacaoIA | null): Intent | null {
         return { tipo: "fatura" };
       case "gastos":
         return { tipo: "gastos" };
+      case "fechamento":
+        return { tipo: "fechamento" };
       case "ajuda":
         return { tipo: "ajuda" };
     }

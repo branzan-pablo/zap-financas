@@ -205,7 +205,8 @@ const PROMPT_NLU =
   "Você é o assistente de WhatsApp de um app brasileiro de finanças pessoais. " +
   "Interprete a mensagem do usuário e devolva JSON:\n" +
   '- Pergunta sobre saldo → {tipo:"consulta", alvo:"saldo"}; fatura do cartão → alvo:"fatura"; ' +
-  'gastos do mês/extrato → alvo:"gastos"; pedido de ajuda ou cumprimento sem pedido claro → alvo:"ajuda".\n' +
+  'gastos do mês corrente/extrato → alvo:"gastos"; balanço/resumo/fechamento do MÊS PASSADO → ' +
+  'alvo:"fechamento"; pedido de ajuda ou cumprimento sem pedido claro → alvo:"ajuda".\n' +
   "- Relato de um ou MAIS gastos (ex.: \"gastei 50 no mercado e 30 de uber ontem\") → " +
   '{tipo:"registrar", gastos:[{valor: em reais, descricao: curta, ex. "mercado"}]}.\n' +
   '- Nada disso → {tipo:"nenhum"}. Nunca invente valores.';
@@ -216,7 +217,7 @@ const SCHEMA_NLU = {
     tipo: { type: "string", enum: ["consulta", "registrar", "nenhum"] },
     alvo: {
       type: "string",
-      enum: ["saldo", "fatura", "gastos", "ajuda"],
+      enum: ["saldo", "fatura", "gastos", "fechamento", "ajuda"],
       nullable: true,
     },
     gastos: {
@@ -265,7 +266,11 @@ function normalizarInterpretacao(raw: unknown): InterpretacaoIA | null {
 
   if (
     r.tipo === "consulta" &&
-    (r.alvo === "saldo" || r.alvo === "fatura" || r.alvo === "gastos" || r.alvo === "ajuda")
+    (r.alvo === "saldo" ||
+      r.alvo === "fatura" ||
+      r.alvo === "gastos" ||
+      r.alvo === "fechamento" ||
+      r.alvo === "ajuda")
   ) {
     return { tipo: "consulta", alvo: r.alvo };
   }

@@ -13,6 +13,7 @@ export type Intent =
   | { tipo: "saldo" }
   | { tipo: "fatura" }
   | { tipo: "gastos" }
+  | { tipo: "fechamento" }
   | { tipo: "registrar"; valor: number; descricao: string }
   | { tipo: "registrar_lote"; itens: { valor: number; descricao: string }[] }
   | { tipo: "ajuda" }
@@ -50,6 +51,9 @@ export function interpretarMensagem(texto: string): Intent {
     }
   }
 
+  // Antes de "fatura"/"gastos": "fechamento do mês", "resumo do mês passado".
+  if (/\bfechamento\b|\bresumo\b|\bbalanco\b|mes passado/.test(t))
+    return { tipo: "fechamento" };
   if (/\bfatura\b|\bcartao\b/.test(t)) return { tipo: "fatura" };
   if (/\bsaldo\b|quanto tenho|quanto eu tenho/.test(t)) return { tipo: "saldo" };
   if (/\bgastos?\b|quanto gastei|gasto do mes|extrato/.test(t)) return { tipo: "gastos" };

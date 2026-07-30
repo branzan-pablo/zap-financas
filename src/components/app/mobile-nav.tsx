@@ -18,7 +18,8 @@ import { NAV, CONFIG, isActive, type NavItem } from "./nav-items";
 
 // Abas diretas (ordem = posição na barra). As demais seções vão para "Mais".
 const TABS = [NAV[0], NAV[2], NAV[3], NAV[5]]; // Início, Transações, Cartões, Investimentos
-const MAIS = [NAV[1], NAV[6], NAV[4], CONFIG]; // Contas, Orçamentos, Metas, Configurações
+// Contas, Orçamentos, Fechamento, Metas, Configurações
+const MAIS = [NAV[1], NAV[6], NAV[7], NAV[4], CONFIG];
 const MAIS_HREFS = MAIS.map((i) => i.href);
 
 export function MobileNav() {

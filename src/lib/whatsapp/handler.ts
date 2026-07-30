@@ -7,6 +7,8 @@ import {
   type CategoriaRegra,
 } from "@/lib/categorization/rules";
 import { getAIProvider } from "@/lib/ai";
+import { carregarFechamento } from "@/lib/monthly-close-data";
+import { mensagemFechamento, mesAFechar } from "@/lib/monthly-close";
 import type { Intent } from "./intent";
 
 /**
@@ -21,6 +23,7 @@ const AJUDA =
   "• *saldo* — saldo nas suas contas\n" +
   "• *fatura* — fatura aberta dos cartões\n" +
   "• *gastos* — quanto você gastou no mês\n" +
+  "• *fechamento* — o resumo do mês passado\n" +
   "• *gastei 50 no mercado* — registro um gasto\n" +
   "• mande um *áudio* falando seus gastos\n" +
   "• mande a *foto da nota fiscal* que eu registro";
@@ -38,6 +41,11 @@ export async function responderIntent(
       return fatura(db, userId, hoje);
     case "gastos":
       return gastos(db, userId, hoje);
+    case "fechamento":
+      return mensagemFechamento(
+        await carregarFechamento(db, userId, mesAFechar(hoje)),
+        formatBRL
+      );
     case "registrar":
       return registrarLote(
         db,
