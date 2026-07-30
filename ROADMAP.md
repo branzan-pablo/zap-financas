@@ -107,8 +107,12 @@ qualidade (parcelas do Dinzo bugam nas reviews) e preço (R$12,49/mês anual vs 
   limite mensal com carry-over (vale até ser substituído; 0 desliga), barra de progresso,
   alertas `orcamento_atencao` (≥80%)/`orcamento_estouro` no dashboard E no cron de WhatsApp
   (mesma fonte: resumoFinanceiro)
-- 📋 **P1 — Retenção (restante)**: fechamento mensal (resumo do mês via WhatsApp/web) ·
-  contas manuais (CRUD)
+- ✅ **P1b — Fechamento mensal** (`src/lib/monthly-close.ts` testado + `/fechamento` +
+  cron `0 12 1 * *`): entradas/saídas, quanto sobrou (% da renda), top categorias com
+  participação, maior gasto e variação vs. mês anterior. Chega sozinho no WhatsApp no dia 1º
+  (dedup por mês via `alerts`) e responde ao comando *fechamento*; web tem navegação por mês.
+  Fonte única (`carregarFechamento`) para WhatsApp e web.
+- 📋 **P1 — Retenção (restante)**: contas manuais (CRUD, p/ dinheiro/VR fora do Open Finance)
 - 📋 **P2 — Diferenciais**: score de saúde financeira · categorias personalizadas ·
   gamificação leve (streak) · PWA instalável
 - 💤 **P3 — Expansão**: multi CPF/CNPJ (PJ, ângulo do Dinzo Ultra) · compartilhamento familiar
