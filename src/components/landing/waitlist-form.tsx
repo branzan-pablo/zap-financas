@@ -40,7 +40,14 @@ export function WaitlistForm({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!emailValid || status === "loading") return;
+    if (status === "loading") return;
+    // Validamos no envio, não desabilitando o botão: um CTA principal cinza
+    // parece quebrado e não diz o que falta. Aqui o erro explica e aponta.
+    if (!emailValid) {
+      setStatus("error");
+      setError("Digite um email válido, como nome@email.com.");
+      return;
+    }
     setStatus("loading");
     setError("");
     try {
@@ -132,7 +139,7 @@ export function WaitlistForm({
         />
         <Button
           type="submit"
-          disabled={!emailValid || status === "loading"}
+          disabled={status === "loading"}
           className={cn(
             "h-12 px-6 text-base font-semibold",
             onDark && "bg-emerald-bright text-white hover:bg-emerald"
@@ -143,7 +150,7 @@ export function WaitlistForm({
       </div>
 
       {status === "error" && (
-        <p role="alert" className="text-sm text-[#b4540a]">
+        <p role="alert" className="text-sm font-medium text-amber-ink">
           {error}
         </p>
       )}

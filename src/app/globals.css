@@ -15,7 +15,9 @@
   --color-emerald-bright: var(--emerald-bright);
   --color-emerald-soft: var(--emerald-soft);
   --color-amber: var(--amber);
+  --color-amber-ink: var(--amber-ink);
   --color-amber-soft: var(--amber-soft);
+  --color-bubble: var(--bubble);
   --color-slate: var(--slate);
   --color-line: var(--line);
 
@@ -62,21 +64,31 @@
 }
 
 :root {
-  /* Brand palette (see specs/04-design-guidelines.md)
-     Ink-forward: primary actions are near-black (Linear/Vercel refs);
-     emerald is a deliberate accent, not the protagonist. */
-  --ink: #0c1322;
+  /* ---------------------------------------------------------------------
+     Paleta — derivada da conversa, não de um template.
+     O produto vive dentro do WhatsApp, então o sistema de cor sai de lá:
+     o verde da bolha enviada e o papel frio de um extrato bancário. Ink-forward
+     (ações primárias quase pretas); o emerald é acento, não protagonista.
+     --------------------------------------------------------------------- */
+  --ink: #0b1220;         /* tinta: texto e ações primárias */
   --ink-hover: #1c2740;
-  --paper: #f7f6f1;
-  --emerald: #0c8a55;
+  --paper: #f2f5f3;       /* papel de extrato: branco frio com veio verde */
+  --emerald: #0c8a55;     /* marca / valores positivos */
   --emerald-bright: #10b981;
-  --emerald-soft: #e8f3ec;
-  --amber: #d97706;
+  --emerald-soft: #e6f1ea;
+  --bubble: #dff3d8;      /* verde da bolha enviada do WhatsApp — só no registro */
+  --amber: #d97706;       /* atenção (superfícies) */
+  --amber-ink: #8a5200;   /* atenção em TEXTO — passa AA sobre claro */
   --amber-soft: #fbf0df;
-  --slate: #58616f;
-  --line: #e7e6df;
+  --slate: #55607a;       /* cinza frio, par do papel */
+  --line: #e2e7e3;
 
   --radius: 0.75rem;
+
+  /* Alvo de toque confortável no mobile (WCAG 2.2 AA pede ≥24px; o mínimo
+     humano confortável é 44–48px). Vira 36px no desktop, onde o ponteiro é
+     preciso e densidade ajuda a ler mais dados. */
+  --tap: 2.75rem;         /* 44px */
 
   /* shadcn tokens mapped to brand (light only) */
   --background: var(--paper);
@@ -122,6 +134,10 @@
   }
   html {
     @apply font-sans;
+    /* Mobile-first: 16px de corpo evita o zoom automático do iOS em inputs e
+       é o mínimo legível a distância de braço. 15px a partir de md, onde a
+       tela comporta mais densidade sem perder legibilidade. */
+    font-size: 16px;
   }
   h1,
   h2,
@@ -129,9 +145,99 @@
     font-family: var(--font-display), var(--font-sans), sans-serif;
     letter-spacing: -0.02em;
   }
+
+  /* Números são o conteúdo deste produto, não decoração: sempre tabulares,
+     para que colunas de valores alinhem e a vírgula não "dance" entre linhas. */
   .font-num {
     font-family: var(--font-mono), ui-monospace, monospace;
-    font-feature-settings: "tnum" 1;
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Foco visível e consistente — teclado e leitores de tela dependem disso.
+     Nunca removemos o anel; ele é da cor da tinta para máximo contraste. */
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Campo de formulário com alvo de toque confortável no mobile.
+     Fonte 16px é obrigatória: abaixo disso o iOS dá zoom ao focar o input. */
+  .field {
+    min-height: var(--tap);
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 1px;
+  }
+  @media (min-width: 768px) {
+    .field {
+      min-height: 2.25rem;
+      font-size: 0.9375rem;
+    }
+  }
+
+  /* Todo <details> do app é um disclosure clicável: o gatilho precisa de área
+     de toque, não só o texto. Compacta no desktop, onde o ponteiro é preciso. */
+  summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    cursor: pointer;
+  }
+  @media (min-width: 768px) {
+    summary {
+      min-height: 0;
+    }
+  }
+
+  /* Rótulo de campo — 14px é o piso para texto secundário. */
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--slate);
+  }
+
+  /* Faixa de filtros com rolagem horizontal: no mobile, 13 chips empilhados
+     empurram o conteúdo para fora da tela. Rolar na horizontal preserva a
+     descoberta sem custar altura. */
+  .chip-strip {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    /* sangra até as bordas da tela para não parecer cortado no meio */
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    padding-bottom: 0.25rem;
+  }
+  .chip-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .chip-strip > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+  @media (min-width: 768px) {
+    .chip-strip {
+      flex-wrap: wrap;
+      overflow-x: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
   }
 }
 
@@ -172,12 +278,45 @@
   }
 }
 
-/* Signature motif: a credit-card-statement "ledger line" (label · leader · value) */
+/* ---------------------------------------------------------------------------
+   ASSINATURA VISUAL — "cupom"
+   O app lê cupom fiscal pela câmera e fala a língua do extrato bancário. O
+   número mais importante do produto ("posso gastar?") vira, então, uma tira de
+   cupom: borda inferior serrilhada, valor em dígitos tabulares e o rateio em
+   linhas de razão. É o ÚNICO elemento ornamentado do app — todo o resto é
+   silencioso de propósito.
+   --------------------------------------------------------------------------- */
+.cupom {
+  position: relative;
+  /* espaço para o serrilhado não comer conteúdo */
+  padding-bottom: 1.25rem;
+}
+
+/* Serrilhado: semicírculos da cor do fundo sobrepostos à borda inferior.
+   Feito com background (não mask) para funcionar em qualquer navegador. */
+.cupom::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 12px;
+  background:
+    radial-gradient(circle at 6px 7px, var(--paper) 6px, #0000 6.5px) 0 0 / 12px 12px repeat-x;
+  pointer-events: none;
+}
+
+/* Linha de razão: rótulo · pontilhado · valor (vernáculo de extrato). */
 .ledger-leader {
   flex: 1 1 auto;
   margin: 0 0.75rem;
   border-bottom: 1px dotted var(--line);
   transform: translateY(-0.2em);
+}
+
+/* Regra tracejada do cupom, usada para separar blocos dentro da tira. */
+.cupom-rule {
+  border: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent);
 }
 
 /* Subtle emerald glow behind the hero artifact — one quiet touch of depth */

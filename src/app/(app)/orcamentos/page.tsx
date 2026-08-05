@@ -124,7 +124,7 @@ export default async function OrcamentosPage() {
                       min="0"
                       defaultValue={limite}
                       aria-label={`Limite mensal para ${c.nome}`}
-                      className="w-32 rounded-lg border border-line px-3 py-1.5 text-sm text-ink"
+                      className="field w-32"
                     />
                     <Button variant="outline" size="sm" type="submit">
                       Salvar
@@ -184,7 +184,7 @@ export default async function OrcamentosPage() {
                     min="0"
                     placeholder="R$ limite"
                     aria-label={`Limite mensal para ${c.nome}`}
-                    className="w-28 rounded-lg border border-line px-3 py-1.5 text-sm text-ink"
+                    className="field w-28"
                   />
                   <Button variant="outline" size="sm" type="submit">
                     Definir

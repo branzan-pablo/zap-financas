@@ -207,7 +207,7 @@ export default async function ContasPage() {
               required
               maxLength={60}
               placeholder="Carteira"
-              className="w-44 rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field w-44"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -215,7 +215,7 @@ export default async function ContasPage() {
             <select
               name="tipo"
               defaultValue="outro"
-              className="rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field"
             >
               <option value="outro">Dinheiro / Outro</option>
               <option value="corrente">Conta corrente</option>
@@ -229,7 +229,7 @@ export default async function ContasPage() {
               name="saldo"
               step="0.01"
               defaultValue="0"
-              className="w-32 rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field w-32"
             />
           </label>
           <Button type="submit" size="sm">

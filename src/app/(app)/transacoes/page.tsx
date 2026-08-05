@@ -69,92 +69,103 @@ export default async function TransacoesPage({
           <summary className="cursor-pointer font-medium text-ink">
             + Novo lançamento
           </summary>
-          <form action={criarLancamento} className="mt-4 flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Descrição</span>
+          {/* Empilhado no mobile (um campo por linha, polegar sobe em coluna
+              reta), em grade a partir de sm. O envio ocupa a largura toda no
+              celular: é a ação da tela, não um botão espremido no fim da fila. */}
+          <form action={criarLancamento} className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label htmlFor="l-descricao" className="field-label">
+                Descrição
+              </label>
               <input
+                id="l-descricao"
                 type="text"
                 name="descricao"
                 required
                 maxLength={120}
                 placeholder="Pão na padaria"
-                className="w-48 rounded-lg border border-line px-3 py-1.5 text-ink"
+                className="field"
               />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Valor</span>
+            </div>
+            <div>
+              <label htmlFor="l-valor" className="field-label">
+                Valor
+              </label>
               <input
+                id="l-valor"
                 type="number"
                 name="valor"
                 step="0.01"
                 min="0.01"
                 required
+                inputMode="decimal"
                 placeholder="0,00"
-                className="w-28 rounded-lg border border-line px-3 py-1.5 text-ink"
+                className="field font-num"
               />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Tipo</span>
-              <select
-                name="tipo"
-                defaultValue="gasto"
-                className="rounded-lg border border-line px-3 py-1.5 text-ink"
-              >
+            </div>
+            <div>
+              <label htmlFor="l-tipo" className="field-label">
+                Tipo
+              </label>
+              <select id="l-tipo" name="tipo" defaultValue="gasto" className="field">
                 <option value="gasto">Gasto</option>
                 <option value="entrada">Entrada</option>
               </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Data</span>
+            </div>
+            <div>
+              <label htmlFor="l-data" className="field-label">
+                Data
+              </label>
               <input
+                id="l-data"
                 type="date"
                 name="data"
                 defaultValue={hojeStr}
-                className="rounded-lg border border-line px-3 py-1.5 text-ink"
+                className="field"
               />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Conta</span>
-              <select
-                name="conta"
-                className="max-w-40 rounded-lg border border-line px-3 py-1.5 text-ink"
-              >
+            </div>
+            <div>
+              <label htmlFor="l-conta" className="field-label">
+                Conta
+              </label>
+              <select id="l-conta" name="conta" className="field">
                 {contas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nome}
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate">Categoria</span>
-              <select
-                name="categoria"
-                defaultValue=""
-                className="max-w-40 rounded-lg border border-line px-3 py-1.5 text-ink"
-              >
-                <option value="">Automática (IA)</option>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="l-categoria" className="field-label">
+                Categoria
+              </label>
+              <select id="l-categoria" name="categoria" defaultValue="" className="field">
+                <option value="">Escolher automaticamente</option>
                 {categorias.map((c) => (
                   <option key={c.id} value={c.id}>
                     {`${c.icone ?? ""} ${c.nome}`.trim()}
                   </option>
                 ))}
               </select>
-            </label>
-            <Button type="submit" size="sm">
-              Lançar
-            </Button>
+            </div>
+            <div className="sm:col-span-2">
+              <Button type="submit" size="lg" className="w-full sm:w-auto">
+                Lançar
+              </Button>
+            </div>
           </form>
-          <p className="mt-3 text-xs leading-relaxed text-slate">
+          <p className="mt-3 text-sm leading-relaxed text-slate">
             Em contas manuais o saldo é ajustado automaticamente. Em contas
             conectadas, o saldo continua vindo do banco.
           </p>
         </details>
       )}
 
-      {/* Filtro por categoria */}
+      {/* Filtro por categoria — faixa rolável no mobile: 13 chips empilhados
+          empurravam o extrato inteiro para fora da primeira tela. */}
       {categorias.length > 0 && (
-        <div className="mb-5 flex flex-wrap gap-2">
+        <nav aria-label="Filtrar por categoria" className="chip-strip mb-5">
           <FiltroChip ativo={!categoria} href="/transacoes" label="Todas" />
           {categorias.map((c) => (
             <FiltroChip
@@ -164,7 +175,7 @@ export default async function TransacoesPage({
               label={`${c.icone ?? ""} ${c.nome}`.trim()}
             />
           ))}
-        </div>
+        </nav>
       )}
 
       {transacoes.length === 0 ? (
@@ -203,7 +214,7 @@ export default async function TransacoesPage({
                       <p className="truncate font-medium text-ink">
                         {t.descricao}
                       </p>
-                      <p className="text-xs text-slate">
+                      <p className="text-sm text-slate">
                         {formatData(t.data)}
                         {cat ? ` · ${cat.nome}` : " · Sem categoria"}
                       </p>
@@ -225,9 +236,9 @@ export default async function TransacoesPage({
                         <input type="hidden" name="id" value={t.id} />
                         <button
                           type="submit"
-                          aria-label={`Excluir ${t.descricao}`}
+                          aria-label={`Excluir lançamento ${t.descricao}`}
                           title="Excluir lançamento"
-                          className="text-sm text-slate transition-colors hover:text-red-600"
+                          className="grid size-11 place-items-center rounded-full text-slate transition-colors hover:bg-red-50 hover:text-red-600 md:size-8"
                         >
                           ✕
                         </button>
@@ -256,10 +267,11 @@ function FiltroChip({
   return (
     <Link
       href={href}
-      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+      aria-current={ativo ? "true" : undefined}
+      className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm transition-colors md:min-h-0 md:py-1.5 ${
         ativo
-          ? "border-emerald bg-emerald-soft text-[#0a6e44]"
-          : "border-line text-slate hover:bg-paper hover:text-ink"
+          ? "border-emerald bg-emerald-soft font-medium text-[#0a6e44]"
+          : "border-line bg-white text-slate hover:bg-paper hover:text-ink"
       }`}
     >
       {label}

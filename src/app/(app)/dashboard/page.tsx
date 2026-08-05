@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { trialDaysRemaining } from "@/lib/trial";
 import { formatBRL } from "@/lib/format";
-import { gerarAlertas, type Severidade } from "@/lib/alerts";
+import { agruparAlertas, gerarAlertas, type Severidade } from "@/lib/alerts";
 import { NIVEL_LABEL, type NivelSaude } from "@/lib/health-score";
 import { carregarStreak } from "@/lib/streak-data";
 import { resumoFinanceiro } from "@/lib/finance-summary";
@@ -88,40 +88,63 @@ export default async function DashboardPage() {
 
       {onTrial && <TrialBanner trialDays={trialDays!} />}
 
-      {/* HERÓI: limite seguro do mês */}
-      <div className={`mb-6 rounded-2xl border border-line ${ui.bg} p-6`}>
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-ink/70">
-            Você pode gastar com segurança
+      {/* HERÓI: limite seguro do mês — a assinatura visual do produto.
+          Tira de cupom fiscal: o número que responde "posso gastar?" ganha o
+          formato do artefato que o app lê pela câmera. */}
+      <div className={`cupom mb-6 rounded-2xl border border-line ${ui.bg} p-5 sm:p-6`}>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm font-medium tracking-wide text-ink/70 uppercase">
+            Posso gastar
           </p>
-          <span className={`rounded-full bg-white/60 px-2.5 py-0.5 text-xs font-semibold ${ui.cor}`}>
+          <span
+            className={`shrink-0 rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold ${ui.cor}`}
+          >
             {ui.label}
           </span>
         </div>
-        <p className={`mt-1 font-num text-4xl font-bold ${ui.cor}`}>
+        <p className={`mt-2 font-num text-[2.75rem] leading-none font-bold sm:text-5xl ${ui.cor}`}>
           {formatBRL(Math.max(0, limite.disponivel))}
         </p>
-        <p className="mt-1 text-sm text-ink/70">
-           {limite.status === "estouro"
-            ? `Você já passou do previsto em ${formatBRL(-limite.disponivel)} este mês.`
-            : `Cerca de ${formatBRL(limite.porDia)} por dia até o fim do mês.`}
-        </p>
+        {/* Rateio em linha de razão — o vernáculo do extrato. */}
+        <hr className="cupom-rule my-3" />
+        <div className="flex items-baseline text-sm text-ink/70">
+          <span>
+            {limite.status === "estouro" ? "Acima do previsto" : "Por dia até o fim do mês"}
+          </span>
+          <span className="ledger-leader" aria-hidden />
+          <span className="font-num font-semibold text-ink">
+            {limite.status === "estouro"
+              ? formatBRL(-limite.disponivel)
+              : formatBRL(limite.porDia)}
+          </span>
+        </div>
       </div>
 
-      {/* Alertas in-app */}
+      {/* Alertas in-app — agrupados por tipo: três cartões idênticos de
+          "cobrança duplicada" empurravam os dados para fora da primeira tela. */}
       {alertas.length > 0 && (
         <div className="mb-6 space-y-2">
-          {alertas.map((a, i) => (
+          {agruparAlertas(alertas).map((a, i) => (
             <div
               key={i}
-              className={`flex items-start gap-3 rounded-xl border p-3 ${ALERTA_UI[a.severidade]}`}
+              className={`flex items-start gap-3 rounded-xl border p-3.5 ${ALERTA_UI[a.severidade]}`}
             >
               <span aria-hidden className="mt-0.5 text-base">
                 {a.severidade === "critico" ? "⛔" : "⚠️"}
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">{a.titulo}</p>
-                <p className="text-sm text-slate">{a.detalhe}</p>
+                <p className="font-semibold text-ink">{a.titulo}</p>
+                {a.itens ? (
+                  <ul className="mt-1 space-y-0.5">
+                    {a.itens.map((item, j) => (
+                      <li key={j} className="text-sm text-slate">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate">{a.detalhe}</p>
+                )}
               </div>
             </div>
           ))}

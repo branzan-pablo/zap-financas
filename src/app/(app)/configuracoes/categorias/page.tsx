@@ -83,7 +83,7 @@ export default async function CategoriasPage() {
                       defaultValue={c.icone ?? ""}
                       maxLength={4}
                       aria-label={`Ícone de ${c.nome}`}
-                      className="w-16 rounded-lg border border-line px-3 py-1.5 text-center text-ink"
+                      className="field w-16 text-center"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm">
@@ -94,7 +94,7 @@ export default async function CategoriasPage() {
                       required
                       maxLength={40}
                       defaultValue={c.nome}
-                      className="w-36 rounded-lg border border-line px-3 py-1.5 text-ink"
+                      className="field w-36"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm">
@@ -112,7 +112,7 @@ export default async function CategoriasPage() {
                     <select
                       name="tipo"
                       defaultValue={c.tipo}
-                      className="rounded-lg border border-line px-3 py-1.5 text-ink"
+                      className="field"
                     >
                       <option value="despesa">Despesa</option>
                       <option value="receita">Receita</option>
@@ -126,7 +126,7 @@ export default async function CategoriasPage() {
                       name="regras"
                       defaultValue={regrasTexto(c.regras)}
                       placeholder="petz, ração, veterinário"
-                      className="rounded-lg border border-line px-3 py-1.5 text-ink"
+                      className="field"
                     />
                   </label>
                   <Button variant="outline" size="sm" type="submit">
@@ -159,7 +159,7 @@ export default async function CategoriasPage() {
               name="icone"
               maxLength={4}
               placeholder="🐶"
-              className="w-16 rounded-lg border border-line px-3 py-1.5 text-center text-ink"
+              className="field w-16 text-center"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -170,7 +170,7 @@ export default async function CategoriasPage() {
               required
               maxLength={40}
               placeholder="Pets"
-              className="w-36 rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field w-36"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -188,7 +188,7 @@ export default async function CategoriasPage() {
             <select
               name="tipo"
               defaultValue="despesa"
-              className="rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field"
             >
               <option value="despesa">Despesa</option>
               <option value="receita">Receita</option>
@@ -201,7 +201,7 @@ export default async function CategoriasPage() {
               type="text"
               name="regras"
               placeholder="petz, ração, veterinário"
-              className="rounded-lg border border-line px-3 py-1.5 text-ink"
+              className="field"
             />
           </label>
           <Button type="submit" size="sm">

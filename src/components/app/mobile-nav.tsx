@@ -150,7 +150,7 @@ function Rótulo({ ativo, children }: { ativo: boolean; children: React.ReactNod
   return (
     <span
       className={cn(
-        "text-[11px] leading-none",
+        "text-xs leading-none",
         ativo ? "font-medium text-[#0a6e44]" : "text-slate"
       )}
     >

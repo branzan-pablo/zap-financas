@@ -20,6 +20,8 @@ export type Alerta = {
   severidade: Severidade;
   titulo: string;
   detalhe: string;
+  /** Presente quando o alerta agrega vários do mesmo tipo — a UI vira lista. */
+  itens?: string[];
 };
 
 export type FaturaResumo = { nome: string; fechamento: string; total: number };
@@ -107,9 +109,53 @@ export function gerarAlertas(input: {
       tipo: "cobranca_duplicada",
       severidade: "atencao",
       titulo: "Possível cobrança duplicada",
-      detalhe: `${d.descricao} aparece mais de uma vez por ${fmt(d.valor)}. Confira.`,
+      detalhe: `${d.descricao} aparece mais de uma vez por ${fmt(d.valor)}.`,
     });
   }
 
   return alertas.sort((a, b) => ORDEM[a.severidade] - ORDEM[b.severidade]);
+}
+
+/** Rótulo no plural de cada tipo, usado ao agrupar. */
+const PLURAL: Record<Alerta["tipo"], string> = {
+  fatura_fechando: "faturas fechando",
+  limite_atencao: "avisos de limite",
+  limite_estouro: "avisos de limite",
+  cobranca_duplicada: "possíveis cobranças duplicadas",
+  orcamento_atencao: "orçamentos no limite",
+  orcamento_estouro: "orçamentos estourados",
+};
+
+/**
+ * Agrupa alertas repetidos do mesmo tipo num único cartão.
+ *
+ * Sem isso, três cobranças duplicadas viram três cartões idênticos que ocupam
+ * a primeira tela inteira no celular e empurram os dados para baixo. A
+ * informação continua toda lá — vira uma linha por item dentro de um cartão.
+ * Preserva a ordem de gravidade recebida.
+ */
+export function agruparAlertas(alertas: Alerta[]): Alerta[] {
+  const porTipo = new Map<Alerta["tipo"], Alerta[]>();
+  for (const a of alertas) {
+    const lista = porTipo.get(a.tipo) ?? [];
+    lista.push(a);
+    porTipo.set(a.tipo, lista);
+  }
+
+  const out: Alerta[] = [];
+  for (const [tipo, lista] of porTipo) {
+    if (lista.length === 1) {
+      out.push(lista[0]);
+      continue;
+    }
+    out.push({
+      tipo,
+      severidade: lista[0].severidade,
+      titulo: `${lista.length} ${PLURAL[tipo]}`,
+      detalhe: lista.map((a) => a.detalhe).join(" "),
+      // Cada item vira uma linha: agrupar reduz ruído, não informação.
+      itens: lista.map((a) => a.detalhe),
+    });
+  }
+  return out.sort((a, b) => ORDEM[a.severidade] - ORDEM[b.severidade]);
 }
