@@ -8,7 +8,7 @@ export type * from "./types";
 /**
  * Factory do provider de Open Finance — escolhe a implementação por env.
  *
- * Mesma filosofia de [waitlist.ts](../waitlist.ts): real quando configurado,
+ * Mesma filosofia das demais camadas: real quando configurado,
  * fallback seguro caso contrário.
  *
  *   OPENFINANCE_PROVIDER=pluggy  + PLUGGY_CLIENT_ID/SECRET  → Pluggy real

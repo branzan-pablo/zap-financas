@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { WaitlistForm } from "@/components/landing/waitlist-form";
+import { buttonVariants } from "@/components/ui/button";
 
 type PeriodKey = "mensal" | "trimestral" | "anual";
 
@@ -50,7 +51,7 @@ const FEATURES = [
 
 const ORDER: PeriodKey[] = ["mensal", "trimestral", "anual"];
 
-export function Pricing({ checkoutUrl }: { checkoutUrl?: string }) {
+export function Pricing() {
   const [period, setPeriod] = useState<PeriodKey>("anual");
   const plan = PLANS[period];
 
@@ -131,12 +132,21 @@ export function Pricing({ checkoutUrl }: { checkoutUrl?: string }) {
           </ul>
 
           <div className="mt-8">
-            <WaitlistForm
-              intent="founder"
-              priceShown={`${plan.label} ${plan.price}${plan.period}`}
-              ctaLabel="Quero ser fundador"
-              checkoutUrl={checkoutUrl}
-            />
+            {/* O plano é escolhido dentro do app, depois do trial — aqui a ação
+                é uma só: criar a conta. Um CTA por cartão evitaria decisão
+                antes de a pessoa conhecer o produto. */}
+            <Link
+              href="/signup"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "w-full font-semibold"
+              )}
+            >
+              Começar grátis
+            </Link>
+            <p className="mt-3 text-center text-sm text-slate">
+              14 dias grátis. Você só escolhe o plano depois.
+            </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 font-num text-xs text-slate">
               <span className="rounded-full border border-line px-2.5 py-1">
                 Pix

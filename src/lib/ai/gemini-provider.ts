@@ -10,7 +10,7 @@ import type {
 /**
  * Provider de IA usando Google Gemini via REST (free tier do Google AI Studio).
  *
- * Sem SDK novo — fetch puro, espelhando o estilo de [waitlist.ts](../waitlist.ts).
+ * Sem SDK novo — fetch puro, com a chave server-only.
  * A chave (GEMINI_API_KEY) é SERVER-ONLY; este módulo só roda no servidor.
  *
  * Falha graciosa: qualquer erro de rede/parse devolve { categoriaId: null } em

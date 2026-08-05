@@ -7,7 +7,7 @@ export type { AIProvider, CategoriaCandidata, CategorizacaoIA } from "./provider
 /**
  * Factory do provider de IA — escolhe a implementação por env.
  *
- * Mesma filosofia de [waitlist.ts](../waitlist.ts): usa o serviço real quando
+ * Mesma filosofia das demais camadas: usa o serviço real quando
  * há credencial; senão, cai num fallback offline seguro.
  *
  *   AI_PROVIDER=gemini + GEMINI_API_KEY → Gemini real

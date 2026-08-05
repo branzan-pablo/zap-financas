@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { FaturaSignature } from "@/components/landing/fatura-signature";
 import { WhatsappMockup } from "@/components/landing/whatsapp-mockup";
 import { Pricing } from "@/components/landing/pricing";
@@ -94,12 +94,17 @@ export default function Home() {
           </span>
           Zap Finanças
         </span>
-        <a
-          href="#lista"
-          className={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}
-        >
-          Entrar na lista
-        </a>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex")}
+          >
+            Entrar
+          </Link>
+          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }))}>
+            Criar conta
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1">
@@ -127,10 +132,18 @@ export default function Home() {
                 conversa que você já usa todo dia.
               </p>
 
-              <div id="lista" className="mt-8 max-w-md scroll-mt-24">
-                <WaitlistForm />
+              <div className="mt-8 max-w-md">
+                <Link
+                  href="/signup"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "w-full font-semibold sm:w-auto"
+                  )}
+                >
+                  Criar conta grátis
+                </Link>
                 <p className="mt-2.5 text-sm text-slate">
-                  Lista de espera · sem spam, só o aviso de lançamento.
+                  14 dias grátis · sem cartão de crédito · cancele quando quiser.
                 </p>
               </div>
             </div>
@@ -251,7 +264,7 @@ export default function Home() {
         </section>
 
         {/* Preço — toggle Mensal/Trimestral/Anual */}
-        <Pricing checkoutUrl={process.env.NEXT_PUBLIC_FOUNDER_CHECKOUT_URL} />
+        <Pricing />
 
         {/* FAQ — quebra de objeções */}
         <section className="border-t border-line bg-white">
@@ -288,11 +301,22 @@ export default function Home() {
               Pare de ser pego de surpresa pela fatura.
             </h2>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-white/70">
-              Entre na lista e seja um dos primeiros a controlar o cartão pelo
-              WhatsApp.
+              Conecte seus bancos hoje e veja a fatura se formando antes de ela
+              fechar.
             </p>
-            <div className="mx-auto mt-8 max-w-md">
-              <WaitlistForm onDark />
+            <div className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3">
+              <Link
+                href="/signup"
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "w-full bg-emerald-bright font-semibold text-white hover:bg-emerald sm:w-auto"
+                )}
+              >
+                Criar conta grátis
+              </Link>
+              <p className="text-sm text-white/60">
+                14 dias grátis · sem cartão de crédito
+              </p>
             </div>
           </div>
         </section>
