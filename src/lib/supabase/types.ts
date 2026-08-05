@@ -384,6 +384,7 @@ export type Database = {
           id: string
           lgpd_consent_at: string | null
           nome: string | null
+          onboarding_done_at: string | null
           plano: string
           telefone: string | null
           trial_ends_at: string | null
@@ -395,6 +396,7 @@ export type Database = {
           id: string
           lgpd_consent_at?: string | null
           nome?: string | null
+          onboarding_done_at?: string | null
           plano?: string
           telefone?: string | null
           trial_ends_at?: string | null
@@ -406,6 +408,7 @@ export type Database = {
           id?: string
           lgpd_consent_at?: string | null
           nome?: string | null
+          onboarding_done_at?: string | null
           plano?: string
           telefone?: string | null
           trial_ends_at?: string | null
