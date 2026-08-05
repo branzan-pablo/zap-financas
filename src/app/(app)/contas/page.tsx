@@ -4,6 +4,12 @@ import { ConnectModal } from "@/components/app/connect-modal";
 import { PluggyConnectButton } from "@/components/app/pluggy-connect-button";
 import { SyncButton } from "@/components/app/sync-button";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+import { Select } from "@/components/ui/select";
 import { formatBRL, formatData } from "@/lib/format";
 import { arquivarContaManual, criarContaManual } from "./actions";
 
@@ -56,47 +62,40 @@ export default async function ContasPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Contas</h1>
-          <p className="mt-1 text-slate">
-            Conecte e gerencie suas contas bancárias via Open Finance.
-          </p>
-        </div>
-        {modoPluggy ? (
-          <PluggyConnectButton
-            includeSandbox={process.env.PLUGGY_INCLUDE_SANDBOX !== "false"}
-          />
-        ) : (
-          <ConnectModal institutions={institutions} />
-        )}
-      </div>
+      <PageHeader
+        titulo="Contas"
+        descricao="Conecte e gerencie suas contas bancárias via Open Finance."
+        acao={
+          modoPluggy ? (
+            <PluggyConnectButton
+              includeSandbox={process.env.PLUGGY_INCLUDE_SANDBOX !== "false"}
+            />
+          ) : (
+            <ConnectModal institutions={institutions} />
+          )
+        }
+      />
 
       {contas.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-white p-10 text-center">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-emerald-soft text-2xl">
-            🏦
-          </div>
-          <h2 className="font-display text-xl font-bold text-ink">
-            Nenhuma conta conectada
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm leading-relaxed text-slate">
-            Conecte mais de 100 bancos via Open Finance e veja tudo em um só
-            lugar. Use o botão{" "}
-            <span className="font-medium text-ink">Conectar conta</span> — ou crie
-            uma conta manual abaixo para dinheiro e VR.
-          </p>
-        </div>
+        <EmptyState
+          icone="🏦"
+          titulo="Nenhuma conta conectada"
+          descricao={
+            <>
+              Conecte mais de 100 bancos via Open Finance e veja tudo em um só
+              lugar. Use o botão{" "}
+              <span className="font-medium text-ink">Conectar conta</span> — ou
+              crie uma conta manual abaixo para dinheiro e VR.
+            </>
+          }
+        />
       ) : (
         <div className="space-y-6">
           {[...grupos.entries()].map(([key, items]) => {
             const banco = items[0]?.banco ?? "Conexão";
             const ultimoSync = items.find((i) => i.ultimo_sync)?.ultimo_sync;
             return (
-              <div
-                key={key}
-                className="overflow-hidden rounded-2xl border border-line bg-white"
-              >
+              <Card key={key} padding="none" className="overflow-hidden">
                 <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
                   <div>
                     <p className="font-semibold text-ink">{banco}</p>
@@ -124,7 +123,7 @@ export default async function ContasPage() {
                         </div>
                         <span
                           className={`font-num font-semibold ${
-                            negativo ? "text-red-600" : "text-ink"
+                            negativo ? "text-danger" : "text-ink"
                           }`}
                         >
                           {formatBRL(c.saldo)}
@@ -133,13 +132,13 @@ export default async function ContasPage() {
                     );
                   })}
                 </ul>
-              </div>
+              </Card>
             );
           })}
 
           {/* Contas manuais — dinheiro, VR, poupança de outro banco. */}
           {manuais.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <Card padding="none" className="overflow-hidden">
               <div className="border-b border-line px-5 py-3">
                 <p className="font-semibold text-ink">Contas manuais</p>
                 <p className="text-xs text-slate">
@@ -163,7 +162,7 @@ export default async function ContasPage() {
                       <div className="flex shrink-0 items-center gap-3">
                         <span
                           className={`font-num font-semibold ${
-                            negativo ? "text-red-600" : "text-ink"
+                            negativo ? "text-danger" : "text-ink"
                           }`}
                         >
                           {formatBRL(c.saldo)}
@@ -173,7 +172,7 @@ export default async function ContasPage() {
                           <button
                             type="submit"
                             title="Arquivar conta (mantém o histórico)"
-                            className="text-sm text-slate transition-colors hover:text-red-600"
+                            className="text-sm text-slate transition-colors hover:text-danger"
                           >
                             Arquivar
                           </button>
@@ -183,13 +182,13 @@ export default async function ContasPage() {
                   );
                 })}
               </ul>
-            </div>
+            </Card>
           )}
         </div>
       )}
 
       {/* Criar conta manual — sempre disponível, inclusive sem nenhuma conta. */}
-      <details className="mt-6 rounded-2xl border border-line bg-white p-5">
+      <Card render={<details />} className="mt-6">
         <summary className="cursor-pointer font-medium text-ink">
           + Adicionar conta manual
         </summary>
@@ -199,44 +198,41 @@ export default async function ContasPage() {
           lançamentos.
         </p>
         <form action={criarContaManual} className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Nome</span>
-            <input
+          <Field id="conta-nome" label="Nome">
+            <Input
+              id="conta-nome"
               type="text"
               name="nome"
               required
               maxLength={60}
+              autoComplete="off"
               placeholder="Carteira"
-              className="field w-44"
+              className="w-44"
             />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Tipo</span>
-            <select
-              name="tipo"
-              defaultValue="outro"
-              className="field"
-            >
+          </Field>
+          <Field id="conta-tipo" label="Tipo">
+            <Select id="conta-tipo" name="tipo" defaultValue="outro">
               <option value="outro">Dinheiro / Outro</option>
               <option value="corrente">Conta corrente</option>
               <option value="poupanca">Poupança</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Saldo inicial</span>
-            <input
+            </Select>
+          </Field>
+          <Field id="conta-saldo" label="Saldo inicial">
+            <Input
+              id="conta-saldo"
               type="number"
               name="saldo"
               step="0.01"
+              inputMode="decimal"
               defaultValue="0"
-              className="field w-32"
+              className="w-32 font-num"
             />
-          </label>
+          </Field>
           <Button type="submit" size="sm">
             Criar conta
           </Button>
         </form>
-      </details>
+      </Card>
     </div>
   );
 }

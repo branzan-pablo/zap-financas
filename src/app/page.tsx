@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FaturaSignature } from "@/components/landing/fatura-signature";
 import { WhatsappMockup } from "@/components/landing/whatsapp-mockup";
@@ -95,15 +95,14 @@ export default function Home() {
           Zap Finanças
         </span>
         <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex")}
+          <Button
+            variant="ghost"
+            className="hidden sm:inline-flex"
+            render={<Link href="/login" />}
           >
             Entrar
-          </Link>
-          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }))}>
-            Criar conta
-          </Link>
+          </Button>
+          <Button render={<Link href="/signup" />}>Criar conta</Button>
         </div>
       </header>
 
@@ -117,8 +116,8 @@ export default function Home() {
           <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pt-12 pb-24 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-20">
             <div>
               <Badge
-                variant="secondary"
-                className="bg-emerald-soft font-num text-xs tracking-wide text-[#0a6e44]"
+                tone="ok"
+                className="font-num text-xs font-medium tracking-wide text-emerald-ink"
               >
                 Open Finance · IA · WhatsApp
               </Badge>
@@ -133,15 +132,13 @@ export default function Home() {
               </p>
 
               <div className="mt-8 max-w-md">
-                <Link
-                  href="/signup"
-                  className={cn(
-                    buttonVariants({ variant: "default", size: "lg" }),
-                    "w-full font-semibold sm:w-auto"
-                  )}
+                <Button
+                  size="lg"
+                  className="w-full font-semibold sm:w-auto"
+                  render={<Link href="/signup" />}
                 >
                   Criar conta grátis
-                </Link>
+                </Button>
                 <p className="mt-2.5 text-sm text-slate">
                   14 dias grátis · sem cartão de crédito · cancele quando quiser.
                 </p>
@@ -305,15 +302,13 @@ export default function Home() {
               fechar.
             </p>
             <div className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3">
-              <Link
-                href="/signup"
-                className={cn(
-                  buttonVariants({ size: "lg" }),
-                  "w-full bg-emerald-bright font-semibold text-white hover:bg-emerald sm:w-auto"
-                )}
+              <Button
+                size="lg"
+                className="w-full bg-emerald-bright font-semibold text-white hover:bg-emerald sm:w-auto"
+                render={<Link href="/signup" />}
               >
                 Criar conta grátis
-              </Link>
+              </Button>
               <p className="text-sm text-white/60">
                 14 dias grátis · sem cartão de crédito
               </p>

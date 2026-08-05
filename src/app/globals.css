@@ -2,7 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Light-only por decisão de produto: a paleta é "papel de extrato bancário", e
+   um extrato não tem modo escuro. Não existe variante `dark` aqui — se um dia
+   existir, ela nasce de uma paleta desenhada, não de inversões automáticas. */
 
 @theme inline {
   --color-background: var(--background);
@@ -14,9 +16,15 @@
   --color-emerald: var(--emerald);
   --color-emerald-bright: var(--emerald-bright);
   --color-emerald-soft: var(--emerald-soft);
+  --color-emerald-ink: var(--emerald-ink);
   --color-amber: var(--amber);
   --color-amber-ink: var(--amber-ink);
   --color-amber-soft: var(--amber-soft);
+  --color-amber-bar: var(--amber-bar);
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
   --color-bubble: var(--bubble);
   --color-slate: var(--slate);
   --color-line: var(--line);
@@ -76,12 +84,21 @@
   --emerald: #0c8a55;     /* marca / valores positivos */
   --emerald-bright: #10b981;
   --emerald-soft: #e6f1ea;
+  --emerald-ink: #0a6e44; /* marca em TEXTO sobre superfície clara */
   --bubble: #dff3d8;      /* verde da bolha enviada do WhatsApp — só no registro */
   --amber: #d97706;       /* atenção (superfícies) */
   --amber-ink: #8a5200;   /* atenção em TEXTO — passa AA sobre claro */
   --amber-soft: #fbf0df;
+  --amber-bar: #d99a00;   /* atenção em BARRA — não é texto, pode ser mais viva */
   --slate: #55607a;       /* cinza frio, par do papel */
   --line: #e2e7e3;
+
+  /* Vermelho de estouro. Estava vindo do Tailwind cru (red-600/50/200/500),
+     fora do sistema — agora é token, como o resto. */
+  --danger: #dc2626;      /* estouro em TEXTO e ações */
+  --danger-ink: #b91c1c;
+  --danger-soft: #fef2f2; /* superfície */
+  --danger-line: #fecaca; /* borda */
 
   --radius: 0.75rem;
 
@@ -104,14 +121,14 @@
   --muted: #eeede7;
   --muted-foreground: var(--slate);
   --accent: var(--emerald-soft);
-  --accent-foreground: #0a6e44;
+  --accent-foreground: var(--emerald-ink);
   --destructive: oklch(0.577 0.245 27.325);
   --border: var(--line);
   --input: var(--line);
   --ring: var(--ink);
   --chart-1: var(--emerald);
   --chart-2: var(--amber);
-  --chart-3: #0a6e44;
+  --chart-3: var(--emerald-ink);
   --chart-4: #c77f0a;
   --chart-5: var(--slate);
   --sidebar: #ffffff;
@@ -144,6 +161,19 @@
   h3 {
     font-family: var(--font-display), var(--font-sans), sans-serif;
     letter-spacing: -0.02em;
+    /* Evita viúvas: uma palavra sozinha na última linha de um título é ruído. */
+    text-wrap: pretty;
+  }
+
+  /* Mata o atraso de ~300ms que o navegador reserva para detectar duplo-toque.
+     Em um app operado com o polegar, esse atraso é a diferença entre "responde"
+     e "travou". */
+  button,
+  a,
+  summary,
+  label,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   /* Números são o conteúdo deste produto, não decoração: sempre tabulares,
@@ -317,6 +347,31 @@
 .cupom-rule {
   border: 0;
   border-top: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   TOUR — holofote
+   Escurece a tela inteira MENOS o elemento em foco, usando uma sombra de
+   espalhamento gigante em vez de recortar uma máscara: o alvo continua sendo o
+   próprio elemento da página (nada é clonado), então nunca sai de sincronia.
+   --------------------------------------------------------------------------- */
+.tour-holofote {
+  position: fixed;
+  z-index: 61;
+  pointer-events: none;
+  border-radius: 1rem;
+  box-shadow: 0 0 0 9999px rgb(11 18 32 / 0.55);
+  transition:
+    top 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-holofote {
+    transition: none;
+  }
 }
 
 /* Subtle emerald glow behind the hero artifact — one quiet touch of depth */

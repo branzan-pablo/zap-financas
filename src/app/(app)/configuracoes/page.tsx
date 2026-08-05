@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { trialDaysRemaining } from "@/lib/trial";
 import Link from "next/link";
 import { DangerZone } from "@/components/app/danger-zone";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient();
@@ -17,16 +20,11 @@ export default async function ConfiguracoesPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">
-          Configurações
-        </h1>
-        <p className="mt-1 text-slate">Gerencie sua conta e assinatura.</p>
-      </div>
+      <PageHeader titulo="Configurações" descricao="Gerencie sua conta e assinatura." />
 
       <div className="space-y-4">
         {/* Profile */}
-        <section className="rounded-2xl border border-line bg-white p-6">
+        <Card padding="lg" render={<section />}>
           <h2 className="font-semibold text-ink">Perfil</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between">
@@ -53,11 +51,19 @@ export default async function ConfiguracoesPage() {
                 </Link>
               </dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-slate">Tour do app</dt>
+              <dd className="text-ink">
+                <Link href="/dashboard?tour=1" className="text-emerald hover:underline">
+                  Refazer
+                </Link>
+              </dd>
+            </div>
           </dl>
-        </section>
+        </Card>
 
         {/* Subscription */}
-        <section className="rounded-2xl border border-line bg-white p-6">
+        <Card padding="lg" render={<section />}>
           <h2 className="font-semibold text-ink">Assinatura</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between">
@@ -77,25 +83,22 @@ export default async function ConfiguracoesPage() {
           </dl>
           {profile?.plano === "trial" && (
             <div className="mt-5">
-              <Link
-                href="/assinar"
-                className="inline-flex items-center gap-2 rounded-[10px] bg-emerald px-4 py-2 text-sm font-medium text-white hover:bg-emerald/90"
-              >
+              <Button variant="emerald" render={<Link href="/assinar" />}>
                 Ver planos e assinar
-              </Link>
+              </Button>
             </div>
           )}
-        </section>
+        </Card>
 
         {/* Danger zone */}
-        <section className="rounded-2xl border border-line bg-white p-6">
+        <Card padding="lg" render={<section />}>
           <h2 className="font-semibold text-ink">Dados e privacidade</h2>
           <p className="mt-2 text-sm text-slate">
             Em conformidade com a LGPD, você pode exportar ou excluir seus dados
             a qualquer momento.
           </p>
           <DangerZone />
-        </section>
+        </Card>
       </div>
     </div>
   );

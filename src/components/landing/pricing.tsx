@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 type PeriodKey = "mensal" | "trimestral" | "anual";
 
@@ -102,10 +102,10 @@ export function Pricing() {
       {/* Card */}
       <div className="mx-auto mt-6 max-w-md overflow-hidden rounded-2xl border border-emerald/30 bg-white shadow-[0_1px_2px_rgba(11,18,32,.05),0_16px_40px_rgba(11,18,32,.07)]">
         <div className="flex items-center justify-between border-b border-line bg-emerald-soft/60 px-8 py-3">
-          <span className="font-num text-xs uppercase tracking-[0.18em] text-[#0a6e44]">
+          <span className="font-num text-xs uppercase tracking-[0.18em] text-emerald-ink">
             Plano Fundador
           </span>
-          <span className="font-num text-xs text-[#0a6e44]">
+          <span className="font-num text-xs text-emerald-ink">
             {plan.popular ? "mais popular" : "primeiras 100 vagas"}
           </span>
         </div>
@@ -135,15 +135,13 @@ export function Pricing() {
             {/* O plano é escolhido dentro do app, depois do trial — aqui a ação
                 é uma só: criar a conta. Um CTA por cartão evitaria decisão
                 antes de a pessoa conhecer o produto. */}
-            <Link
-              href="/signup"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "w-full font-semibold"
-              )}
+            <Button
+              size="lg"
+              className="w-full font-semibold"
+              render={<Link href="/signup" />}
             >
               Começar grátis
-            </Link>
+            </Button>
             <p className="mt-3 text-center text-sm text-slate">
               14 dias grátis. Você só escolhe o plano depois.
             </p>

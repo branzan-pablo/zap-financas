@@ -29,7 +29,7 @@ export function Sidebar({ userName }: { userName?: string | null }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3">
+      <nav data-tour="nav" className="flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-0.5">
           {NAV.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
@@ -41,7 +41,7 @@ export function Sidebar({ userName }: { userName?: string | null }) {
                   className={cn(
                     "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-emerald-soft text-[#0a6e44]"
+                      ? "bg-emerald-soft text-emerald-ink"
                       : "text-slate hover:bg-paper hover:text-ink"
                   )}
                 >
@@ -60,7 +60,7 @@ export function Sidebar({ userName }: { userName?: string | null }) {
             className={cn(
               "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors",
               isActive(pathname, CONFIG.href)
-                ? "bg-emerald-soft text-[#0a6e44]"
+                ? "bg-emerald-soft text-emerald-ink"
                 : "text-slate hover:bg-paper hover:text-ink"
             )}
           >
@@ -86,9 +86,10 @@ export function Sidebar({ userName }: { userName?: string | null }) {
             onClick={handleSignOut}
             disabled={isPending}
             title="Sair"
+            aria-label="Sair da conta"
             className="shrink-0 rounded-lg p-1 text-slate hover:bg-paper hover:text-ink disabled:opacity-50"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-4" aria-hidden />
           </button>
         </div>
       </div>

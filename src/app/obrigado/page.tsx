@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Pagamento confirmado · Zap Finanças",
@@ -24,9 +23,9 @@ export default function Obrigado() {
           os primeiros.
         </p>
         <div className="mt-8">
-          <Link href="/" className={cn(buttonVariants(), "h-11 px-6")}>
+          <Button className="px-6" render={<Link href="/" />}>
             Voltar ao início
-          </Link>
+          </Button>
         </div>
         <p className="mt-6 font-num text-xs uppercase tracking-[0.18em] text-slate">
           Qualquer dúvida, é só responder o email da compra

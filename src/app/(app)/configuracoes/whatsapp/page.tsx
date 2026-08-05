@@ -1,6 +1,8 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { gerarCodigoPareamento, desvincularWhatsapp } from "./actions";
 
 type WaLink = {
@@ -33,21 +35,14 @@ export default async function WhatsAppPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6">
-        <Link href="/configuracoes" className="text-sm text-slate hover:text-ink">
-          ← Configurações
-        </Link>
-        <h1 className="mt-2 font-display text-2xl font-bold text-ink">
-          WhatsApp
-        </h1>
-        <p className="mt-1 text-slate">
-          Vincule seu número para consultar suas finanças e registrar gastos pelo
-          WhatsApp.
-        </p>
-      </div>
+      <PageHeader
+        voltar={{ href: "/configuracoes", label: "Configurações" }}
+        titulo="WhatsApp"
+        descricao="Vincule seu número para consultar suas finanças e registrar gastos pelo WhatsApp."
+      />
 
       {ativo ? (
-        <div className="rounded-2xl border border-line bg-white p-6">
+        <Card padding="lg">
           <div className="flex items-center gap-2">
             <span className="size-2 rounded-full bg-emerald" aria-hidden />
             <p className="font-medium text-ink">WhatsApp conectado</p>
@@ -61,9 +56,9 @@ export default async function WhatsAppPage() {
               Desvincular
             </Button>
           </form>
-        </div>
+        </Card>
       ) : codigoValido ? (
-        <div className="rounded-2xl border border-line bg-white p-6 text-center">
+        <Card padding="lg" className="text-center">
           <p className="text-sm text-slate">Seu código de pareamento</p>
           <p className="my-3 font-num text-4xl font-bold tracking-[0.3em] text-ink">
             {link!.codigo_pareamento}
@@ -80,23 +75,18 @@ export default async function WhatsAppPage() {
               Gerar novo código
             </Button>
           </form>
-        </div>
+        </Card>
       ) : (
-        <div className="rounded-2xl border border-dashed border-line bg-white p-8 text-center">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-emerald-soft text-2xl">
-            💬
-          </div>
-          <h2 className="font-display text-lg font-bold text-ink">
-            Conecte seu WhatsApp
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm leading-relaxed text-slate">
-            Gere um código e envie pelo WhatsApp para vincular seu número. Depois
-            é só conversar com o Zap.
-          </p>
-          <form action={gerarCodigoPareamento} className="mt-5">
-            <Button type="submit">Gerar código de pareamento</Button>
-          </form>
-        </div>
+        <EmptyState
+          icone="💬"
+          titulo="Conecte seu WhatsApp"
+          descricao="Gere um código e envie pelo WhatsApp para vincular seu número. Depois é só conversar com o Zap."
+          acao={
+            <form action={gerarCodigoPareamento}>
+              <Button type="submit">Gerar código de pareamento</Button>
+            </form>
+          }
+        />
       )}
     </div>
   );

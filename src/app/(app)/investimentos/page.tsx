@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatTile } from "@/components/ui/stat-tile";
 import { formatBRL } from "@/lib/format";
 
 type Investimento = {
@@ -40,52 +44,36 @@ export default async function InvestimentosPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">
-          Investimentos
-        </h1>
-        <p className="mt-1 text-slate">
-          CDB, LCI, Tesouro, fundos, ações — tudo consolidado.
-        </p>
-      </div>
+      <PageHeader
+        titulo="Investimentos"
+        descricao="CDB, LCI, Tesouro, fundos, ações — tudo consolidado."
+      />
 
       {investimentos.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-white p-10 text-center">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-emerald-soft text-2xl">
-            📈
-          </div>
-          <h2 className="font-display text-xl font-bold text-ink">
-            Nenhum investimento conectado
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm leading-relaxed text-slate">
-            Conecte uma corretora em{" "}
-            <Link href="/contas" className="font-medium text-emerald underline">
-              Contas
-            </Link>{" "}
-            para consolidar sua carteira aqui.
-          </p>
-        </div>
+        <EmptyState
+          icone="📈"
+          titulo="Nenhum investimento conectado"
+          descricao={
+            <>
+              Conecte uma corretora em{" "}
+              <Link href="/contas" className="font-medium text-emerald underline">
+                Contas
+              </Link>{" "}
+              para consolidar sua carteira aqui.
+            </>
+          }
+        />
       ) : (
         <>
           {/* Resumo da carteira */}
           <div className="mb-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-xs text-slate">Patrimônio atual</p>
-              <p className="mt-1 font-num text-xl font-bold text-ink">
-                {formatBRL(totalAtual)}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-xs text-slate">Total aplicado</p>
-              <p className="mt-1 font-num text-xl font-bold text-ink">
-                {formatBRL(totalAplicado)}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-xs text-slate">Rendimento</p>
+            <StatTile size="md" titulo="Patrimônio atual" valor={formatBRL(totalAtual)} />
+            <StatTile size="md" titulo="Total aplicado" valor={formatBRL(totalAplicado)} />
+            <Card>
+              <p className="text-sm text-slate">Rendimento</p>
               <p
                 className={`mt-1 font-num text-xl font-bold ${
-                  ganho >= 0 ? "text-emerald" : "text-red-600"
+                  ganho >= 0 ? "text-emerald" : "text-danger"
                 }`}
               >
                 {ganho >= 0 ? "+" : ""}
@@ -95,11 +83,11 @@ export default async function InvestimentosPage() {
                   {ganhoPct.toFixed(1)}%)
                 </span>
               </p>
-            </div>
+            </Card>
           </div>
 
           {/* Posições */}
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <Card padding="none" className="overflow-hidden">
             <ul className="divide-y divide-line">
               {investimentos.map((inv) => {
                 const rend = inv.rendimento_pct ?? 0;
@@ -120,7 +108,7 @@ export default async function InvestimentosPage() {
                       </p>
                       <p
                         className={`text-xs font-medium ${
-                          rend >= 0 ? "text-emerald" : "text-red-600"
+                          rend >= 0 ? "text-emerald" : "text-danger"
                         }`}
                       >
                         {rend >= 0 ? "+" : ""}
@@ -131,7 +119,7 @@ export default async function InvestimentosPage() {
                 );
               })}
             </ul>
-          </div>
+          </Card>
         </>
       )}
     </div>

@@ -3,6 +3,11 @@ import { ArrowLeft, ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { carregarFechamento } from "@/lib/monthly-close-data";
 import { mesAFechar, mesAnterior, rotuloMes } from "@/lib/monthly-close";
+import { Card, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Meter } from "@/components/ui/meter";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatTile } from "@/components/ui/stat-tile";
 import { formatBRL } from "@/lib/format";
 
 /**
@@ -46,90 +51,75 @@ export default async function FechamentoPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Fechamento</h1>
-          <p className="mt-1 capitalize text-slate">{rotuloMes(mes)}</p>
-        </div>
-        <div className="flex shrink-0 gap-1">
-          <Link
-            href={`/fechamento?mes=${anterior}`}
-            aria-label={`Ver ${rotuloMes(anterior)}`}
-            className="grid size-9 place-items-center rounded-lg border border-line text-slate transition-colors hover:bg-paper"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
-          {proximo ? (
+      <PageHeader
+        titulo="Fechamento"
+        descricao={<span className="capitalize">{rotuloMes(mes)}</span>}
+        className="items-end"
+        acao={
+          <div className="flex gap-1">
             <Link
-              href={`/fechamento?mes=${proximo}`}
-              aria-label={`Ver ${rotuloMes(proximo)}`}
-              className="grid size-9 place-items-center rounded-lg border border-line text-slate transition-colors hover:bg-paper"
+              href={`/fechamento?mes=${anterior}`}
+              aria-label={`Ver ${rotuloMes(anterior)}`}
+              className="grid size-11 place-items-center rounded-lg border border-line text-slate transition-colors hover:bg-paper md:size-9"
             >
-              <ArrowRight className="size-4" />
+              <ArrowLeft className="size-4" />
             </Link>
-          ) : (
-            <span
-              aria-hidden
-              className="grid size-9 place-items-center rounded-lg border border-line text-line"
-            >
-              <ArrowRight className="size-4" />
-            </span>
-          )}
-        </div>
-      </div>
+            {proximo ? (
+              <Link
+                href={`/fechamento?mes=${proximo}`}
+                aria-label={`Ver ${rotuloMes(proximo)}`}
+                className="grid size-11 place-items-center rounded-lg border border-line text-slate transition-colors hover:bg-paper md:size-9"
+              >
+                <ArrowRight className="size-4" />
+              </Link>
+            ) : (
+              <span
+                aria-hidden
+                className="grid size-11 place-items-center rounded-lg border border-line text-line md:size-9"
+              >
+                <ArrowRight className="size-4" />
+              </span>
+            )}
+          </div>
+        }
+      />
 
       {f.numTransacoes === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-white p-10 text-center">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-emerald-soft text-2xl">
-            📅
-          </div>
-          <h2 className="font-display text-xl font-bold text-ink">
-            Nenhuma movimentação em {rotuloMes(mes)}
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm leading-relaxed text-slate">
-            Quando houver transações nesse mês, o fechamento aparece aqui — e chega
-            no seu WhatsApp no dia 1º.
-          </p>
-        </div>
+        <EmptyState
+          icone="📅"
+          titulo={`Nenhuma movimentação em ${rotuloMes(mes)}`}
+          descricao="Quando houver transações nesse mês, o fechamento aparece aqui — e chega no seu WhatsApp no dia 1º."
+        />
       ) : (
         <div className="space-y-4">
           {/* Destaque: o que sobrou (ou faltou) */}
-          <div
-            className={`rounded-2xl border p-6 ${
-              positivo ? "border-emerald/30 bg-emerald-soft" : "border-red-200 bg-red-50"
-            }`}
-          >
+          <Card padding="lg" tone={positivo ? "ok" : "estouro"}>
             <p className="text-sm font-medium text-slate">
               {positivo ? "Sobrou no mês" : "Faltou no mês"}
             </p>
             <p
               className={`mt-1 font-num text-4xl font-bold ${
-                positivo ? "text-[#0a6e44]" : "text-red-600"
+                positivo ? "text-emerald-ink" : "text-danger"
               }`}
             >
               {formatBRL(Math.abs(f.saldo))}
             </p>
             {positivo && f.entradas > 0 && (
-              <p className="mt-1 text-sm text-[#0a6e44]">
+              <p className="mt-1 text-sm text-emerald-ink">
                 {Math.round(f.taxaPoupanca * 100)}% da sua renda do mês
               </p>
             )}
             {!positivo && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-danger">
                 Você gastou mais do que entrou neste mês.
               </p>
             )}
-          </div>
+          </Card>
 
           {/* Entradas × saídas */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-sm text-slate">Entrou</p>
-              <p className="mt-1 font-num text-xl font-bold text-ink">
-                {formatBRL(f.entradas)}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-white p-5">
+            <StatTile size="md" titulo="Entrou" valor={formatBRL(f.entradas)} />
+            <Card>
               <p className="text-sm text-slate">Saiu</p>
               <p className="mt-1 font-num text-xl font-bold text-ink">
                 {formatBRL(f.saidas)}
@@ -137,7 +127,7 @@ export default async function FechamentoPage({
               {f.variacaoGastoPct !== null && Math.abs(f.variacaoGastoPct) >= 0.01 && (
                 <p
                   className={`mt-1 flex items-center gap-1 text-xs ${
-                    f.variacaoGastoPct > 0 ? "text-red-600" : "text-emerald"
+                    f.variacaoGastoPct > 0 ? "text-danger" : "text-emerald"
                   }`}
                 >
                   {f.variacaoGastoPct > 0 ? (
@@ -149,15 +139,13 @@ export default async function FechamentoPage({
                   {f.variacaoGastoPct > 0 ? "mais" : "menos"} que o mês anterior
                 </p>
               )}
-            </div>
+            </Card>
           </div>
 
           {/* Onde foi o dinheiro */}
           {f.topCategorias.length > 0 && (
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <h2 className="font-display text-base font-bold text-ink">
-                Onde foi o dinheiro
-              </h2>
+            <Card>
+              <CardTitle className="text-base">Onde foi o dinheiro</CardTitle>
               <ul className="mt-4 space-y-3">
                 {f.topCategorias.map((c) => (
                   <li key={c.nome}>
@@ -172,20 +160,20 @@ export default async function FechamentoPage({
                         · {Math.round(c.pct * 100)}%
                       </span>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-paper">
-                      <div
-                        className="h-full rounded-full bg-emerald"
-                        style={{ width: `${(c.total / maxCat) * 100}%` }}
-                      />
-                    </div>
+                    <Meter
+                      className="mt-1.5"
+                      valor={c.total}
+                      max={maxCat}
+                      label={`${c.nome}: ${formatBRL(c.total)}`}
+                    />
                   </li>
                 ))}
               </ul>
-            </div>
+            </Card>
           )}
 
           {/* Rodapé: maior gasto + volume */}
-          <div className="rounded-2xl border border-line bg-white p-5 text-sm text-slate">
+          <Card className="text-sm text-slate">
             {f.maiorGasto && (
               <p>
                 Maior gasto:{" "}
@@ -198,7 +186,7 @@ export default async function FechamentoPage({
             <p className={f.maiorGasto ? "mt-1" : undefined}>
               {f.numTransacoes} transaç{f.numTransacoes === 1 ? "ão" : "ões"} no mês.
             </p>
-          </div>
+          </Card>
         </div>
       )}
     </div>

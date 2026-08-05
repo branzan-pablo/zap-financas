@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Card, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Meter } from "@/components/ui/meter";
+import { PageHeader } from "@/components/ui/page-header";
 import { formatBRL, formatData } from "@/lib/format";
 import { mapaParcelas, type ParcelaInput } from "@/lib/installments";
 import { faturaAtual, type FaturaTransacao } from "@/lib/fatura";
@@ -83,21 +87,19 @@ export default async function CartoesPage() {
     return (
       <div className="mx-auto max-w-4xl">
         <Header />
-        <div className="rounded-2xl border border-dashed border-line bg-white p-10 text-center">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-emerald-soft text-2xl">
-            💳
-          </div>
-          <h2 className="font-display text-xl font-bold text-ink">
-            Nenhum cartão conectado
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm leading-relaxed text-slate">
-            Conecte um cartão em{" "}
-            <Link href="/contas" className="font-medium text-emerald underline">
-              Contas
-            </Link>{" "}
-            para ver o mapa de parcelas futuras.
-          </p>
-        </div>
+        <EmptyState
+          icone="💳"
+          titulo="Nenhum cartão conectado"
+          descricao={
+            <>
+              Conecte um cartão em{" "}
+              <Link href="/contas" className="font-medium text-emerald underline">
+                Contas
+              </Link>{" "}
+              para ver o mapa de parcelas futuras.
+            </>
+          }
+        />
       </div>
     );
   }
@@ -115,7 +117,7 @@ export default async function CartoesPage() {
               ? Math.min(100, (fatura.total / c.limite) * 100)
               : 0;
           return (
-            <div key={c.id} className="rounded-2xl border border-line bg-white p-5">
+            <Card key={c.id}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-ink">{c.nome}</p>
@@ -136,29 +138,25 @@ export default async function CartoesPage() {
 
               {/* Uso do limite */}
               <div className="mt-3">
-                <div className="h-1.5 overflow-hidden rounded-full bg-paper">
-                  <div
-                    className={`h-full rounded-full ${
-                      usoPct >= 80 ? "bg-amber" : "bg-emerald"
-                    }`}
-                    style={{ width: `${usoPct}%` }}
-                  />
-                </div>
+                <Meter
+                  className="h-1.5"
+                  valor={usoPct}
+                  tone={usoPct >= 80 ? "atencao" : "ok"}
+                  label={`Uso do limite de ${c.nome}`}
+                />
                 <p className="mt-1 text-xs text-slate">
                   {formatBRL(fatura?.total ?? 0)} de {formatBRL(c.limite)} ·{" "}
                   {usoPct.toFixed(0)}% do limite
                 </p>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
       {/* Mapa de parcelas */}
       <div className="mb-3 flex items-end justify-between">
-        <h2 className="font-display text-lg font-bold text-ink">
-          Parcelas futuras
-        </h2>
+        <CardTitle>Parcelas futuras</CardTitle>
         <span className="text-sm text-slate">
           Comprometido: <span className="font-num font-semibold text-ink">
             {formatBRL(comprometidoTotal)}
@@ -167,25 +165,24 @@ export default async function CartoesPage() {
       </div>
 
       {mapa.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line bg-white p-6 text-center text-slate">
-          Nenhuma compra parcelada em aberto. 🎉
-        </p>
+        <EmptyState size="sm" descricao="Nenhuma compra parcelada em aberto. 🎉" />
       ) : (
         <div className="space-y-2">
           {mapa.map((m) => (
-            <div
+            <Card
               key={m.mes}
-              className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3"
+              padding="none"
+              className="flex items-center gap-3 rounded-xl px-4 py-3"
             >
               <span className="w-14 shrink-0 text-sm font-medium text-slate">
                 {rotuloMes(m.mes)}
               </span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper">
-                <div
-                  className="h-full rounded-full bg-emerald"
-                  style={{ width: `${(m.total / maxMes) * 100}%` }}
-                />
-              </div>
+              <Meter
+                className="flex-1"
+                valor={m.total}
+                max={maxMes}
+                label={`${rotuloMes(m.mes)}: ${formatBRL(m.total)}`}
+              />
               <span
                 className="w-24 shrink-0 text-right font-num font-semibold text-ink"
                 title={m.itens
@@ -194,7 +191,7 @@ export default async function CartoesPage() {
               >
                 {formatBRL(m.total)}
               </span>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -204,11 +201,9 @@ export default async function CartoesPage() {
 
 function Header() {
   return (
-    <div className="mb-6">
-      <h1 className="font-display text-2xl font-bold text-ink">Cartões</h1>
-      <p className="mt-1 text-slate">
-        Cartões conectados e mapa de parcelas futuras mês a mês.
-      </p>
-    </div>
+    <PageHeader
+      titulo="Cartões"
+      descricao="Cartões conectados e mapa de parcelas futuras mês a mês."
+    />
   );
 }

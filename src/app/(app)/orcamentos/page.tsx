@@ -3,6 +3,12 @@ import { orcamentosVigentes, LIMIAR_ATENCAO } from "@/lib/budgets";
 import { resumoFinanceiro } from "@/lib/finance-summary";
 import { formatBRL } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { Card, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
+import { Meter } from "@/components/ui/meter";
+import { PageHeader } from "@/components/ui/page-header";
+import { type Tone } from "@/components/ui/tone";
 import { definirOrcamento } from "./actions";
 
 /**
@@ -23,11 +29,6 @@ type CategoriaRow = {
 // Categorias que não fazem sentido orçar (entradas/movimentações, não gastos).
 const SEM_ORCAMENTO = /sal[áa]rio|receita|transfer[êe]ncia|investimento/i;
 
-const BARRA = {
-  ok: "bg-emerald",
-  atencao: "bg-[#d99a00]",
-  estouro: "bg-red-500",
-} as const;
 
 export default async function OrcamentosPage() {
   const supabase = await createClient();
@@ -66,26 +67,22 @@ export default async function OrcamentosPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Orçamentos</h1>
-        <p className="mt-1 text-slate">
-          Defina um limite mensal por categoria. Eu te aviso no dashboard e no
-          WhatsApp quando o gasto passar de {Math.round(LIMIAR_ATENCAO * 100)}% —
-          e quando estourar.
-        </p>
-      </div>
+      <PageHeader
+        titulo="Orçamentos"
+        descricao={`Defina um limite mensal por categoria. Eu te aviso no dashboard e no WhatsApp quando o gasto passar de ${Math.round(LIMIAR_ATENCAO * 100)}% — e quando estourar.`}
+      />
 
       {comOrcamento.length > 0 && (
         <div className="mb-8 space-y-3">
-          <h2 className="font-display text-lg font-bold text-ink">Ativos</h2>
+          <CardTitle>Ativos</CardTitle>
           {comOrcamento.map((c) => {
             const limite = vigentes.get(c.id)!;
             const gasto = gastoPorCat.get(c.id) ?? 0;
             const pct = limite > 0 ? gasto / limite : 0;
-            const status =
+            const status: Tone =
               pct > 1 ? "estouro" : pct >= LIMIAR_ATENCAO ? "atencao" : "ok";
             return (
-              <div key={c.id} className="rounded-2xl border border-line bg-white p-4">
+              <Card key={c.id} padding="sm">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <span aria-hidden>{c.icone ?? "📌"}</span>
@@ -94,7 +91,7 @@ export default async function OrcamentosPage() {
                   <p className="shrink-0 text-sm text-slate">
                     <span
                       className={`font-num font-semibold ${
-                        status === "estouro" ? "text-red-600" : "text-ink"
+                        status === "estouro" ? "text-danger" : "text-ink"
                       }`}
                     >
                       {formatBRL(gasto)}
@@ -102,29 +99,24 @@ export default async function OrcamentosPage() {
                     / {formatBRL(limite)}
                   </p>
                 </div>
-                <div
-                  className="mt-3 h-2 overflow-hidden rounded-full bg-paper"
-                  role="progressbar"
-                  aria-valuenow={Math.round(pct * 100)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                >
-                  <div
-                    className={`h-full rounded-full ${BARRA[status]}`}
-                    style={{ width: `${Math.min(100, pct * 100)}%` }}
-                  />
-                </div>
+                <Meter
+                  className="mt-3"
+                  valor={pct * 100}
+                  tone={status}
+                  label={`${c.nome}: ${formatBRL(gasto)} de ${formatBRL(limite)}`}
+                />
                 <div className="mt-3 flex items-center gap-2">
                   <form action={definirOrcamento} className="flex items-center gap-2">
                     <input type="hidden" name="categoria" value={c.id} />
-                    <input
+                    <Input
                       type="number"
                       name="limite"
                       step="0.01"
                       min="0"
+                      inputMode="decimal"
                       defaultValue={limite}
                       aria-label={`Limite mensal para ${c.nome}`}
-                      className="field w-32"
+                      className="w-32 font-num"
                     />
                     <Button variant="outline" size="sm" type="submit">
                       Salvar
@@ -133,33 +125,29 @@ export default async function OrcamentosPage() {
                   <form action={definirOrcamento} className="ml-auto">
                     <input type="hidden" name="categoria" value={c.id} />
                     <input type="hidden" name="limite" value="0" />
-                    <button type="submit" className="text-sm text-slate hover:text-red-600">
+                    <button type="submit" className="text-sm text-slate hover:text-danger">
                       Remover
                     </button>
                   </form>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
       )}
 
       <div className="space-y-3">
-        <h2 className="font-display text-lg font-bold text-ink">
+        <CardTitle>
           {comOrcamento.length > 0 ? "Adicionar em outra categoria" : "Escolha uma categoria"}
-        </h2>
+        </CardTitle>
         {comOrcamento.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-line bg-white p-6 text-center">
-            <div className="mx-auto mb-3 grid size-12 place-items-center rounded-full bg-emerald-soft text-xl">
-              🎯
-            </div>
-            <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate">
-              Sem orçamento definido ainda. Escolha uma categoria abaixo, defina o
-              limite do mês e deixe que eu vigio por você.
-            </p>
-          </div>
+          <EmptyState
+            size="sm"
+            icone="🎯"
+            descricao="Sem orçamento definido ainda. Escolha uma categoria abaixo, defina o limite do mês e deixe que eu vigio por você."
+          />
         )}
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
+        <Card padding="none" className="divide-y divide-line overflow-hidden" render={<ul />}>
           {semOrcamento.map((c) => {
             const gasto = gastoPorCat.get(c.id) ?? 0;
             return (
@@ -177,14 +165,15 @@ export default async function OrcamentosPage() {
                 </div>
                 <form action={definirOrcamento} className="flex shrink-0 items-center gap-2">
                   <input type="hidden" name="categoria" value={c.id} />
-                  <input
+                  <Input
                     type="number"
                     name="limite"
                     step="0.01"
                     min="0"
+                    inputMode="decimal"
                     placeholder="R$ limite"
                     aria-label={`Limite mensal para ${c.nome}`}
-                    className="field w-28"
+                    className="w-28 font-num"
                   />
                   <Button variant="outline" size="sm" type="submit">
                     Definir
@@ -193,7 +182,7 @@ export default async function OrcamentosPage() {
               </li>
             );
           })}
-        </ul>
+        </Card>
       </div>
     </div>
   );

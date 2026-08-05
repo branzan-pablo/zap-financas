@@ -1,15 +1,22 @@
 import * as React from "react"
-import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+/**
+ * Campo de texto.
+ *
+ * Existiam dois sistemas concorrentes: este componente (shadcn genérico, com
+ * `h-8` de desktop e zero usos) e a classe `.field` do globals.css (25 usos).
+ * Ganhou o `.field`, porque é ele que carrega as decisões do produto — 44px de
+ * alvo no toque, 16px de fonte para o iOS não dar zoom ao focar. O componente
+ * agora só aplica essa classe e cuida do estado inválido.
+ */
+function Input({ className, ...props }: React.ComponentProps<"input">) {
   return (
-    <InputPrimitive
-      type={type}
+    <input
       data-slot="input"
       className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        "field placeholder:text-slate/70 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger",
         className
       )}
       {...props}

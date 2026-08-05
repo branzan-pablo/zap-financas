@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { formatBRL } from "@/lib/format";
 import { getPlano } from "@/lib/payments/plans";
 import { confirmarPagamento } from "./actions";
@@ -23,7 +24,7 @@ export default async function CheckoutMockPage({
 
   return (
     <div className="grid min-h-svh place-items-center bg-paper px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-6">
+      <Card padding="lg" className="w-full max-w-sm">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid size-8 place-items-center rounded-lg bg-[#009ee3] text-xs font-bold text-white">
             MP
@@ -69,7 +70,7 @@ export default async function CheckoutMockPage({
           Nenhuma cobrança real é feita. Substituído pelo Mercado Pago quando as
           credenciais forem configuradas.
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

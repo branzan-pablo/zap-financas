@@ -1,103 +1,93 @@
-import * as React from "react"
+import * as React from "react";
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { TONE, type Tone } from "./tone";
 
+/**
+ * Superfície da marca.
+ *
+ * `rounded-2xl border border-line bg-white` estava escrito à mão em 65 lugares —
+ * este componente é essa string, com nome. Nada de `ring`, `shadow` ou variante
+ * escura do shadcn genérico: a superfície do produto é papel branco sobre papel
+ * de extrato, separado por uma linha fina.
+ */
+const cardVariants = cva("rounded-2xl border", {
+  variants: {
+    // `none` para listas: a lista encosta na borda e cada item tem o seu padding.
+    padding: {
+      none: "",
+      sm: "p-4",
+      md: "p-5",
+      lg: "p-6",
+      hero: "p-5 sm:p-6",
+    },
+    /** Convite a preencher algo que ainda não existe (empty states). */
+    dashed: {
+      true: "border-dashed",
+      false: "",
+    },
+    /**
+     * Cartão que flutua sobre o papel — usado nas telas de auth, onde o cartão
+     * é a tela inteira e precisa se descolar do fundo.
+     */
+    elevated: {
+      true: "shadow-[0_1px_2px_rgba(11,18,32,.06),0_8px_24px_rgba(11,18,32,.06)]",
+      false: "",
+    },
+  },
+  defaultVariants: { padding: "md", dashed: false, elevated: false },
+});
+
+type CardProps = useRender.ComponentProps<"div"> &
+  VariantProps<typeof cardVariants> & {
+    /** Colore a superfície pelo status. Ausente = papel branco neutro. */
+    tone?: Tone;
+  };
+
+/**
+ * `render` (idioma do `@base-ui/react`, como no `Badge`) troca a tag mantendo o
+ * estilo — é assim que um cartão vira `<details>` sem duplicar a superfície.
+ */
 function Card({
   className,
-  size = "default",
+  padding,
+  dashed,
+  elevated,
+  tone,
+  render,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
-  return (
-    <div
-      data-slot="card"
-      data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
-      {...props}
-    />
-  )
+}: CardProps) {
+  const t = tone ? TONE[tone] : TONE.neutro;
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(
+      {
+        className: cn(
+          cardVariants({ padding, dashed, elevated }),
+          t.fundo,
+          t.borda,
+          className
+        ),
+      },
+      props
+    ),
+    render,
+    state: { slot: "card" },
+  });
 }
 
-function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+/** Título de bloco dentro de um cartão — o `h2` das telas internas. */
+function CardTitle({ className, ...props }: React.ComponentProps<"h2">) {
   return (
-    <div
-      data-slot="card-header"
-      className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
+    <h2
       data-slot="card-title"
-      className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
-        className
-      )}
+      className={cn("font-display text-lg font-bold text-ink", className)}
       {...props}
     />
-  )
+  );
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  )
-}
-
-function CardAction({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-action"
-      className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function CardContent({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn("px-(--card-spacing)", className)}
-      {...props}
-    />
-  )
-}
-
-function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-footer"
-      className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-}
+export { Card, CardTitle, cardVariants };

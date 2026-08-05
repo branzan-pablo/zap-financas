@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+import { Select } from "@/components/ui/select";
 import { formatBRL, formatData } from "@/lib/format";
 import { criarLancamento, excluirLancamento } from "./actions";
 
@@ -56,16 +62,14 @@ export default async function TransacoesPage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Transações</h1>
-        <p className="mt-1 text-slate">
-          Seu extrato consolidado, categorizado automaticamente.
-        </p>
-      </div>
+      <PageHeader
+        titulo="Transações"
+        descricao="Seu extrato consolidado, categorizado automaticamente."
+      />
 
       {/* Lançamento manual — o que o Open Finance não traz (dinheiro, VR). */}
       {contas.length > 0 && (
-        <details className="mb-5 rounded-2xl border border-line bg-white p-5">
+        <Card render={<details />} className="mb-5">
           <summary className="cursor-pointer font-medium text-ink">
             + Novo lançamento
           </summary>
@@ -73,25 +77,19 @@ export default async function TransacoesPage({
               reta), em grade a partir de sm. O envio ocupa a largura toda no
               celular: é a ação da tela, não um botão espremido no fim da fila. */}
           <form action={criarLancamento} className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label htmlFor="l-descricao" className="field-label">
-                Descrição
-              </label>
-              <input
+            <Field id="l-descricao" label="Descrição" className="sm:col-span-2">
+              <Input
                 id="l-descricao"
                 type="text"
                 name="descricao"
                 required
                 maxLength={120}
+                autoComplete="off"
                 placeholder="Pão na padaria"
-                className="field"
               />
-            </div>
-            <div>
-              <label htmlFor="l-valor" className="field-label">
-                Valor
-              </label>
-              <input
+            </Field>
+            <Field id="l-valor" label="Valor">
+              <Input
                 id="l-valor"
                 type="number"
                 name="valor"
@@ -100,55 +98,37 @@ export default async function TransacoesPage({
                 required
                 inputMode="decimal"
                 placeholder="0,00"
-                className="field font-num"
+                className="font-num"
               />
-            </div>
-            <div>
-              <label htmlFor="l-tipo" className="field-label">
-                Tipo
-              </label>
-              <select id="l-tipo" name="tipo" defaultValue="gasto" className="field">
+            </Field>
+            <Field id="l-tipo" label="Tipo">
+              <Select id="l-tipo" name="tipo" defaultValue="gasto">
                 <option value="gasto">Gasto</option>
                 <option value="entrada">Entrada</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="l-data" className="field-label">
-                Data
-              </label>
-              <input
-                id="l-data"
-                type="date"
-                name="data"
-                defaultValue={hojeStr}
-                className="field"
-              />
-            </div>
-            <div>
-              <label htmlFor="l-conta" className="field-label">
-                Conta
-              </label>
-              <select id="l-conta" name="conta" className="field">
+              </Select>
+            </Field>
+            <Field id="l-data" label="Data">
+              <Input id="l-data" type="date" name="data" defaultValue={hojeStr} />
+            </Field>
+            <Field id="l-conta" label="Conta">
+              <Select id="l-conta" name="conta">
                 {contas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nome}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="l-categoria" className="field-label">
-                Categoria
-              </label>
-              <select id="l-categoria" name="categoria" defaultValue="" className="field">
+              </Select>
+            </Field>
+            <Field id="l-categoria" label="Categoria" className="sm:col-span-2">
+              <Select id="l-categoria" name="categoria" defaultValue="">
                 <option value="">Escolher automaticamente</option>
                 {categorias.map((c) => (
                   <option key={c.id} value={c.id}>
                     {`${c.icone ?? ""} ${c.nome}`.trim()}
                   </option>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </Field>
             <div className="sm:col-span-2">
               <Button type="submit" size="lg" className="w-full sm:w-auto">
                 Lançar
@@ -159,7 +139,7 @@ export default async function TransacoesPage({
             Em contas manuais o saldo é ajustado automaticamente. Em contas
             conectadas, o saldo continua vindo do banco.
           </p>
-        </details>
+        </Card>
       )}
 
       {/* Filtro por categoria — faixa rolável no mobile: 13 chips empilhados
@@ -179,20 +159,20 @@ export default async function TransacoesPage({
       )}
 
       {transacoes.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-white p-10 text-center">
-          <p className="font-display text-lg font-bold text-ink">
-            Nenhuma transação ainda
-          </p>
-          <p className="mx-auto mt-2 max-w-sm text-slate">
-            Conecte uma conta em{" "}
-            <Link href="/contas" className="font-medium text-emerald underline">
-              Contas
-            </Link>{" "}
-            para ver seu extrato aqui.
-          </p>
-        </div>
+        <EmptyState
+          titulo="Nenhuma transação ainda"
+          descricao={
+            <>
+              Conecte uma conta em{" "}
+              <Link href="/contas" className="font-medium text-emerald underline">
+                Contas
+              </Link>{" "}
+              para ver seu extrato aqui.
+            </>
+          }
+        />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+        <Card padding="none" className="overflow-hidden">
           <ul className="divide-y divide-line">
             {transacoes.map((t) => {
               const credito = t.valor >= 0;
@@ -238,7 +218,7 @@ export default async function TransacoesPage({
                           type="submit"
                           aria-label={`Excluir lançamento ${t.descricao}`}
                           title="Excluir lançamento"
-                          className="grid size-11 place-items-center rounded-full text-slate transition-colors hover:bg-red-50 hover:text-red-600 md:size-8"
+                          className="grid size-11 place-items-center rounded-full text-slate transition-colors hover:bg-danger-soft hover:text-danger md:size-8"
                         >
                           ✕
                         </button>
@@ -249,7 +229,7 @@ export default async function TransacoesPage({
               );
             })}
           </ul>
-        </div>
+        </Card>
       )}
     </div>
   );
@@ -270,7 +250,7 @@ function FiltroChip({
       aria-current={ativo ? "true" : undefined}
       className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm transition-colors md:min-h-0 md:py-1.5 ${
         ativo
-          ? "border-emerald bg-emerald-soft font-medium text-[#0a6e44]"
+          ? "border-emerald bg-emerald-soft font-medium text-emerald-ink"
           : "border-line bg-white text-slate hover:bg-paper hover:text-ink"
       }`}
     >

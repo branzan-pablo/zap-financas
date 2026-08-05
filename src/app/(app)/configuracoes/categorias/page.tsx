@@ -1,6 +1,11 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+import { Select } from "@/components/ui/select";
 import {
   atualizarCategoria,
   criarCategoria,
@@ -49,86 +54,85 @@ export default async function CategoriasPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6">
-        <Link href="/configuracoes" className="text-sm text-slate hover:text-ink">
-          ← Configurações
-        </Link>
-        <h1 className="mt-2 font-display text-2xl font-bold text-ink">Categorias</h1>
-        <p className="mt-1 text-slate">
-          Crie categorias suas e ensine o app a reconhecê-las: as palavras-chave
-          são usadas na categorização automática, antes de recorrer à IA.
-        </p>
-      </div>
+      <PageHeader
+        voltar={{ href: "/configuracoes", label: "Configurações" }}
+        titulo="Categorias"
+        descricao="Crie categorias suas e ensine o app a reconhecê-las: as palavras-chave são usadas na categorização automática, antes de recorrer à IA."
+      />
 
       {/* Minhas categorias */}
       <section className="mb-6">
-        <h2 className="mb-3 font-display text-lg font-bold text-ink">Minhas categorias</h2>
+        <CardTitle className="mb-3">Minhas categorias</CardTitle>
         {minhas.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-line bg-white p-6 text-center text-sm leading-relaxed text-slate">
-            Você ainda não criou categorias. Use o formulário abaixo — por exemplo
-            <span className="font-medium text-ink"> Pets</span> com as palavras
-            <span className="font-medium text-ink"> petz, ração, veterinário</span>.
-          </p>
+          <EmptyState
+            size="sm"
+            descricao={
+              <>
+                Você ainda não criou categorias. Use o formulário abaixo — por
+                exemplo<span className="font-medium text-ink"> Pets</span> com as
+                palavras
+                <span className="font-medium text-ink"> petz, ração, veterinário</span>.
+              </>
+            }
+          />
         ) : (
           <ul className="space-y-3">
             {minhas.map((c) => (
-              <li key={c.id} className="rounded-2xl border border-line bg-white p-4">
+              <Card key={c.id} padding="sm" render={<li />}>
                 <form action={atualizarCategoria} className="flex flex-wrap items-end gap-3">
                   <input type="hidden" name="id" value={c.id} />
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate">Ícone</span>
-                    <input
+                  <Field id={`cat-${c.id}-icone`} label="Ícone">
+                    <Input
+                      id={`cat-${c.id}-icone`}
                       type="text"
                       name="icone"
                       defaultValue={c.icone ?? ""}
                       maxLength={4}
                       aria-label={`Ícone de ${c.nome}`}
-                      className="field w-16 text-center"
+                      className="w-16 text-center"
                     />
-                  </label>
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate">Nome</span>
-                    <input
+                  </Field>
+                  <Field id={`cat-${c.id}-nome`} label="Nome">
+                    <Input
+                      id={`cat-${c.id}-nome`}
                       type="text"
                       name="nome"
                       required
                       maxLength={40}
                       defaultValue={c.nome}
-                      className="field w-36"
+                      className="w-36"
                     />
-                  </label>
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate">Cor</span>
+                  </Field>
+                  <Field id={`cat-${c.id}-cor`} label="Cor">
                     <input
+                      id={`cat-${c.id}-cor`}
                       type="color"
                       name="cor"
                       defaultValue={c.cor ?? "#64748b"}
                       aria-label={`Cor de ${c.nome}`}
-                      className="h-9 w-12 rounded-lg border border-line bg-white p-1"
+                      className="h-11 w-12 rounded-lg border border-line bg-white p-1 md:h-9"
                     />
-                  </label>
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate">Tipo</span>
-                    <select
-                      name="tipo"
-                      defaultValue={c.tipo}
-                      className="field"
-                    >
+                  </Field>
+                  <Field id={`cat-${c.id}-tipo`} label="Tipo">
+                    <Select id={`cat-${c.id}-tipo`} name="tipo" defaultValue={c.tipo}>
                       <option value="despesa">Despesa</option>
                       <option value="receita">Receita</option>
                       <option value="transferencia">Transferência</option>
-                    </select>
-                  </label>
-                  <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm">
-                    <span className="text-slate">Palavras-chave</span>
-                    <input
+                    </Select>
+                  </Field>
+                  <Field
+                    id={`cat-${c.id}-regras`}
+                    label="Palavras-chave"
+                    className="min-w-48 flex-1"
+                  >
+                    <Input
+                      id={`cat-${c.id}-regras`}
                       type="text"
                       name="regras"
                       defaultValue={regrasTexto(c.regras)}
                       placeholder="petz, ração, veterinário"
-                      className="field"
                     />
-                  </label>
+                  </Field>
                   <Button variant="outline" size="sm" type="submit">
                     Salvar
                   </Button>
@@ -137,84 +141,77 @@ export default async function CategoriasPage() {
                   <input type="hidden" name="id" value={c.id} />
                   <button
                     type="submit"
-                    className="text-sm text-slate transition-colors hover:text-red-600"
+                    className="text-sm text-slate transition-colors hover:text-danger"
                   >
                     Excluir categoria
                   </button>
                 </form>
-              </li>
+              </Card>
             ))}
           </ul>
         )}
       </section>
 
       {/* Criar */}
-      <section className="mb-6 rounded-2xl border border-line bg-white p-5">
-        <h2 className="font-display text-lg font-bold text-ink">Nova categoria</h2>
+      <Card render={<section />} className="mb-6">
+        <CardTitle>Nova categoria</CardTitle>
         <form action={criarCategoria} className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Ícone</span>
-            <input
+          <Field id="nova-icone" label="Ícone">
+            <Input
+              id="nova-icone"
               type="text"
               name="icone"
               maxLength={4}
               placeholder="🐶"
-              className="field w-16 text-center"
+              className="w-16 text-center"
             />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Nome</span>
-            <input
+          </Field>
+          <Field id="nova-nome" label="Nome">
+            <Input
+              id="nova-nome"
               type="text"
               name="nome"
               required
               maxLength={40}
+              autoComplete="off"
               placeholder="Pets"
-              className="field w-36"
+              className="w-36"
             />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Cor</span>
+          </Field>
+          <Field id="nova-cor" label="Cor">
             <input
+              id="nova-cor"
               type="color"
               name="cor"
               defaultValue="#64748b"
               aria-label="Cor da nova categoria"
-              className="h-9 w-12 rounded-lg border border-line bg-white p-1"
+              className="h-11 w-12 rounded-lg border border-line bg-white p-1 md:h-9"
             />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate">Tipo</span>
-            <select
-              name="tipo"
-              defaultValue="despesa"
-              className="field"
-            >
+          </Field>
+          <Field id="nova-tipo" label="Tipo">
+            <Select id="nova-tipo" name="tipo" defaultValue="despesa">
               <option value="despesa">Despesa</option>
               <option value="receita">Receita</option>
               <option value="transferencia">Transferência</option>
-            </select>
-          </label>
-          <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm">
-            <span className="text-slate">Palavras-chave</span>
-            <input
+            </Select>
+          </Field>
+          <Field id="nova-regras" label="Palavras-chave" className="min-w-48 flex-1">
+            <Input
+              id="nova-regras"
               type="text"
               name="regras"
               placeholder="petz, ração, veterinário"
-              className="field"
             />
-          </label>
+          </Field>
           <Button type="submit" size="sm">
             Criar
           </Button>
         </form>
-      </section>
+      </Card>
 
       {/* Globais (referência) */}
       <section>
-        <h2 className="mb-3 font-display text-lg font-bold text-ink">
-          Categorias padrão
-        </h2>
+        <CardTitle className="mb-3">Categorias padrão</CardTitle>
         <p className="mb-3 text-sm text-slate">
           Já vêm prontas para todos e não podem ser alteradas.
         </p>

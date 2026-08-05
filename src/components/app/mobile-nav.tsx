@@ -32,6 +32,7 @@ export function MobileNav() {
   return (
     <>
       <nav
+        data-tour="nav"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Navegação principal"
       >
@@ -84,7 +85,7 @@ export function MobileNav() {
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors",
                         ativo
-                          ? "bg-emerald-soft text-[#0a6e44]"
+                          ? "bg-emerald-soft text-emerald-ink"
                           : "text-ink hover:bg-paper"
                       )}
                     >
@@ -138,7 +139,7 @@ function Pílula({ ativo, children }: { ativo: boolean; children: React.ReactNod
     <span
       className={cn(
         "grid size-9 place-items-center rounded-full transition-colors",
-        ativo ? "bg-emerald-soft text-[#0a6e44]" : "text-slate"
+        ativo ? "bg-emerald-soft text-emerald-ink" : "text-slate"
       )}
     >
       {children}
@@ -151,7 +152,7 @@ function Rótulo({ ativo, children }: { ativo: boolean; children: React.ReactNod
     <span
       className={cn(
         "text-xs leading-none",
-        ativo ? "font-medium text-[#0a6e44]" : "text-slate"
+        ativo ? "font-medium text-emerald-ink" : "text-slate"
       )}
     >
       {children}

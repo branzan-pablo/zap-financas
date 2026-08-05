@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { formatBRL, formatData } from "@/lib/format";
 import { PLANOS, precoMensalEquivalente } from "@/lib/payments/plans";
 import { avaliarAcesso } from "@/lib/payments/access";
@@ -50,7 +51,7 @@ export default async function AssinarPage() {
         </div>
 
         {assinado ? (
-          <div className="mx-auto max-w-md rounded-2xl border border-line bg-white p-6 text-center">
+          <Card padding="lg" className="mx-auto max-w-md text-center">
             <p className="text-sm text-slate">Plano atual</p>
             <p className="mt-1 font-display text-xl font-bold text-ink capitalize">
               {sub?.plano}
@@ -69,14 +70,15 @@ export default async function AssinarPage() {
                 </Button>
               </form>
             )}
-          </div>
+          </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-3">
             {PLANOS.map((p) => (
-              <div
+              <Card
                 key={p.id}
-                className={`relative flex flex-col rounded-2xl border bg-white p-6 ${
-                  p.destaque ? "border-emerald ring-1 ring-emerald" : "border-line"
+                padding="lg"
+                className={`relative flex flex-col ${
+                  p.destaque ? "border-emerald ring-1 ring-emerald" : ""
                 }`}
               >
                 {p.destaque && (
@@ -106,7 +108,7 @@ export default async function AssinarPage() {
                     Assinar
                   </Button>
                 </form>
-              </div>
+              </Card>
             ))}
           </div>
         )}
