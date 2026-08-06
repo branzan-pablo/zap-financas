@@ -16,6 +16,8 @@ export function Meter({
   tone = "ok",
   cor,
   label,
+  animar = false,
+  atraso = 0,
   className,
 }: {
   valor: number;
@@ -25,6 +27,14 @@ export function Meter({
   cor?: string | null;
   /** Rótulo para leitor de tela quando a barra não tem texto adjacente. */
   label?: string;
+  /**
+   * Preenche a barra da esquerda para a direita ao pintar, reusando o `cz-bar`
+   * da assinatura visual. É CSS puro: o componente continua server, sem
+   * hidratação, e `prefers-reduced-motion` já é respeitado em globals.css.
+   */
+  animar?: boolean;
+  /** Segundos de atraso — escalona uma lista de barras (só com `animar`). */
+  atraso?: number;
   className?: string;
 }) {
   const pct = max > 0 ? Math.min(100, Math.max(0, (valor / max) * 100)) : 0;
@@ -38,8 +48,12 @@ export function Meter({
       aria-valuemax={100}
     >
       <div
-        className={cn("h-full rounded-full", !cor && TONE[tone].barra)}
-        style={{ width: `${pct}%`, backgroundColor: cor ?? undefined }}
+        className={cn("h-full rounded-full", animar && "cz-bar", !cor && TONE[tone].barra)}
+        style={{
+          width: `${pct}%`,
+          backgroundColor: cor ?? undefined,
+          animationDelay: animar && atraso ? `${atraso}s` : undefined,
+        }}
       />
     </div>
   );
