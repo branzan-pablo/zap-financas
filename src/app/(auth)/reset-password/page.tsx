@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
             type="password"
             autoComplete="new-password"
             required
-            minLength={8}
+            minLength={12}
             disabled={isPending}
           />
         </div>
@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
             type="password"
             autoComplete="new-password"
             required
-            minLength={8}
+            minLength={12}
             disabled={isPending}
           />
         </div>

@@ -94,10 +94,15 @@ async function fatura(
   if (!cards || cards.length === 0) return "Você não tem cartões conectados ainda.";
 
   const contaIds = cards.map((c) => c.account_id).filter((x): x is string => !!x);
+  // O `user_id` é redundante com os contaIds (que vieram dos cards do usuário),
+  // mas aqui o client é o ADMIN — RLS desligado. Nada no schema garante que
+  // `cards.account_id` aponte para conta do mesmo dono, então o filtro fica
+  // explícito: toda query com admin client escopa por user_id.
   const { data: txs } = contaIds.length
     ? await db
         .from("transactions")
         .select("account_id, valor, data")
+        .eq("user_id", userId)
         .in("account_id", contaIds)
     : { data: [] };
   const porConta = new Map<string, FaturaTransacao[]>();

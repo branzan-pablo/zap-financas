@@ -104,7 +104,18 @@ SUPABASE_SERVICE_ROLE_KEY=      # service_role (nunca NEXT_PUBLIC_)
 
 ## Segurança
 
-- RLS habilitado em todas as 12 tabelas — dados isolados por `user_id = auth.uid()`
-- `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN` — **nunca** `NEXT_PUBLIC_`
+- RLS habilitado em todas as tabelas — dados isolados por `user_id = auth.uid()`
+- Colunas de billing (`plano`, `trial_ends_at`) com `GRANT` restrito: o usuário
+  não escreve nelas nem indo direto na API REST do Supabase — só o `service_role`,
+  via webhook de pagamento e cron de dunning
+- `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN` — **nunca** `NEXT_PUBLIC_`
 - Todo cálculo financeiro roda no servidor (Server Components / Route Handlers)
-- Webhooks validados por assinatura (HMAC)
+- Webhooks validados por assinatura (HMAC-SHA256, comparação em tempo constante)
+  e idempotentes — reentrega não duplica lançamento
+- Saldo ajustado por UPDATE atômico no Postgres (`ajustar_saldo`), não read-modify-write
+- Headers de segurança em todas as rotas: HSTS, CSP, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
+- Providers externos **fail closed** em produção: sem a env var correta o app
+  lança erro em vez de cair no mock (que não cobra, não entrega e injeta dados falsos)
+- Senha: mínimo 12 caracteres com letras e números, validado no servidor
+- Chamadas a APIs externas com timeout (15s; 30s para IA)

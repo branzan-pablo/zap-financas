@@ -32,9 +32,15 @@ function normalizarTelefone(bruto: string): string {
   return digitos ? `+${digitos}` : "";
 }
 
-/** Mensagem inbound normalizada: texto direto ou mídia a baixar depois. */
+/**
+ * Mensagem inbound normalizada: texto direto ou mídia a baixar depois.
+ *
+ * `messageId` é opcional só no formato simples de teste (`{telefone, texto}`),
+ * que não tem id — nesse caso não há como deduplicar e a mensagem é processada
+ * sempre. Payloads reais da Evolution sempre trazem `data.key.id`.
+ */
 type MsgInbound =
-  | { tipo: "texto"; telefone: string; texto: string }
+  | { tipo: "texto"; telefone: string; texto: string; messageId?: string }
   | { tipo: "audio" | "imagem"; telefone: string; messageId: string; mimeType: string };
 
 /** Extrai a mensagem de payloads Evolution ou do formato simples de teste. */
@@ -56,14 +62,15 @@ function extrair(payload: unknown): MsgInbound | null {
   const telefone = normalizarTelefone(jid);
   if (!telefone) return null;
 
+  const messageId = typeof key?.id === "string" ? key.id : "";
+
   const texto =
     (typeof message?.conversation === "string" && message.conversation) ||
     ((message?.extendedTextMessage as Record<string, unknown> | undefined)?.text as string) ||
     "";
-  if (texto) return { tipo: "texto", telefone, texto };
+  if (texto) return { tipo: "texto", telefone, texto, messageId: messageId || undefined };
 
   // Mídia: só guardamos o id — o download acontece APÓS validar o vínculo.
-  const messageId = typeof key?.id === "string" ? key.id : "";
   if (!messageId) return null;
   const audio = message?.audioMessage as Record<string, unknown> | undefined;
   if (audio) {
@@ -104,6 +111,27 @@ export async function POST(request: Request) {
   }
 
   const db = createAdminClient();
+
+  // Idempotência: a Evolution reentrega quando não recebe ack a tempo. Sem esta
+  // trava, uma reentrega de "gastei 50 no mercado" registra o gasto DUAS vezes.
+  //
+  // O INSERT vem ANTES de processar e a PK é a trava: na reentrega (ou em duas
+  // entregas simultâneas) o segundo INSERT falha com 23505 e devolvemos ack sem
+  // reprocessar. Atômico, sem lock explícito.
+  if (msg.messageId) {
+    const { error } = await db
+      .from("whatsapp_processed")
+      .insert({ message_id: msg.messageId });
+    if (error) {
+      if (error.code === "23505") {
+        return Response.json({ ok: true, ignored: "mensagem já processada" });
+      }
+      console.error("webhook whatsapp: falha no dedup:", error.message);
+      // Falha de infra (não duplicata): 500 para a Evolution reenviar.
+      return Response.json({ ok: false }, { status: 500 });
+    }
+  }
+
   const provider = getWhatsAppProvider();
   const responder = async (texto: string) => {
     await provider.enviar({ telefone: msg.telefone, texto });

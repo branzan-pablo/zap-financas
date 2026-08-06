@@ -21,15 +21,30 @@ let pendente: LinkRow; // linha de pareamento pendente (por código)
 let link: LinkRow; // vínculo ativo (por telefone)
 let updates: { vals: Record<string, unknown> }[];
 let updateError: { message: string } | null;
+/** messageIds já processados — espelha a PK de `whatsapp_processed`. */
+let processados: Set<string>;
+/** Força erro de infra (não-duplicata) no INSERT do dedup. */
+let dedupError: { code: string; message: string } | null;
 
 function fakeDb() {
-  const build = () => {
+  const build = (tabela: string) => {
     const filtros: Record<string, unknown> = {};
     const b = {
       select: () => b,
       update: (vals: Record<string, unknown>) => {
         updates.push({ vals });
         return b;
+      },
+      // Só a tabela de dedup recebe insert no webhook. A PK é simulada pelo Set:
+      // segunda inserção do mesmo id → 23505, igual ao Postgres.
+      insert: async (vals: { message_id: string }) => {
+        if (tabela !== "whatsapp_processed") return { error: null };
+        if (dedupError) return { error: dedupError };
+        if (processados.has(vals.message_id)) {
+          return { error: { code: "23505", message: "duplicate key" } };
+        }
+        processados.add(vals.message_id);
+        return { error: null };
       },
       eq: (col: string, val: unknown) => {
         filtros[col] = val;
@@ -47,7 +62,7 @@ function fakeDb() {
     };
     return b;
   };
-  return { from: () => build() };
+  return { from: (tabela: string) => build(tabela) };
 }
 
 const enviar = vi.fn(async () => ({ ok: true }));
@@ -114,6 +129,8 @@ beforeEach(() => {
   link = { user_id: "user-1" };
   updates = [];
   updateError = null;
+  processados = new Set();
+  dedupError = null;
   vi.clearAllMocks();
   enviar.mockResolvedValue({ ok: true });
   obterMidiaBase64.mockResolvedValue({
@@ -160,6 +177,64 @@ describe("silêncio (anti-spam)", () => {
       ignored: "remetente não vinculado",
     });
     expect(enviar).not.toHaveBeenCalled();
+  });
+});
+
+// --- Idempotência ------------------------------------------------------------
+
+describe("idempotência (reentrega da Evolution)", () => {
+  it("mesma mensagem entregue 2x registra o gasto só uma vez", async () => {
+    const primeira = await post(evoTexto("gastei 50 no mercado"));
+    await expect(primeira.json()).resolves.toMatchObject({ ok: true });
+    expect(responderIntent).toHaveBeenCalledTimes(1);
+
+    const reentrega = await post(evoTexto("gastei 50 no mercado"));
+    await expect(reentrega.json()).resolves.toMatchObject({
+      ok: true,
+      ignored: "mensagem já processada",
+    });
+    // O ponto: o handler NÃO roda de novo — senão o gasto entraria duplicado.
+    expect(responderIntent).toHaveBeenCalledTimes(1);
+    expect(enviar).toHaveBeenCalledTimes(1);
+  });
+
+  it("mensagens diferentes passam as duas", async () => {
+    await post(evoTexto("saldo"));
+    await post({
+      data: {
+        key: { remoteJid: JID, id: "MSG2", fromMe: false },
+        message: { conversation: "fatura" },
+      },
+    });
+    expect(responderIntent).toHaveBeenCalledTimes(2);
+  });
+
+  it("áudio reentregue não é baixado nem processado de novo", async () => {
+    interpretarAudio.mockResolvedValue({
+      tipo: "registrar",
+      gastos: [{ valor: 50, descricao: "mercado" }],
+    });
+    await post(evoAudio());
+    expect(obterMidiaBase64).toHaveBeenCalledTimes(1);
+    expect(responderIntent).toHaveBeenCalledTimes(1);
+
+    await post(evoAudio());
+    // Sem a trava, baixaríamos a mídia de novo (custo) e registraríamos 2x.
+    expect(obterMidiaBase64).toHaveBeenCalledTimes(1);
+    expect(responderIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it("falha de infra no dedup → 500 para a Evolution reenviar", async () => {
+    dedupError = { code: "08006", message: "connection failure" };
+    const res = await post(evoTexto("saldo"));
+    expect(res.status).toBe(500);
+    expect(responderIntent).not.toHaveBeenCalled();
+  });
+
+  it("payload simples sem messageId continua sendo processado", async () => {
+    const res = await post({ telefone: "+5511999999999", texto: "saldo" });
+    await expect(res.json()).resolves.toMatchObject({ ok: true });
+    expect(responderIntent).toHaveBeenCalledTimes(1);
   });
 });
 

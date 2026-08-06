@@ -8,11 +8,13 @@ export type * from "./types";
 /**
  * Factory do provider de Open Finance — escolhe a implementação por env.
  *
- * Mesma filosofia das demais camadas: real quando configurado,
- * fallback seguro caso contrário.
- *
  *   OPENFINANCE_PROVIDER=pluggy  + PLUGGY_CLIENT_ID/SECRET  → Pluggy real
- *   (qualquer outro caso)                                   → mock
+ *   (qualquer outro caso, fora de produção)                 → mock
+ *
+ * ⚠️ FAIL CLOSED EM PRODUÇÃO. O mock gera contas e transações fictícias. Cair
+ * nele em produção — por env var ausente ou com typo — encheria o extrato real
+ * de usuários com dados inventados, indistinguíveis dos verdadeiros. Melhor
+ * quebrar alto na hora do que corromper dados financeiros em silêncio.
  */
 export function getOpenFinanceProvider(): OpenFinanceProvider {
   const provider = process.env.OPENFINANCE_PROVIDER;
@@ -26,6 +28,13 @@ export function getOpenFinanceProvider(): OpenFinanceProvider {
       );
     }
     return new PluggyOpenFinanceProvider(clientId, clientSecret);
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Em produção, OPENFINANCE_PROVIDER precisa ser 'pluggy'. " +
+        "O provider mock injeta transações fictícias e nunca pode rodar em produção."
+    );
   }
 
   return new MockOpenFinanceProvider();

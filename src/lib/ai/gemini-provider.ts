@@ -1,3 +1,4 @@
+import { fetchComTimeout, TIMEOUT_IA_MS } from "@/lib/http";
 import type {
   AIProvider,
   CategoriaCandidata,
@@ -49,7 +50,7 @@ export class GeminiAIProvider implements AIProvider {
       `Categorias disponíveis (id: nome):\n${lista}`;
 
     try {
-      const res = await fetch(
+      const res = await fetchComTimeout(
         `${ENDPOINT}/${this.model}:generateContent?key=${this.apiKey}`,
         {
           method: "POST",
@@ -69,7 +70,8 @@ export class GeminiAIProvider implements AIProvider {
               },
             },
           }),
-        }
+        },
+        TIMEOUT_IA_MS
       );
 
       if (!res.ok) return { categoriaId: null, confianca: 0 };
@@ -173,7 +175,7 @@ export class GeminiAIProvider implements AIProvider {
     schema: object
   ): Promise<unknown | null> {
     try {
-      const res = await fetch(
+      const res = await fetchComTimeout(
         `${ENDPOINT}/${this.model}:generateContent?key=${this.apiKey}`,
         {
           method: "POST",
@@ -186,7 +188,8 @@ export class GeminiAIProvider implements AIProvider {
               responseSchema: schema,
             },
           }),
-        }
+        },
+        TIMEOUT_IA_MS
       );
       if (!res.ok) return null;
       const data = await res.json();

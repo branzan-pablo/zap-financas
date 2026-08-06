@@ -105,8 +105,8 @@ export default function SignupPage() {
             type="password"
             autoComplete="new-password"
             required
-            minLength={8}
-            placeholder="Mínimo 8 caracteres"
+            minLength={12}
+            placeholder="Mínimo 12 caracteres, com letras e números"
             disabled={isPending}
           />
         </div>

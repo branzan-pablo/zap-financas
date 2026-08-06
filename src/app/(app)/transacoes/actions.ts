@@ -39,11 +39,11 @@ export async function criarLancamento(formData: FormData): Promise<void> {
     ? dataBruta
     : `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
 
-  // A conta tem de ser do usuário (RLS já limita; buscamos para saber se é
-  // manual e qual o saldo atual).
+  // A conta tem de ser do usuário (RLS já limita; buscamos para confirmar que
+  // existe e é dele antes de lançar).
   const { data: conta } = await supabase
     .from("accounts")
-    .select("id, saldo, pluggy_account_id")
+    .select("id")
     .eq("id", contaId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -65,10 +65,10 @@ export async function criarLancamento(formData: FormData): Promise<void> {
   });
   if (error) throw new Error(`Falha ao lançar: ${error.message}`);
 
-  if (conta.pluggy_account_id === null) {
-    const novoSaldo = Math.round(((conta.saldo ?? 0) + assinado) * 100) / 100;
-    await supabase.from("accounts").update({ saldo: novoSaldo }).eq("id", conta.id);
-  }
+  // Ajuste atômico: um único UPDATE `saldo = saldo + delta` no Postgres. Ler o
+  // saldo aqui e escrever de volta perderia lançamentos concorrentes (app +
+  // WhatsApp ao mesmo tempo). A função só toca em contas manuais e respeita RLS.
+  await supabase.rpc("ajustar_saldo", { p_conta_id: conta.id, p_delta: assinado });
 
   revalidatePath("/transacoes");
   revalidatePath("/contas");
@@ -105,15 +105,11 @@ export async function excluirLancamento(formData: FormData): Promise<void> {
     .eq("user_id", user.id);
   if (error) throw new Error(`Falha ao excluir: ${error.message}`);
 
-  const { data: conta } = await supabase
-    .from("accounts")
-    .select("id, saldo, pluggy_account_id")
-    .eq("id", tx.account_id)
-    .maybeSingle();
-  if (conta && conta.pluggy_account_id === null) {
-    const novoSaldo = Math.round(((conta.saldo ?? 0) - tx.valor) * 100) / 100;
-    await supabase.from("accounts").update({ saldo: novoSaldo }).eq("id", conta.id);
-  }
+  // Desfaz o efeito no saldo — atômico, mesma razão do lançamento.
+  await supabase.rpc("ajustar_saldo", {
+    p_conta_id: tx.account_id,
+    p_delta: -tx.valor,
+  });
 
   revalidatePath("/transacoes");
   revalidatePath("/contas");

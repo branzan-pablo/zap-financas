@@ -12,6 +12,9 @@ export default async function CheckoutMockPage({
 }: {
   searchParams: Promise<{ ext?: string; plano?: string }>;
 }) {
+  // O checkout simulado não existe em produção — ver a trava em [actions.ts](./actions.ts).
+  if (process.env.NODE_ENV === "production") redirect("/assinar");
+
   const { ext, plano: planoId } = await searchParams;
   const plano = getPlano(planoId ?? "");
   if (!plano || !ext) redirect("/assinar");

@@ -17,10 +17,17 @@ import type { PlanoId } from "@/lib/payments/plans";
  */
 export async function POST(request: Request) {
   const rawBody = await request.text();
-  const provider = getPaymentsProvider();
 
-  // Fail closed: em produção o webhook NÃO pode rodar com o provider mock
-  // (que não valida assinatura) — evita aceitar eventos forjados.
+  // Fail closed: em produção o webhook NÃO pode rodar com o provider mock (que
+  // não valida assinatura) — evita aceitar eventos forjados. A factory já lança
+  // nesse caso; convertemos em 503 para o MP reenviar depois do fix, em vez de
+  // devolver um 500 com stack trace.
+  let provider;
+  try {
+    provider = getPaymentsProvider();
+  } catch {
+    return Response.json({ ok: false, error: "Pagamentos não configurados." }, { status: 503 });
+  }
   if (process.env.NODE_ENV === "production" && provider.nome === "mock") {
     return Response.json({ ok: false, error: "Pagamentos não configurados." }, { status: 503 });
   }

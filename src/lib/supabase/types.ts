@@ -590,12 +590,31 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_processed: {
+        Row: {
+          message_id: string
+          processed_at: string
+        }
+        Insert: {
+          message_id: string
+          processed_at?: string
+        }
+        Update: {
+          message_id?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      // Ajuste atômico de saldo — ver migration 20260806000002.
+      ajustar_saldo: {
+        Args: { p_conta_id: string; p_delta: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

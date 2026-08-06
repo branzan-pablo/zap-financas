@@ -101,8 +101,14 @@ está implementado ([`pluggy-connect-button.tsx`](../src/components/app/pluggy-c
 - [ ] `/assinar` → escolher plano → `init_point` abre o checkout **real**.
 - [ ] Fazer **uma assinatura de verdade** (pode cancelar depois) e confirmar que o
       webhook ativou o acesso.
-- [ ] Assinatura forjada no webhook → **401** (a validação de `x-signature` já
-      está implementada e foi testada em sandbox).
+- [ ] Assinatura forjada no webhook → **401**.
+
+> ⚠️ **Pré-requisito, não pule:** a validação de `x-signature` está implementada
+> mas **nunca foi exercida contra o sandbox** — o template do manifest é uma
+> suposição a partir da documentação. Se estiver errado, o webhook rejeita
+> *todas* as notificações: o cliente paga e não recebe acesso, silenciosamente.
+> Percorra [`pre-producao-checklist.md`](pre-producao-checklist.md) §3 **antes**
+> desta seção.
 
 ---
 
