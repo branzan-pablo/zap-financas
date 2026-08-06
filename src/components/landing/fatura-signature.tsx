@@ -1,5 +1,11 @@
 // Signature visual: projected invoice + future-installments timeline + chat bubble.
-// Pure CSS animation (no client JS); respects prefers-reduced-motion via globals.css.
+// As barras e a entrada do cartão continuam CSS puro (cz-rise / cz-bar), sem JS
+// de cliente. A ÚNICA parte hidratada é a contagem do valor da fatura — CSS não
+// interpola um número através de um formatador de moeda. Ver animated-number.tsx.
+// prefers-reduced-motion é respeitado nos dois caminhos.
+
+import { AnimatedNumber } from "@/components/ui/animated-number";
+import { DUR } from "@/lib/motion";
 
 const PARCELAS = [
   { mes: "jun", valor: "1.240", width: "100%" },
@@ -25,9 +31,13 @@ export function FaturaSignature() {
         </div>
 
         <div className="mt-3 flex items-end gap-3">
-          <span className="font-num text-4xl font-bold tracking-tight text-ink">
-            R$&nbsp;2.180
-          </span>
+          <AnimatedNumber
+            className="font-num text-4xl font-bold tracking-tight text-ink"
+            valor={2180}
+            formato="inteiro"
+            // Entra junto com o fim do `cz-rise` do cartão, não antes dele.
+            atraso={DUR.rise * 0.4}
+          />
           <span className="font-num mb-1 text-sm font-medium text-amber">
             +R$&nbsp;190 ↑
           </span>

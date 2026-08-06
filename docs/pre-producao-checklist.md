@@ -161,17 +161,32 @@ pergunta qual é o principal e cria o redirect do outro automaticamente.
 Recomendo o **apex** (`zapfinancas.com.br`) como principal — mais curto para
 digitar e para ditar por WhatsApp.
 
-**Registros confirmados** — obtidos de `vercel domains inspect zapfinancas.com.br`
-em 2026-08-06, não de tutorial:
+**Registros** — os que o painel da Vercel exibe em Settings → Domains. A Vercel
+está expandindo a faixa de IP; estes são os atuais (os antigos `76.76.21.21` e
+`cname.vercel-dns.com` seguem funcionando, mas não há motivo para entrar já no
+legado):
 
 | Tipo | Nome | Valor |
 |---|---|---|
-| `A` | `@` (apex) | `76.76.21.21` |
-| `CNAME` | `www` | `cname.vercel-dns.com` |
+| `A` | *(vazio = apex)* | `216.198.79.1` |
+| `CNAME` | `www` | `a19c4fa345a2899f.vercel-dns-017.com` |
 
-> Se a Vercel exibir valores diferentes dos acima na tela de Domains, **use os
-> dela**: o IP do apex já mudou mais de uma vez, e um IP velho leva a um domínio
-> que resolve para lugar nenhum — falha silenciosa e chata de diagnosticar.
+> ⚠️ O CNAME do `www` é **único deste projeto** — copie pelo botão do painel da
+> Vercel, não digite à mão. Se o painel exibir valores diferentes dos acima,
+> **use os dele**.
+
+**Preenchendo no Registro.br** (Configurar zona DNS → modo avançado):
+
+O editor **não aceita `@`** (está na letra miúda do rodapé). Para o apex, deixe o
+campo **Nome vazio** — o formulário já mostra o sufixo `.zapfinancas.com.br` ao
+lado, então vazio significa a raiz. E **não** use ponto final no CNAME: é um
+formulário estruturado, não arquivo de zona (o próprio exemplo deles é sem
+ponto). Um ponto sobrando faria o alvo virar
+`...vercel-dns-017.com.zapfinancas.com.br`.
+
+Os registros são **os mesmos** independentemente de apex ou www ser o primário —
+quem decide isso é a Vercel, não o DNS. Dá para criar a zona antes de resolver
+essa questão.
 
 ### B. Registro.br
 

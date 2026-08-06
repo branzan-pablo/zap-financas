@@ -311,6 +311,7 @@ async function ResumoDashboard({
           valor={resumo.score.score}
           tone={scoreTone}
           label="Saúde financeira"
+          animar
         />
 
         <ul className="mt-4 space-y-1.5">
@@ -354,7 +355,7 @@ async function ResumoDashboard({
         <Card className="mb-6">
           <CardTitle className="mb-4">Gastos por categoria</CardTitle>
           <div className="space-y-3">
-            {categorias.map((c) => (
+            {categorias.map((c, i) => (
               <div key={c.nome} className="flex items-center gap-3">
                 <span className="w-32 shrink-0 truncate text-sm text-ink">
                   {c.icone} {c.nome}
@@ -365,6 +366,8 @@ async function ResumoDashboard({
                   max={maxCat}
                   cor={c.cor ?? "#10b981"}
                   label={`${c.nome}: ${formatBRL(c.total)}`}
+                  animar
+                  atraso={i * 0.06}
                 />
                 <span className="w-24 shrink-0 text-right font-num text-sm font-semibold text-ink">
                   {formatBRL(c.total)}
