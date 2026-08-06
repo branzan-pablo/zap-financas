@@ -1,3 +1,4 @@
+import { fetchComTimeout } from "@/lib/http";
 import type { OpenFinanceProvider } from "./provider";
 import type {
   OFAccount,
@@ -80,7 +81,7 @@ export class PluggyOpenFinanceProvider implements OpenFinanceProvider {
 
   private async getApiKey(): Promise<string> {
     if (this.apiKey) return this.apiKey;
-    const res = await fetch(`${API}/auth`, {
+    const res = await fetchComTimeout(`${API}/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId: this.clientId, clientSecret: this.clientSecret }),
@@ -93,7 +94,7 @@ export class PluggyOpenFinanceProvider implements OpenFinanceProvider {
 
   private async api<T>(path: string, init?: RequestInit): Promise<T> {
     const key = await this.getApiKey();
-    const res = await fetch(`${API}${path}`, {
+    const res = await fetchComTimeout(`${API}${path}`, {
       ...init,
       headers: { "X-API-KEY": key, "Content-Type": "application/json", ...(init?.headers ?? {}) },
     });

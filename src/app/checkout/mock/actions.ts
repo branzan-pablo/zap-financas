@@ -13,9 +13,18 @@ import type { PlanoId } from "@/lib/payments/plans";
  * o caminho de ativação é idêntico — só a origem do gatilho muda.
  */
 export async function confirmarPagamento(formData: FormData) {
-  // Trava de segurança: o checkout simulado SÓ pode ativar assinatura no modo
-  // mock. Com um provider real (Mercado Pago), a ativação vem do webhook
-  // assinado — nunca desta ação. Impede ativar assinatura sem pagar em produção.
+  // Trava de segurança em DUAS camadas — esta ação concede acesso pago sem
+  // cobrar nada, então não pode depender de uma única condição.
+  //
+  //  1. NODE_ENV: em produção não existe caso legítimo de uso. Esta checagem não
+  //     depende de nenhuma env var de negócio — se PAYMENTS_PROVIDER sumisse ou
+  //     viesse com typo, a antiga trava (só pelo nome do provider) ABRIRIA, e
+  //     qualquer usuário logado viraria assinante pago de graça.
+  //  2. Provider: fora de produção, só o mock ativa por aqui. Com o Mercado Pago
+  //     configurado, a ativação vem exclusivamente do webhook assinado.
+  if (process.env.NODE_ENV === "production") {
+    redirect("/assinar");
+  }
   if (getPaymentsProvider().nome !== "mock") {
     redirect("/assinar");
   }

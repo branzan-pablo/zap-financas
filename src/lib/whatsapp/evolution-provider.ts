@@ -1,3 +1,4 @@
+import { fetchComTimeout } from "@/lib/http";
 import type { MensagemEnviar, MidiaBase64, WhatsAppProvider } from "./provider";
 
 /**
@@ -27,7 +28,7 @@ export class EvolutionWhatsAppProvider implements WhatsAppProvider {
     // Evolution espera o número só com dígitos (código do país incluso).
     const number = msg.telefone.replace(/\D/g, "");
     try {
-      const res = await fetch(
+      const res = await fetchComTimeout(
         `${this.apiUrl.replace(/\/$/, "")}/message/sendText/${this.instance}`,
         {
           method: "POST",
@@ -52,7 +53,7 @@ export class EvolutionWhatsAppProvider implements WhatsAppProvider {
    */
   async obterMidiaBase64(messageId: string): Promise<MidiaBase64 | null> {
     try {
-      const res = await fetch(
+      const res = await fetchComTimeout(
         `${this.apiUrl.replace(/\/$/, "")}/chat/getBase64FromMediaMessage/${this.instance}`,
         {
           method: "POST",

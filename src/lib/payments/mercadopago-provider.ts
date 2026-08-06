@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { fetchComTimeout } from "@/lib/http";
 import type {
   CheckoutInput,
   CheckoutResultado,
@@ -43,7 +44,7 @@ export class MercadoPagoProvider implements PaymentsProvider {
     init: RequestInit & { idempotencyKey?: string } = {}
   ): Promise<Response> {
     const { idempotencyKey, ...rest } = init;
-    return fetch(`${API}${path}`, {
+    return fetchComTimeout(`${API}${path}`, {
       ...rest,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,

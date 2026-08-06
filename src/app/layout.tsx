@@ -22,7 +22,15 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = "https://zapfinancas.app";
+/**
+ * Origem canônica do site — base para Open Graph, canonical e URLs relativas.
+ *
+ * Segue `NEXT_PUBLIC_APP_URL` para não divergir do resto do app (callbacks de
+ * auth, back_url do checkout). Estava fixo em "zapfinancas.app", domínio que não
+ * é o de produção: as prévias de link apontariam para fora, e neste produto a
+ * prévia aparece exatamente onde ele vive — no WhatsApp.
+ */
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zapfinancas.com.br";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
