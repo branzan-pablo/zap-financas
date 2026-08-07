@@ -1,33 +1,13 @@
 import type { NextConfig } from "next";
 
 /**
- * Content-Security-Policy.
+ * O Content-Security-Policy NÃO mora aqui — está em `src/proxy.ts`.
  *
- * Origens externas em uso:
- *   • Supabase  — REST/Auth/Realtime (connect-src, incl. wss para realtime)
- *   • Pluggy    — o widget Pluggy Connect roda num iframe de cdn.pluggy.ai
- *   • Vercel    — @vercel/analytics (script + beacon)
- *
- * `unsafe-inline` em script-src é exigido pelo runtime do Next.js (bootstrap e
- * payload de hidratação são inline). Trocar por nonce exige mover o CSP para o
- * proxy e gerar um nonce por request — vale fazer depois; por ora este CSP já
- * bloqueia script de terceiros não listados, que é o ganho principal.
+ * Ele saiu deste arquivo quando passou a usar nonce por requisição: `headers()`
+ * é avaliado uma vez, no build, e um nonce que se repete não é nonce. Os demais
+ * headers de segurança continuam abaixo, porque são constantes e não dependem
+ * da requisição.
  */
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.pluggy.ai",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pluggy.ai https://va.vercel-scripts.com",
-  "frame-src 'self' https://cdn.pluggy.ai https://connect.pluggy.ai",
-  "worker-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
-].join("; ");
 
 const nextConfig: NextConfig = {
   /**
@@ -60,7 +40,6 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains",
           },
-          { key: "Content-Security-Policy", value: CSP },
           // Redundante com frame-ancestors do CSP, mas cobre browsers antigos.
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },

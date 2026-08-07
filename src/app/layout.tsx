@@ -53,6 +53,20 @@ export const viewport: Viewport = {
   themeColor: "#FBFBF9",
 };
 
+/**
+ * Exigência do CSP com nonce (ver `src/proxy.ts`).
+ *
+ * O Next carimba o nonce nos scripts durante a renderização, lendo o header da
+ * requisição. Página pré-renderizada no build não tem requisição — sairia com
+ * os scripts sem nonce e o navegador se recusaria a executá-los: tela branca,
+ * sem hidratação. Declarado no layout raiz, vale para todas as rotas.
+ *
+ * O CUSTO É REAL e foi aceito conscientemente: a landing e as telas de auth
+ * eram estáticas e agora renderizam a cada requisição, sem cache de CDN. O
+ * acréscimo é o SSR em si — o proxy já rodava em todas elas antes disto.
+ */
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
