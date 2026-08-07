@@ -296,14 +296,33 @@
   animation: cz-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Troca de painel — as abas "Entrar / Criar conta". Régua de app, não de
+   vitrine: 200ms e 6px, só o suficiente para o olho seguir que o conteúdo foi
+   substituído. Mesma curva do resto da casa. */
+@keyframes cz-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .cz-bar {
   transform-origin: left;
   animation: cz-bar 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.cz-swap {
+  animation: cz-swap 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cz-rise,
-  .cz-bar {
+  .cz-bar,
+  .cz-swap {
     animation: none;
   }
 }

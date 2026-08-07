@@ -1,6 +1,10 @@
+"use client";
+
 import * as React from "react";
+import { Check, Eye, EyeOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { REGRAS_SENHA } from "@/lib/auth/validacao";
 import { Card } from "@/components/ui/card";
 
 /**
@@ -54,6 +58,26 @@ export function AuthError({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+/**
+ * Login com Google — DESLIGADO até termos o Custom Domain do Supabase.
+ *
+ * O provider está configurado e funcionando (credenciais no Supabase, app em
+ * produção no Google Cloud). O problema é a tela de consentimento: o Google
+ * exibe o domínio raiz da URL de callback, e a do Supabase é
+ * `<project-ref>.supabase.co`. O usuário lê "para continuar em
+ * vtbpadfrguerropwwdbj.supabase.co" na hora de entregar a conta Google —
+ * num app financeiro isso queima confiança e, pior, treina a pessoa a aceitar
+ * domínios estranhos nesse momento, que é o que o phishing explora.
+ *
+ * Não há correção gratuita: o nome do app no consent screen não substitui o
+ * domínio. A solução é o Custom Domain do Supabase (US$ 10/mês + plano Pro),
+ * que faz o callback virar `auth.zapfinancas.com.br`.
+ *
+ * PARA RELIGAR: contrate o Custom Domain, aponte o client Supabase para ele, e
+ * troque esta constante para `true`. O resto do código continua no lugar.
+ */
+export const GOOGLE_LOGIN_HABILITADO: boolean = false;
 
 /** Divisor "ou" entre o formulário e o login social. */
 export function AuthDivider() {
@@ -129,6 +153,7 @@ export function AuthSubmit({
     <button
       type="submit"
       disabled={pending}
+      aria-busy={pending}
       className={cn(
         "min-h-(--tap) w-full rounded-[10px] bg-emerald px-4 py-2.5 font-medium text-white",
         "transition-colors hover:bg-emerald/90 disabled:opacity-60",
@@ -190,7 +215,13 @@ export function AuthLabel({
   );
 }
 
-/** Campo de auth: mesma geometria do `.field`, com o anel de foco da marca. */
+/**
+ * Campo de auth: mesma geometria do `.field`, com o anel de foco da marca.
+ *
+ * O espaçamento em relação ao rótulo mora no `AuthField`, não aqui: com o olho
+ * da senha posicionado por `absolute`, uma margem no próprio input desalinharia
+ * o botão em 6px.
+ */
 export function AuthInput({
   className,
   ...props
@@ -198,12 +229,252 @@ export function AuthInput({
   return (
     <input
       className={cn(
-        "mt-1.5 min-h-(--tap) w-full rounded-[10px] border border-line bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-slate/60",
+        "min-h-(--tap) w-full rounded-[10px] border border-line bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-slate/60",
         "focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/20",
+        "aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:ring-danger/20",
         "disabled:opacity-50",
         className
       )}
       {...props}
     />
+  );
+}
+
+/**
+ * Rótulo + campo + erro, com a ligação `aria` já feita.
+ *
+ * O `id` é obrigatório na assinatura porque tudo aqui depende dele: o `htmlFor`
+ * do rótulo, o `id` do parágrafo de erro e o `aria-describedby` que o controle
+ * usa para apontar de volta. Quem monta o campo à mão erra um dos três.
+ */
+export function AuthField({
+  id,
+  label,
+  acao,
+  erro,
+  descricao,
+  children,
+}: {
+  /** Precisa bater com o `id` do controle filho. */
+  id: string;
+  label: React.ReactNode;
+  /** Link auxiliar na linha do rótulo — o "Esqueci a senha" da tela de login. */
+  acao?: React.ReactNode;
+  /** Mensagem de erro. Anunciada quando aparece; some quando o campo é corrigido. */
+  erro?: string;
+  /** Apoio abaixo do campo (a lista de requisitos da senha, por exemplo). */
+  descricao?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <AuthLabel htmlFor={id}>{label}</AuthLabel>
+        {acao}
+      </div>
+      <div className="mt-1.5">{children}</div>
+      {erro && (
+        <p id={`${id}-erro`} role="alert" className="mt-1.5 text-sm text-danger">
+          {erro}
+        </p>
+      )}
+      {descricao}
+    </div>
+  );
+}
+
+/**
+ * Campo de senha com o olho de mostrar/ocultar.
+ *
+ * Digitar 12 caracteres às cegas num teclado de celular é a receita para errar
+ * a senha três vezes e desistir — por isso o olho existe. Ele começa fechado e
+ * NÃO guarda estado entre campos: revelar é uma decisão pontual, tomada com a
+ * tela à vista, não uma preferência que persiste.
+ */
+export function AuthPasswordInput({
+  id,
+  className,
+  ...props
+}: React.ComponentProps<"input"> & { id: string }) {
+  const [visivel, setVisivel] = React.useState(false);
+
+  return (
+    <div className="relative">
+      <AuthInput
+        id={id}
+        type={visivel ? "text" : "password"}
+        className={cn("pr-12", className)}
+        {...props}
+      />
+      <button
+        type="button"
+        onClick={() => setVisivel((v) => !v)}
+        // O rótulo diz o que o botão FAZ ao ser acionado, não em que estado
+        // está — é isso que o leitor de tela anuncia quando o foco chega nele.
+        aria-label={visivel ? "Ocultar senha" : "Mostrar senha"}
+        aria-pressed={visivel}
+        aria-controls={id}
+        // Alvo de 44px encostado na borda direita do campo: o dedo acerta sem
+        // esbarrar no texto, e a área fica dentro da altura do próprio campo.
+        className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-[10px] text-slate transition-colors hover:text-ink"
+      >
+        {visivel ? (
+          <EyeOff className="size-[18px]" aria-hidden />
+        ) : (
+          <Eye className="size-[18px]" aria-hidden />
+        )}
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Requisitos da senha em linhas de razão — rótulo · pontilhado · situação.
+ *
+ * Reusa o `.ledger-leader` da assinatura do app (a tira de cupom) em vez de uma
+ * barra colorida de "força". Força é palpite; estes são exatamente os dois
+ * testes que a action aplica, então a lista não promete o que o servidor vai
+ * recusar. Aparece só depois da primeira tecla: antes disso não há o que
+ * conferir, e uma lista de exigências num campo vazio é ameaça, não ajuda.
+ */
+export function RequisitosSenha({
+  senha,
+  cobrando,
+  id = "requisitos-senha",
+}: {
+  senha: string;
+  /** Depois da primeira tentativa, o que falta deixa de ser aviso e vira erro. */
+  cobrando: boolean;
+  id?: string;
+}) {
+  return (
+    <ul id={id} aria-label="Requisitos da senha" className="mt-2.5 space-y-1">
+      {REGRAS_SENHA.map((regra) => {
+        const atende = regra.atende(senha);
+        return (
+          <li key={regra.id} className="flex items-baseline text-xs">
+            <span
+              className={
+                atende
+                  ? "text-emerald-ink"
+                  : cobrando
+                    ? "text-danger"
+                    : "text-slate"
+              }
+            >
+              {regra.rotulo}
+            </span>
+            <span className="ledger-leader" aria-hidden />
+            <span className="sr-only">{atende ? "pronto" : "falta"}</span>
+            {atende ? (
+              <Check
+                aria-hidden
+                className="size-3.5 shrink-0 self-center text-emerald"
+              />
+            ) : (
+              <span
+                aria-hidden
+                className={cn(
+                  "shrink-0",
+                  cobrando ? "text-danger" : "text-slate/60"
+                )}
+              >
+                —
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Os dois modos da tela de entrada. */
+export type AuthModo = "entrar" | "criar";
+
+const ABAS: { modo: AuthModo; rotulo: string }[] = [
+  { modo: "entrar", rotulo: "Entrar" },
+  { modo: "criar", rotulo: "Criar conta" },
+];
+
+/**
+ * Alternador entre entrar e criar conta.
+ *
+ * Antes, trocar de modo era uma navegação: um link "Criar conta" no meio de um
+ * parágrafo, uma rota nova, o cartão inteiro repintado. Como as duas telas
+ * pedem quase os mesmos campos, a navegação escondia o quanto elas são a mesma
+ * coisa — e cobrava um round-trip por um engano de um clique.
+ *
+ * A trilha é o papel do extrato (`bg-paper`) e o modo ativo é uma folha branca
+ * deslizando sobre ela: o mesmo par de superfícies do resto do app, sem
+ * inventar cor nova para um controle.
+ */
+export function AuthSegmented({
+  modo,
+  onModoChange,
+  desabilitado,
+}: {
+  modo: AuthModo;
+  onModoChange: (modo: AuthModo) => void;
+  desabilitado?: boolean;
+}) {
+  // Com exatamente duas abas, ←/Home vão para a primeira e →/End para a
+  // segunda; não há ciclo a percorrer. Se um dia virarem três, isto precisa
+  // virar um índice com wrap-around.
+  function aoTeclar(e: React.KeyboardEvent<HTMLDivElement>) {
+    const paraPrimeira = e.key === "ArrowLeft" || e.key === "Home";
+    const paraSegunda = e.key === "ArrowRight" || e.key === "End";
+    if (!paraPrimeira && !paraSegunda) return;
+    e.preventDefault();
+    const destino: AuthModo = paraPrimeira ? "entrar" : "criar";
+    onModoChange(destino);
+    document.getElementById(`aba-${destino}`)?.focus();
+  }
+
+  return (
+    <div
+      role="tablist"
+      aria-label="Entrar ou criar conta"
+      onKeyDown={aoTeclar}
+      className={cn(
+        "relative grid grid-cols-2 rounded-xl border border-line bg-paper p-1",
+        desabilitado && "opacity-60"
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-[10px] bg-white",
+          "shadow-[0_1px_2px_rgba(11,18,32,.08)]",
+          // 180ms na curva da casa: régua de app, não de vitrine.
+          "transition-transform duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+          modo === "criar" && "translate-x-full"
+        )}
+      />
+      {ABAS.map((aba) => {
+        const ativa = aba.modo === modo;
+        return (
+          <button
+            key={aba.modo}
+            id={`aba-${aba.modo}`}
+            type="button"
+            role="tab"
+            aria-selected={ativa}
+            aria-controls={`painel-${aba.modo}`}
+            // Tabindex móvel: a faixa inteira é UMA parada de tabulação, e as
+            // setas escolhem dentro dela. É o padrão de tablist.
+            tabIndex={ativa ? 0 : -1}
+            disabled={desabilitado}
+            onClick={() => onModoChange(aba.modo)}
+            className={cn(
+              "relative min-h-(--tap) rounded-[10px] text-sm font-medium transition-colors",
+              ativa ? "text-ink" : "text-slate hover:text-ink"
+            )}
+          >
+            {aba.rotulo}
+          </button>
+        );
+      })}
+    </div>
   );
 }

@@ -3,36 +3,50 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { resetPassword } from "../actions";
+import { validarEmail } from "@/lib/auth/validacao";
 import {
   AuthCard,
   AuthError,
+  AuthField,
   AuthInput,
-  AuthLabel,
   AuthSubmit,
   AuthSuccess,
   AuthTitle,
 } from "@/components/auth/auth-shell";
 
 export default function ForgotPasswordPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [email, setEmail] = useState("");
+  const [erroEmail, setErroEmail] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentou, setTentou] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+  const [pendente, iniciar] = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-    const fd = new FormData(e.currentTarget);
-    startTransition(async () => {
-      const result = await resetPassword(fd);
-      if (result?.error) {
-        setError(result.error);
+    setTentou(true);
+    setErro(null);
+
+    const invalido = validarEmail(email);
+    setErroEmail(invalido);
+    if (invalido) {
+      document.getElementById("email")?.focus();
+      return;
+    }
+
+    const fd = new FormData();
+    fd.set("email", email.trim());
+    iniciar(async () => {
+      const resultado = await resetPassword(fd);
+      if (resultado?.error) {
+        setErro(resultado.error);
       } else {
-        setSuccess(true);
+        setEnviado(true);
       }
     });
   }
 
-  if (success) {
+  if (enviado) {
     return (
       <AuthSuccess
         titulo="Email enviado"
@@ -55,24 +69,32 @@ export default function ForgotPasswordPage() {
         Digite seu email e enviaremos um link para criar uma nova senha.
       </p>
 
-      {error && <AuthError>{error}</AuthError>}
+      {erro && <AuthError>{erro}</AuthError>}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <div>
-          <AuthLabel htmlFor="email">Email</AuthLabel>
+      {/* `noValidate`: a validação é nossa, em português e presa ao campo — o
+          balão nativo do navegador some sozinho e não é lido por leitor de tela. */}
+      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+        <AuthField id="email" label="Email" erro={erroEmail ?? undefined}>
           <AuthInput
             id="email"
             name="email"
             type="email"
+            inputMode="email"
             autoComplete="email"
             spellCheck={false}
-            required
             placeholder="seu@email.com"
-            disabled={isPending}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (tentou) setErroEmail(validarEmail(e.target.value));
+            }}
+            aria-invalid={Boolean(erroEmail)}
+            aria-describedby={erroEmail ? "email-erro" : undefined}
+            disabled={pendente}
           />
-        </div>
+        </AuthField>
 
-        <AuthSubmit pending={isPending} pendingLabel="Enviando…">
+        <AuthSubmit pending={pendente} pendingLabel="Enviando…" className="mt-6">
           Enviar link
         </AuthSubmit>
       </form>

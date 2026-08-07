@@ -2,70 +2,126 @@
 
 import { useState, useTransition } from "react";
 import { updatePassword } from "../actions";
+import { validarSenhaNova } from "@/lib/auth/validacao";
 import {
   AuthCard,
   AuthError,
-  AuthInput,
-  AuthLabel,
+  AuthField,
+  AuthPasswordInput,
   AuthSubmit,
   AuthTitle,
+  RequisitosSenha,
 } from "@/components/auth/auth-shell";
 
+type Erros = Partial<Record<"password" | "confirm", string>>;
+
 export default function ResetPasswordPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [erros, setErros] = useState<Erros>({});
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentou, setTentou] = useState(false);
+  const [pendente, iniciar] = useTransition();
+
+  function conferir(senha: string, repetida: string): Erros {
+    return {
+      password: validarSenhaNova(senha) ?? undefined,
+      // Só cobramos a confirmação depois que ela tem conteúdo: acusar
+      // "não coincidem" na primeira letra da repetição é acusar o óbvio.
+      confirm:
+        repetida && repetida !== senha ? "As senhas não coincidem." : undefined,
+    };
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-    const fd = new FormData(e.currentTarget);
-    if (fd.get("password") !== fd.get("confirm")) {
-      setError("As senhas não coincidem.");
+    setTentou(true);
+    setErro(null);
+
+    const achados = conferir(password, confirm);
+    if (!confirm) achados.confirm = "Repita a senha.";
+    setErros(achados);
+
+    const primeiro = (["password", "confirm"] as const).find((c) => achados[c]);
+    if (primeiro) {
+      document.getElementById(primeiro)?.focus();
       return;
     }
-    startTransition(async () => {
-      const result = await updatePassword(fd);
-      if (result?.error) setError(result.error);
+
+    const fd = new FormData();
+    fd.set("password", password);
+    iniciar(async () => {
+      const resultado = await updatePassword(fd);
+      if (resultado?.error) setErro(resultado.error);
     });
   }
+
+  function mudar(campo: "password" | "confirm", valor: string) {
+    const senha = campo === "password" ? valor : password;
+    const repetida = campo === "confirm" ? valor : confirm;
+    if (campo === "password") setPassword(valor);
+    else setConfirm(valor);
+    if (tentou) setErros(conferir(senha, repetida));
+  }
+
+  const senhaEmBranco = password.length === 0;
 
   return (
     <AuthCard>
       <AuthTitle>Nova senha</AuthTitle>
       <p className="mt-1 text-sm text-slate">
-        Escolha uma senha segura com pelo menos 8 caracteres.
+        Escolha uma senha que você não use em outro serviço.
       </p>
 
-      {error && <AuthError>{error}</AuthError>}
+      {erro && <AuthError>{erro}</AuthError>}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <div>
-          <AuthLabel htmlFor="password">Nova senha</AuthLabel>
-          <AuthInput
+      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+        <AuthField
+          id="password"
+          label="Nova senha"
+          erro={senhaEmBranco ? erros.password : undefined}
+          descricao={
+            !senhaEmBranco && (
+              <RequisitosSenha
+                id="password-requisitos"
+                senha={password}
+                cobrando={tentou}
+              />
+            )
+          }
+        >
+          <AuthPasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="new-password"
-            required
-            minLength={12}
-            disabled={isPending}
+            value={password}
+            onChange={(e) => mudar("password", e.target.value)}
+            aria-invalid={Boolean(erros.password)}
+            aria-describedby={
+              senhaEmBranco
+                ? erros.password
+                  ? "password-erro"
+                  : undefined
+                : "password-requisitos"
+            }
+            disabled={pendente}
           />
-        </div>
+        </AuthField>
 
-        <div>
-          <AuthLabel htmlFor="confirm">Confirmar senha</AuthLabel>
-          <AuthInput
+        <AuthField id="confirm" label="Repita a senha" erro={erros.confirm}>
+          <AuthPasswordInput
             id="confirm"
             name="confirm"
-            type="password"
             autoComplete="new-password"
-            required
-            minLength={12}
-            disabled={isPending}
+            value={confirm}
+            onChange={(e) => mudar("confirm", e.target.value)}
+            aria-invalid={Boolean(erros.confirm)}
+            aria-describedby={erros.confirm ? "confirm-erro" : undefined}
+            disabled={pendente}
           />
-        </div>
+        </AuthField>
 
-        <AuthSubmit pending={isPending} pendingLabel="Salvando…">
+        <AuthSubmit pending={pendente} pendingLabel="Salvando…" className="mt-6">
           Salvar nova senha
         </AuthSubmit>
       </form>

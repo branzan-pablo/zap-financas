@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { traduzirErroAuth } from "@/lib/auth/erros";
+import { validarEmail, validarSenhaNova } from "@/lib/auth/validacao";
 
 /**
  * Origem do app para as URLs de retorno do Supabase.
@@ -21,23 +23,13 @@ function callbackUrl(next?: string): string {
 }
 
 /**
- * Regra de senha, validada no SERVIDOR.
+ * A política de senha e o texto dos erros moram em `@/lib/auth/validacao` —
+ * o formulário lê as MESMAS funções para responder antes do round-trip.
  *
- * O `minLength` do input só vale no browser — estas actions são alcançáveis por
- * POST direto, então sem esta checagem a política real seria a do Supabase
- * (6 caracteres por padrão). Para um app com dados bancários, 12 é o piso.
+ * A validação aqui não é redundância: estas actions são alcançáveis por POST
+ * direto, e sem elas a política real seria a do Supabase (6 caracteres por
+ * padrão). Para um app com dados bancários, 12 é o piso.
  */
-const SENHA_MIN = 12;
-
-function validarSenha(password: string): string | null {
-  if (password.length < SENHA_MIN) {
-    return `A senha precisa ter pelo menos ${SENHA_MIN} caracteres.`;
-  }
-  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-    return "A senha precisa misturar letras e números.";
-  }
-  return null;
-}
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -48,7 +40,7 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: error.message };
+    return { error: traduzirErroAuth(error.message) };
   }
 
   redirect("/dashboard");
@@ -66,7 +58,10 @@ export async function signUp(formData: FormData) {
     return { error: "É preciso aceitar a Política de Privacidade para continuar." };
   }
 
-  const senhaInvalida = validarSenha(password);
+  const emailInvalido = validarEmail(email);
+  if (emailInvalido) return { error: emailInvalido };
+
+  const senhaInvalida = validarSenhaNova(password);
   if (senhaInvalida) return { error: senhaInvalida };
 
   const { error } = await supabase.auth.signUp({
@@ -80,7 +75,7 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: traduzirErroAuth(error.message) };
   }
 
   // Return success so the UI can show "check your email"
@@ -115,12 +110,15 @@ export async function resetPassword(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
+  const emailInvalido = validarEmail(email);
+  if (emailInvalido) return { error: emailInvalido };
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: callbackUrl("/reset-password"),
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: traduzirErroAuth(error.message) };
   }
 
   return { success: true };
@@ -130,13 +128,13 @@ export async function updatePassword(formData: FormData) {
   const supabase = await createClient();
   const password = String(formData.get("password") ?? "");
 
-  const senhaInvalida = validarSenha(password);
+  const senhaInvalida = validarSenhaNova(password);
   if (senhaInvalida) return { error: senhaInvalida };
 
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { error: error.message };
+    return { error: traduzirErroAuth(error.message) };
   }
 
   redirect("/dashboard");
