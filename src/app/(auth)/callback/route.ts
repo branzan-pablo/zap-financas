@@ -43,7 +43,7 @@ const TIPOS_ACEITOS = new Set<EmailOtpType>([
  * pedindo os dados do banco. Exigir uma barra só, sem esquema e sem host,
  * mantém o destino dentro do app.
  */
-function destinoSeguro(next: string | null): string {
+export function destinoSeguro(next: string | null): string {
   if (!next || !next.startsWith("/") || next.startsWith("//")) return "/dashboard";
   return next;
 }
