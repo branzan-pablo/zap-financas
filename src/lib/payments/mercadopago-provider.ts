@@ -24,7 +24,11 @@ import { WebhookSignatureError } from "./provider";
 
 const API = "https://api.mercadopago.com";
 
-type MPPreapproval = { status?: string; next_payment_date?: string };
+type MPPreapproval = {
+  status?: string;
+  next_payment_date?: string;
+  external_reference?: string;
+};
 type MPAuthorizedPayment = {
   preapproval_id?: string;
   status?: string;
@@ -168,6 +172,7 @@ export class MercadoPagoProvider implements PaymentsProvider {
             tipo: "aprovado",
             externalId: preapprovalId,
             periodoFim: pre?.next_payment_date,
+            externalReference: pre?.external_reference,
           };
         }
         return { tipo: "falha_pagamento", externalId: preapprovalId };
@@ -178,7 +183,12 @@ export class MercadoPagoProvider implements PaymentsProvider {
         const pre = await this.mpGet<MPPreapproval>(`/preapproval/${dataId}`);
         const status = pre?.status ?? "";
         if (status === "authorized") {
-          return { tipo: "aprovado", externalId: dataId, periodoFim: pre?.next_payment_date };
+          return {
+            tipo: "aprovado",
+            externalId: dataId,
+            periodoFim: pre?.next_payment_date,
+            externalReference: pre?.external_reference,
+          };
         }
         // Aceita as duas grafias na LEITURA de propósito. A API devolve
         // `cancelled` hoje (verificado), mas a documentação deles diz

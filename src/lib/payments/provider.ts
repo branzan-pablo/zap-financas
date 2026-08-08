@@ -40,6 +40,18 @@ export type WebhookEvento = {
   externalId: string;
   /** Fim do ciclo informado pelo provider (fonte da verdade do faturamento). */
   periodoFim?: string;
+  /**
+   * Referência que NÓS mandamos ao criar o checkout — o `user_id`.
+   *
+   * Existe como segunda via para achar o dono da assinatura. O caminho normal é
+   * pelo `externalId`, mas ele só resolve se for o mesmo id que gravamos: um
+   * usuário que abandona o checkout e volta depois gera outro preapproval, e a
+   * janela de idempotência do MP é curta demais para impedir isso. Se ele
+   * autorizar o antigo, o `externalId` não bate com nada — e sem esta segunda
+   * via o webhook responderia "assinatura desconhecida" e ninguém ativaria a
+   * conta de quem acabou de pagar.
+   */
+  externalReference?: string;
 };
 
 export interface PaymentsProvider {
