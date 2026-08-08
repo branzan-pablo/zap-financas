@@ -6,20 +6,23 @@ import { useState, useTransition } from "react";
 import { Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/(auth)/actions";
-import { NAV, CONFIG, isActive, type NavItem } from "./nav-items";
+import { NAV, CONFIG, ABAS_MOBILE, isActive, type NavItem } from "./nav-items";
 
 /**
  * Navegação mobile (bottom tab bar + folha "Mais").
  *
  * Visível só abaixo de `md`. As 4 seções de uso diário ficam nas abas; o resto
- * (Contas, Metas, Configurações, Sair) entra na folha "Mais". O estado ativo
- * usa a pílula `emerald-soft` — mesma linguagem da sidebar do desktop.
+ * (Contas, Orçamentos, Fechamento, Configurações, Sair) entra na folha "Mais".
+ * O estado ativo usa a pílula `emerald-soft` — mesma linguagem da sidebar.
  */
 
-// Abas diretas (ordem = posição na barra). As demais seções vão para "Mais".
-const TABS = [NAV[0], NAV[2], NAV[3], NAV[5]]; // Início, Transações, Cartões, Investimentos
-// Contas, Orçamentos, Fechamento, Metas, Configurações
-const MAIS = [NAV[1], NAV[6], NAV[7], NAV[4], CONFIG];
+// Derivado de `ABAS_MOBILE` por ROTA, nunca por índice: o que não é aba cai em
+// "Mais" sozinho, e remover uma seção do `NAV` não desalinha nada aqui.
+const TABS = NAV.filter((i) => ABAS_MOBILE.includes(i.href as (typeof ABAS_MOBILE)[number]));
+const MAIS = [
+  ...NAV.filter((i) => !ABAS_MOBILE.includes(i.href as (typeof ABAS_MOBILE)[number])),
+  CONFIG,
+];
 const MAIS_HREFS = MAIS.map((i) => i.href);
 
 export function MobileNav() {
