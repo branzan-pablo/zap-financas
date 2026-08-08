@@ -1,35 +1,56 @@
 <!--
   Template: Confirm signup (Supabase → Authentication → Emails → Templates)
-  Assunto:  Confirme seu e-mail — Zap Finanças
+  Assunto:  Confirme seu e-mail - Zap Finanças
 
   Estilos são INLINE de propósito: Gmail e Outlook descartam <style> em boa
   parte dos contextos, e um e-mail sem estilo precisa continuar legível.
 
+  ⚠️ NÃO troque o link por {{ .ConfirmationURL }}. Aquele passa pelo /verify do
+  Supabase, que devolve o token no FRAGMENTO da URL (#access_token=...), e
+  fragmento não é enviado ao servidor - o /callback não consegue lê-lo nem em
+  teoria. O resultado é o usuário clicar e cair em /login?error=auth_callback_failed.
+  O link abaixo aponta direto para a nossa rota com token_hash em query param,
+  onde `verifyOtp` fecha a sessão do lado do servidor.
+
+  A marca no topo é a mesma do login (badge verde com "Z" + nome), desenhada em
+  HTML e não em <img> de propósito: Gmail e Outlook bloqueiam imagem remota por
+  padrão em remetente desconhecido, e a marca é justamente o que precisa
+  aparecer de primeira. Outlook desktop ignora border-radius e mostra o badge
+  quadrado - degrada bem, não vale um hack.
+
   Este é o primeiro contato de todo usuário novo com a marca. Um e-mail em
   inglês, de um domínio recém-conhecido, pedindo clique num link, é o que as
-  pessoas foram ensinadas a tratar como golpe — daí o cuidado com o texto:
+  pessoas foram ensinadas a tratar como golpe, daí o cuidado com o texto:
   diz quem somos, o que a pessoa acabou de fazer, e o que acontece se ela
   ignorar.
 -->
-<div style="margin:0;padding:24px 12px;background:#FBFBF9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #E8E6E1;border-radius:12px;padding:32px;">
+<div
+  style="margin:0;padding:24px 12px;background:#FBFBF9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div
+    style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #E8E6E1;border-radius:12px;padding:32px;">
 
-    <p style="margin:0 0 24px;font-size:15px;font-weight:600;color:#1B1B1A;letter-spacing:-0.01em;">
-      Zap Finanças
-    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px;">
+      <tr>
+        <td width="32" height="32" align="center" valign="middle"
+          style="width:32px;height:32px;background:#0C8A55;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;line-height:32px;color:#ffffff;text-align:center;">Z</td>
+        <td width="10" style="width:10px;font-size:0;line-height:0;">&nbsp;</td>
+        <td valign="middle"
+          style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#1B1B1A;letter-spacing:-0.01em;">Zap Finanças</td>
+      </tr>
+    </table>
 
     <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;font-weight:700;color:#1B1B1A;letter-spacing:-0.02em;">
       Confirme seu e-mail
     </h1>
 
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A4A47;">
-      Você criou uma conta no Zap Finanças. Confirme este endereço para
-      liberar o acesso e começar seus 14 dias de teste.
+      Você criou uma conta no Zap Finanças.<br>
+      Confirme este endereço para liberar o acesso e começar seus 14 dias de teste.
     </p>
 
     <p style="margin:0 0 24px;">
-      <a href="{{ .ConfirmationURL }}"
-         style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard"
+        style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
         Confirmar meu e-mail
       </a>
     </p>
@@ -38,20 +59,21 @@
       Se o botão não funcionar, copie e cole este endereço no navegador:
     </p>
     <p style="margin:0 0 28px;font-size:12px;line-height:1.5;word-break:break-all;">
-      <a href="{{ .ConfirmationURL }}" style="color:#4A4A47;">{{ .ConfirmationURL }}</a>
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard"
+        style="color:#4A4A47;">{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard</a>
     </p>
 
     <hr style="border:none;border-top:1px solid #E8E6E1;margin:0 0 20px;">
 
     <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6B66;">
-      Se não foi você que criou esta conta, ignore este e-mail — nada é
-      ativado sem esta confirmação.
+      Se não foi você que criou esta conta, ignore este e-mail.<br>
+      Nada é ativado sem esta confirmação.
     </p>
 
   </div>
 
   <p style="max-width:480px;margin:20px auto 0;font-size:12px;line-height:1.5;color:#8A8A85;text-align:center;">
     Zap Finanças · seu assistente financeiro no WhatsApp<br>
-    Este é um e-mail automático — não responda.
+    Este é um e-mail automático, não responda.
   </p>
 </div>
