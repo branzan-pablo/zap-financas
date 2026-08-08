@@ -142,7 +142,6 @@ daquele bloco (`PLUGGY_*`, `GEMINI_API_KEY`, `EVOLUTION_*`, `MERCADOPAGO_*`).
 /orcamentos                   orçamento mensal por categoria
 /fechamento                   fechamento mensal, com navegação por mês
 /investimentos                carteira de investimentos
-/metas                        🚧 placeholder — não entregue (adiado)
 /configuracoes                perfil, assinatura, exportar/excluir conta
 /configuracoes/whatsapp       pareamento do número
 /configuracoes/categorias     categorias personalizadas + palavras-chave
