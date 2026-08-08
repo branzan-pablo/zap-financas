@@ -97,10 +97,19 @@ export class MercadoPagoProvider implements PaymentsProvider {
     return { url, externalId: data.id };
   }
 
+  /**
+   * Cancela a assinatura no MP.
+   *
+   * `canceled` com UM "l" — é a grafia que a API aceita. A doc oficial usa
+   * `canceled` em todas as 12 ocorrências e `cancelled` em nenhuma. Estava
+   * escrito com dois "l" aqui, e o modo de falha era ruim: o usuário cancela em
+   * /assinar, o banco local marca "cancelado", e o MP segue cobrando — porque
+   * nunca recebeu um status que reconhece.
+   */
   async cancelar(externalId: string): Promise<void> {
     const res = await this.mpFetch(`/preapproval/${externalId}`, {
       method: "PUT",
-      body: JSON.stringify({ status: "cancelled" }),
+      body: JSON.stringify({ status: "canceled" }),
     });
     if (!res.ok) {
       throw new Error(`Mercado Pago cancelar falhou: ${res.status} ${await res.text()}`);
@@ -161,7 +170,12 @@ export class MercadoPagoProvider implements PaymentsProvider {
         if (status === "authorized") {
           return { tipo: "aprovado", externalId: dataId, periodoFim: pre?.next_payment_date };
         }
-        if (status === "cancelled") {
+        // Aceita as duas grafias na LEITURA de propósito. Enviamos `canceled`
+        // (ver `cancelar`), mas aqui quem escolhe a palavra é o MP: uma troca
+        // do lado deles passaria despercebida e o cancelamento sumiria em
+        // silêncio. Ser tolerante ao ler e estrito ao escrever custa uma
+        // comparação e remove esse ponto cego.
+        if (status === "canceled" || status === "cancelled") {
           return { tipo: "cancelado", externalId: dataId };
         }
         return null; // pending/paused → sem ação
