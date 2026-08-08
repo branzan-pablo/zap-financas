@@ -69,6 +69,35 @@ function montarCsp(nonce: string): string {
   ].join("; ");
 }
 
+/**
+ * Decide o redirecionamento de auth — separado da requisição para ser testável.
+ *
+ * `acaoDeServidor` existe por um bug real: o proxy redirecionava também o POST
+ * de uma Server Action, e o cliente do Next recebia um 307 onde esperava o
+ * payload da action. O resultado era o error boundary com "An unexpected
+ * response was received from the server" — nunca a tela de login.
+ *
+ * Verificado em produção: `POST /signup` com sessão ativa devolvia 307, o
+ * browser reenviava o POST para /dashboard, e o app quebrava. O caso espelho é
+ * pior e atinge qualquer usuário: sessão expira, a pessoa salva uma transação,
+ * e em vez de ir para o login vê "Algo deu errado" no meio de um lançamento.
+ *
+ * Deixar a action passar é seguro — todas chamam `supabase.auth.getUser()` antes
+ * de tocar em qualquer coisa, e um `redirect()` de dentro de uma action o Next
+ * sabe entregar ao cliente. O RLS é a barreira final.
+ */
+export function redirecionamentoDeAuth(estado: {
+  temSessao: boolean;
+  rotaApp: boolean;
+  rotaAuth: boolean;
+  acaoDeServidor: boolean;
+}): "/login" | "/dashboard" | null {
+  if (estado.acaoDeServidor) return null;
+  if (!estado.temSessao && estado.rotaApp) return "/login";
+  if (estado.temSessao && estado.rotaAuth) return "/dashboard";
+  return null;
+}
+
 export async function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID();
   const csp = montarCsp(nonce);
@@ -143,16 +172,23 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = pathname.startsWith("/login") ||
     pathname.startsWith("/signup");
 
-  if (!user && isAppRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return comCsp(NextResponse.redirect(url), csp);
-  }
+  // O Next carimba `Next-Action` no POST de toda Server Action. É como
+  // distinguir "o usuário está navegando" de "o app está executando uma ação" —
+  // e só o primeiro caso pode ser redirecionado daqui.
+  const acaoDeServidor =
+    request.method === "POST" && request.headers.has("next-action");
 
-  if (user && isAuthRoute) {
+  const destino = redirecionamentoDeAuth({
+    temSessao: Boolean(user),
+    rotaApp: isAppRoute,
+    rotaAuth: isAuthRoute,
+    acaoDeServidor,
+  });
+
+  if (destino) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = destino;
+    if (destino === "/login") url.searchParams.set("next", pathname);
     return comCsp(NextResponse.redirect(url), csp);
   }
 
