@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
     <AuthCard>
       <AuthTitle>Recuperar senha</AuthTitle>
       <p className="mt-1 text-sm text-slate">
-        Digite seu email e enviaremos um link para criar uma nova senha.
+        Digite seu e-mail e enviaremos um link para criar uma nova senha.
       </p>
 
       {erro && <AuthError>{erro}</AuthError>}
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
       {/* `noValidate`: a validação é nossa, em português e presa ao campo — o
           balão nativo do navegador some sozinho e não é lido por leitor de tela. */}
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
-        <AuthField id="email" label="Email" erro={erroEmail ?? undefined}>
+        <AuthField id="email" label="E-mail" erro={erroEmail ?? undefined}>
           <AuthInput
             id="email"
             name="email"

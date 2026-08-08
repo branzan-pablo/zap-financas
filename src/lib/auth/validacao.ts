@@ -16,7 +16,7 @@
 export const SENHA_MIN = 12;
 
 /**
- * Email — checagem de propósito frouxa.
+ * E-mail — checagem de propósito frouxa.
  *
  * A prova de que um endereço existe é o link de confirmação, não uma regex.
  * Barramos só o que claramente não é endereço; regex ambiciosa rejeita emails
@@ -24,9 +24,9 @@ export const SENHA_MIN = 12;
  */
 export function validarEmail(email: string): string | null {
   const valor = email.trim();
-  if (!valor) return "Digite seu email.";
+  if (!valor) return "Digite seu e-mail.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor)) {
-    return "Digite um email completo, como nome@email.com.";
+    return "Digite um e-mail completo, como nome@email.com.";
   }
   return null;
 }
