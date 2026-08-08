@@ -4,6 +4,13 @@
 
   Estilos INLINE pelo mesmo motivo do template de confirmação.
 
+  ⚠️ NÃO troque o link por {{ .ConfirmationURL }}. Aquele passa pelo /verify do
+  Supabase, que devolve o token no FRAGMENTO da URL (#access_token=...), e
+  fragmento não é enviado ao servidor — o /callback não consegue lê-lo nem em
+  teoria. O resultado é o usuário clicar e cair em /login?error=auth_callback_failed.
+  O link abaixo aponta direto para a nossa rota com token_hash em query param,
+  onde `verifyOtp` fecha a sessão do lado do servidor.
+
   Duas escolhas de segurança no texto:
 
   - O prazo de validade do link é dito explicitamente. Quem recebeu sem ter
@@ -30,7 +37,7 @@
     </p>
 
     <p style="margin:0 0 24px;">
-      <a href="{{ .ConfirmationURL }}"
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password"
          style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
         Criar nova senha
       </a>
@@ -40,7 +47,7 @@
       Se o botão não funcionar, copie e cole este endereço no navegador:
     </p>
     <p style="margin:0 0 28px;font-size:12px;line-height:1.5;word-break:break-all;">
-      <a href="{{ .ConfirmationURL }}" style="color:#4A4A47;">{{ .ConfirmationURL }}</a>
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password" style="color:#4A4A47;">{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password</a>
     </p>
 
     <hr style="border:none;border-top:1px solid #E8E6E1;margin:0 0 20px;">

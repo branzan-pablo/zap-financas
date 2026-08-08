@@ -5,6 +5,13 @@
   Estilos são INLINE de propósito: Gmail e Outlook descartam <style> em boa
   parte dos contextos, e um e-mail sem estilo precisa continuar legível.
 
+  ⚠️ NÃO troque o link por {{ .ConfirmationURL }}. Aquele passa pelo /verify do
+  Supabase, que devolve o token no FRAGMENTO da URL (#access_token=...), e
+  fragmento não é enviado ao servidor — o /callback não consegue lê-lo nem em
+  teoria. O resultado é o usuário clicar e cair em /login?error=auth_callback_failed.
+  O link abaixo aponta direto para a nossa rota com token_hash em query param,
+  onde `verifyOtp` fecha a sessão do lado do servidor.
+
   Este é o primeiro contato de todo usuário novo com a marca. Um e-mail em
   inglês, de um domínio recém-conhecido, pedindo clique num link, é o que as
   pessoas foram ensinadas a tratar como golpe — daí o cuidado com o texto:
@@ -28,7 +35,7 @@
     </p>
 
     <p style="margin:0 0 24px;">
-      <a href="{{ .ConfirmationURL }}"
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard"
          style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
         Confirmar meu e-mail
       </a>
@@ -38,7 +45,7 @@
       Se o botão não funcionar, copie e cole este endereço no navegador:
     </p>
     <p style="margin:0 0 28px;font-size:12px;line-height:1.5;word-break:break-all;">
-      <a href="{{ .ConfirmationURL }}" style="color:#4A4A47;">{{ .ConfirmationURL }}</a>
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard" style="color:#4A4A47;">{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=signup&next=%2Fdashboard</a>
     </p>
 
     <hr style="border:none;border-top:1px solid #E8E6E1;margin:0 0 20px;">
