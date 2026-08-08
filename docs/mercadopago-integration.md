@@ -33,6 +33,8 @@ e em produção — trocar de modo não invalida a assinatura já validada.
 | 4 | **Grafia do cancelamento** | `{"status":"cancelled"}` → **200**. `{"status":"canceled"}` → **400** `Invalid preapproval status param` |
 | 5 | **Tópicos do webhook** | `subscription_preapproval` **e** `subscription_authorized_payment` inscritos. O segundo estava faltando: sem ele, **renovação mensal nunca notificaria** |
 | 6 | **Checkout ponta a ponta** | `liveMode: true`, R$ 19,90, cartão tokenizado, MP processou e devolveu veredito |
+| 7 | **Cancelamento por evento real** | Após a recusa, o MP cancelou o preapproval e notificou. O webhook processou e gravou `cancelado` — **e a notificação veio com `cancelled`, dois "l"**, confirmando o item 4 pelo lado da leitura |
+| 8 | **Entrega dos dois tópicos** | `notifications_history`: 10 notificações, 8 `subscription_preapproval` + 2 `subscription_authorized_payment`, **100% em HTTP 200** |
 
 ### ⚠️ A documentação do MP mente sobre o cancelamento
 
@@ -69,8 +71,10 @@ próprios.
 
 Tudo aqui depende de um pagamento aprovado:
 
-1. **Mapa de status** — `authorized` e `paused` no preapproval; `approved`/
-   `processed`/`rejected` no authorized_payment.
+1. **Mapa de status** — falta `authorized` e `paused` no preapproval, e
+   `approved`/`processed` no authorized_payment. O `cancelled` já foi exercitado
+   por evento real (item 7 acima), e o tópico `authorized_payment` já entregou —
+   só não com um pagamento bem-sucedido.
 2. **`next_payment_date` na autorização** — enquanto `pending`, ele volta como o
    *instante da criação*. Se vier assim na autorização, gravaríamos um período já
    vencido. **Mitigado por construção**: `ativarAssinatura` descarta data no
