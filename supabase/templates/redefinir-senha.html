@@ -2,11 +2,12 @@
   Template: Reset Password (Supabase → Authentication → Emails → Templates)
   Assunto:  Redefinir sua senha — Zap Finanças
 
-  Estilos INLINE pelo mesmo motivo do template de confirmação.
+  Estilos INLINE e a marca em HTML (não <img>) pelos mesmos motivos do template
+  de confirmação.
 
   ⚠️ NÃO troque o link por {{ .ConfirmationURL }}. Aquele passa pelo /verify do
   Supabase, que devolve o token no FRAGMENTO da URL (#access_token=...), e
-  fragmento não é enviado ao servidor — o /callback não consegue lê-lo nem em
+  fragmento não é enviado ao servidor - o /callback não consegue lê-lo nem em
   teoria. O resultado é o usuário clicar e cair em /login?error=auth_callback_failed.
   O link abaixo aponta direto para a nossa rota com token_hash em query param,
   onde `verifyOtp` fecha a sessão do lado do servidor.
@@ -20,25 +21,33 @@
     um pedido de redefinição não solicitado costuma ser o primeiro sinal
     visível de que alguém está tentando entrar na conta.
 -->
-<div style="margin:0;padding:24px 12px;background:#FBFBF9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #E8E6E1;border-radius:12px;padding:32px;">
+<div
+  style="margin:0;padding:24px 12px;background:#FBFBF9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div
+    style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #E8E6E1;border-radius:12px;padding:32px;">
 
-    <p style="margin:0 0 24px;font-size:15px;font-weight:600;color:#1B1B1A;letter-spacing:-0.01em;">
-      Zap Finanças
-    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px;">
+      <tr>
+        <td width="32" height="32" align="center" valign="middle"
+          style="width:32px;height:32px;background:#0C8A55;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;line-height:32px;color:#ffffff;text-align:center;">Z</td>
+        <td width="10" style="width:10px;font-size:0;line-height:0;">&nbsp;</td>
+        <td valign="middle"
+          style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#1B1B1A;letter-spacing:-0.01em;">Zap Finanças</td>
+      </tr>
+    </table>
 
     <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;font-weight:700;color:#1B1B1A;letter-spacing:-0.02em;">
       Redefinir sua senha
     </h1>
 
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A4A47;">
-      Recebemos um pedido para redefinir a senha da sua conta. Clique abaixo
-      para escolher uma nova. <strong style="color:#1B1B1A;">O link vale por 1 hora.</strong>
+      Recebemos um pedido para redefinir a senha da sua conta.<br>
+      Clique abaixo para escolher uma nova. <strong style="color:#1B1B1A;">O link vale por 1 hora.</strong>
     </p>
 
     <p style="margin:0 0 24px;">
       <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password"
-         style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
+        style="display:inline-block;background:#1B1B1A;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;">
         Criar nova senha
       </a>
     </p>
@@ -47,21 +56,23 @@
       Se o botão não funcionar, copie e cole este endereço no navegador:
     </p>
     <p style="margin:0 0 28px;font-size:12px;line-height:1.5;word-break:break-all;">
-      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password" style="color:#4A4A47;">{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password</a>
+      <a href="{{ .SiteURL }}/callback?token_hash={{ .TokenHash }}&type=recovery&next=%2Freset-password"
+        style="color:#4A4A47;">{{ .SiteURL }}/callback?token_hash={{ .TokenHash
+        }}&type=recovery&next=%2Freset-password</a>
     </p>
 
     <hr style="border:none;border-top:1px solid #E8E6E1;margin:0 0 20px;">
 
     <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6B66;">
-      Se não foi você que pediu, sua senha atual continua valendo e nada
-      muda. Mas vale trocá-la por precaução — um pedido que você não fez
-      costuma significar que alguém tem o seu e-mail e está tentando entrar.
+      Se não foi você que pediu, sua senha atual continua valendo e nada muda.<br>
+      Mas vale trocá-la por precaução, um pedido que você não fez costuma significar que alguém tem o seu e-mail e está
+      tentando entrar.
     </p>
 
   </div>
 
   <p style="max-width:480px;margin:20px auto 0;font-size:12px;line-height:1.5;color:#8A8A85;text-align:center;">
     Zap Finanças · seu assistente financeiro no WhatsApp<br>
-    Este é um e-mail automático — não responda.
+    Este é um e-mail automático, não responda.
   </p>
 </div>
