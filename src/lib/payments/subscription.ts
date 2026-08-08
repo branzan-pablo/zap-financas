@@ -27,13 +27,33 @@ export async function ativarAssinatura(
 
   // O fim do ciclo é, idealmente, o informado pelo provider (fonte da verdade);
   // só calculamos localmente (now + meses) quando ele não vem (ex.: mock).
-  const fim = periodoFimIso
-    ? new Date(periodoFimIso)
-    : (() => {
-        const d = new Date(agora);
-        d.setMonth(d.getMonth() + plano.meses);
-        return d;
-      })();
+  const calculado = (() => {
+    const d = new Date(agora);
+    d.setMonth(d.getMonth() + plano.meses);
+    return d;
+  })();
+
+  // Rede de segurança contra uma data ruim vinda do provider.
+  //
+  // Numa assinatura `pending` o Mercado Pago devolve `next_payment_date` igual
+  // ao instante da criação — verificado. Se ele fizer o mesmo na autorização,
+  // gravaríamos um `periodo_fim` já vencido: a pessoa paga e o paywall bloqueia
+  // no segundo seguinte, sem nada no sistema apontando o motivo.
+  //
+  // Diante da dúvida, erra-se a favor de quem pagou: uma data no passado ou
+  // ilegível vira o ciclo calculado. O custo máximo é dar acesso a mais do que
+  // o devido até a próxima cobrança confirmar a data real — o oposto custaria
+  // um cliente e um chargeback.
+  const informado = periodoFimIso ? new Date(periodoFimIso) : null;
+  const informadoUtil =
+    informado && !Number.isNaN(informado.getTime()) && informado > agora;
+  if (periodoFimIso && !informadoUtil) {
+    console.warn(
+      `ativarAssinatura: periodo_fim "${periodoFimIso}" do provider é inválido ` +
+        `ou não é futuro; usando o ciclo calculado (${calculado.toISOString()}).`
+    );
+  }
+  const fim = informadoUtil ? informado : calculado;
 
   const { error } = await db.from("subscriptions").upsert(
     {

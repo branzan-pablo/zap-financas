@@ -49,11 +49,41 @@ export async function POST(request: Request) {
   }
 
   const db = createAdminClient();
-  const { data: sub } = await db
+  let { data: sub } = await db
     .from("subscriptions")
     .select("user_id, plano")
     .eq("mp_subscription_id", evento.externalId)
     .maybeSingle();
+
+  // Segunda via: o `external_reference` é o `user_id` que mandamos ao criar o
+  // checkout. Sem isto, um usuário que abandona o checkout e volta depois —
+  // gerando um segundo preapproval, porque a janela de idempotência do MP é
+  // curta — pagaria pelo link antigo e não seria ativado, já que só o id mais
+  // recente fica gravado. O evento cairia como "assinatura desconhecida" e o
+  // dinheiro entraria sem liberar o acesso.
+  if (!sub && evento.externalReference) {
+    const { data: porRef } = await db
+      .from("subscriptions")
+      .select("user_id, plano")
+      .eq("user_id", evento.externalReference)
+      .maybeSingle();
+    if (porRef) {
+      console.warn(
+        `webhook mercadopago: ${evento.externalId} não estava gravado; ` +
+          `resolvido pelo external_reference (user ${porRef.user_id}).`
+      );
+      sub = porRef;
+      // Passa a seguir o preapproval que o MP de fato autorizou — senão um
+      // cancelamento futuro iria para o id antigo e o MP seguiria cobrando.
+      if (evento.tipo === "aprovado") {
+        await db
+          .from("subscriptions")
+          .update({ mp_subscription_id: evento.externalId })
+          .eq("user_id", porRef.user_id);
+      }
+    }
+  }
+
   if (!sub) {
     // Assinatura desconhecida — ack para o MP não reenviar.
     return Response.json({ ok: true, ignored: "assinatura desconhecida" });
