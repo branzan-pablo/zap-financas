@@ -5,10 +5,18 @@ import { MercadoPagoProvider } from "./mercadopago-provider";
 /**
  * Testes de contrato com a API do Mercado Pago.
  *
- * O foco é a grafia de `canceled`: a API aceita UM "l" e o código enviava dois.
- * O bug não aparecia em teste nenhum e o modo de falha era silencioso — usuário
- * cancela, o banco marca "cancelado", e o MP segue cobrando. Um teste que trave
- * a string é barato perto disso.
+ * O foco é a grafia de `cancelled`, onde a API e a documentação do MP
+ * DISCORDAM. A doc usa `canceled` (um "l") em 12 ocorrências e `cancelled` em
+ * nenhuma; a API faz o oposto. Verificado em 2026-08-08, em produção, contra
+ * duas assinaturas `pending`:
+ *
+ *     {"status":"canceled"}  → 400 "Invalid preapproval status param: canceled"
+ *     {"status":"cancelled"} → 200, GET seguinte devolve "cancelled"
+ *
+ * Alguém já "corrigiu" isto para `canceled` seguindo a doc, e o modo de falha é
+ * silencioso: o usuário cancela em /assinar, o MP recusa, e `cancelarAssinatura`
+ * marca "cancelado" no nosso banco de qualquer forma — tela diz que acabou, a
+ * cobrança continua. O teste abaixo é o que impede a próxima tentativa.
  */
 
 const SECRET = "segredo-de-teste";
@@ -35,7 +43,7 @@ function requisicaoAssinada(dataId: string) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("cancelar", () => {
-  it('envia status "canceled" — um "l", como a API exige', async () => {
+  it('envia status "cancelled" — dois "l", como a API exige (a doc mente)', async () => {
     const fetchMock = vi.fn().mockResolvedValue(respostaOk({}));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -44,7 +52,7 @@ describe("cancelar", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.mercadopago.com/preapproval/preapp-1");
     expect(init.method).toBe("PUT");
-    expect(JSON.parse(init.body)).toEqual({ status: "canceled" });
+    expect(JSON.parse(init.body)).toEqual({ status: "cancelled" });
   });
 
   it("propaga falha do MP em vez de engolir", async () => {
@@ -60,9 +68,10 @@ describe("cancelar", () => {
 });
 
 describe("parseWebhook — status da assinatura", () => {
-  // Lê as duas grafias: quem escolhe a palavra na resposta é o MP, e uma troca
-  // do lado deles faria o cancelamento sumir sem ninguém perceber.
-  it.each(["canceled", "cancelled"])(
+  // Lê as duas grafias: a API devolve "cancelled" hoje, mas a doc deles diz
+  // "canceled". O dia em que a API se alinhar à doc não pode ser o dia em que
+  // os cancelamentos param de ser processados.
+  it.each(["cancelled", "canceled"])(
     'mapeia status "%s" para tipo cancelado',
     async (status) => {
       vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respostaOk({ status })));

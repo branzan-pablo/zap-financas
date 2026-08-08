@@ -100,16 +100,26 @@ export class MercadoPagoProvider implements PaymentsProvider {
   /**
    * Cancela a assinatura no MP.
    *
-   * `canceled` com UM "l" — é a grafia que a API aceita. A doc oficial usa
-   * `canceled` em todas as 12 ocorrências e `cancelled` em nenhuma. Estava
-   * escrito com dois "l" aqui, e o modo de falha era ruim: o usuário cancela em
-   * /assinar, o banco local marca "cancelado", e o MP segue cobrando — porque
-   * nunca recebeu um status que reconhece.
+   * `cancelled` com DOIS "l" — e a documentação oficial diz o contrário.
+   *
+   * NÃO "corrija" isto para `canceled`. A doc do MP usa `canceled` em 12
+   * ocorrências e `cancelled` em nenhuma, mas a API de verdade responde:
+   *
+   *     PUT /preapproval/{id} {"status":"canceled"}
+   *     → 400 {"message":"Invalid preapproval status param: canceled"}
+   *
+   *     PUT /preapproval/{id} {"status":"cancelled"}
+   *     → 200, e o GET seguinte devolve status "cancelled"
+   *
+   * Verificado em 2026-08-08 contra a API de produção, em duas assinaturas
+   * recém-criadas (status `pending`, sem o confundidor de "já cancelada").
+   * A troca chegou a ser feita seguindo a doc e foi revertida — o teste em
+   * `mercadopago-provider.test.ts` existe para travar a grafia.
    */
   async cancelar(externalId: string): Promise<void> {
     const res = await this.mpFetch(`/preapproval/${externalId}`, {
       method: "PUT",
-      body: JSON.stringify({ status: "canceled" }),
+      body: JSON.stringify({ status: "cancelled" }),
     });
     if (!res.ok) {
       throw new Error(`Mercado Pago cancelar falhou: ${res.status} ${await res.text()}`);
@@ -170,12 +180,12 @@ export class MercadoPagoProvider implements PaymentsProvider {
         if (status === "authorized") {
           return { tipo: "aprovado", externalId: dataId, periodoFim: pre?.next_payment_date };
         }
-        // Aceita as duas grafias na LEITURA de propósito. Enviamos `canceled`
-        // (ver `cancelar`), mas aqui quem escolhe a palavra é o MP: uma troca
-        // do lado deles passaria despercebida e o cancelamento sumiria em
-        // silêncio. Ser tolerante ao ler e estrito ao escrever custa uma
-        // comparação e remove esse ponto cego.
-        if (status === "canceled" || status === "cancelled") {
+        // Aceita as duas grafias na LEITURA de propósito. A API devolve
+        // `cancelled` hoje (verificado), mas a documentação deles diz
+        // `canceled` — quando as duas discordam, o dia em que a API se alinhar
+        // à doc não pode ser o dia em que os cancelamentos somem em silêncio.
+        // Estrito ao escrever (uma grafia funciona), tolerante ao ler.
+        if (status === "cancelled" || status === "canceled") {
           return { tipo: "cancelado", externalId: dataId };
         }
         return null; // pending/paused → sem ação
