@@ -1,54 +1,101 @@
-# Integração Mercado Pago — notas e checklist de produção
+# Integração Mercado Pago — o que foi verificado e o que não foi
 
-> Estado: provider real implementado conforme a API documentada, **porém NÃO
-> testado contra o sandbox**. Mock-first segue como default (`PAYMENTS_PROVIDER=mock`).
-> Antes de cobrar de verdade, percorrer o checklist abaixo no sandbox.
+> **Estado (2026-08-08):** credenciais de **produção** (`APP_USR-`) no ar, webhook
+> configurado, e o fluxo exercitado contra a API real até onde o Mercado Pago
+> permite. O que falta depende de um pagamento **aprovado** — ver "O que não foi
+> verificado" no fim.
 
-## Arquitetura (como está)
+Aplicação única: **Zap Financas BR**, `5022148820763332`, recebedor `1967760479`.
+Como só existe uma aplicação, o `MERCADOPAGO_WEBHOOK_SECRET` é o mesmo em teste
+e em produção — trocar de modo não invalida a assinatura já validada.
+
+## Arquitetura
 
 - Abstração em `src/lib/payments/` — trocar de provider não toca em UI/gating.
-- **Assinatura (preapproval)**: `criarCheckout` → `POST /preapproval` com
-  `auto_recurring` (frequency/frequency_type/transaction_amount/currency_id BRL),
-  `external_reference = userId`, `payer_email`, `back_url`. Retorna `init_point`
-  (ou `sandbox_init_point` quando o token começa com `TEST-`).
-- **Cancelamento**: `PUT /preapproval/{id} { status: "cancelled" }`. A ação
-  `cancelarMinhaAssinatura` chama o provider ANTES de atualizar o banco (senão o
-  MP continuaria cobrando).
+- **Assinatura**: `criarCheckout` → `POST /preapproval` sem plano associado e com
+  `status: "pending"`, o padrão documentado para quando o meio de pagamento não é
+  definido na criação. Retorna `init_point`; o usuário escolhe como pagar lá.
+- **Cancelamento**: `PUT /preapproval/{id} { status: "cancelled" }`.
+  `cancelarMinhaAssinatura` chama o provider ANTES de atualizar o banco — senão o
+  MP continuaria cobrando enquanto o usuário acha que cancelou.
 - **Webhook** (`/api/webhooks/mercadopago`): valida `x-signature` → consulta o
-  recurso na API (status real) → atualiza estado. Trata os tópicos
-  `subscription_preapproval` (assinatura) e `subscription_authorized_payment`
-  (cobrança recorrente → sucesso/falha → dunning). Fail closed em produção se o
-  provider for o mock.
+  recurso na API → atualiza estado. Fail closed em produção se o provider for mock.
 - **Estado/gating**: `subscription.ts` (escrita via service_role) + `access.ts`
-  (regra de acesso pura e testada) usada no layout `(app)`.
+  (regra pura e testada) usada no layout `(app)`.
 
-## ⚠️ Checklist OBRIGATÓRIO no sandbox antes de produção
+## ✅ Verificado contra a API real
 
-1. **Template do `x-signature`** — confirmar o manifest EXATO. Implementado como:
-   `id:{data.id};request-id:{x-request-id};ts:{ts};` com `data.id` do query param
-   (minúsculo se alfanumérico), HMAC-SHA256 em hex comparado a `v1`. Validar com
-   uma notificação real de teste do painel do MP. **Esta é a parte mais sensível.**
-2. **Corpo do `preapproval`** — confirmar campos obrigatórios e formato de
-   `auto_recurring` para planos trimestral/anual (frequency 3/12 + months).
-3. **Status retornados** — mapear corretamente `authorized`/`paused`/`cancelled`
-   (preapproval) e `approved`/`processed`/`rejected` (authorized_payment).
-4. **`next_payment_date`** — confirmar que é a fonte do fim do ciclo (periodoFim).
-5. **Pix Automático (Pix recorrente)** — DISPONÍVEL no Mercado Pago (confirmado
-   pelo cliente). Estratégia: oferecer Pix Automático **e** cartão no checkout
-   hospedado (`init_point`), deixando o usuário escolher. No sandbox, validar:
-   (a) habilitar Pix Automático na conta MP para ele aparecer no checkout;
-   (b) se o `preapproval` precisa de algum campo extra (ex.: `payment_methods`)
-   para surfacar o Pix, ou se basta a configuração da conta;
-   (c) que a renovação via Pix dispara `subscription_authorized_payment` (o
-   webhook já trata). A 1ª autorização do Pix Automático é feita no app do banco.
-6. **Idempotência** — `X-Idempotency-Key` já enviado no `criarCheckout`. Garantir
-   que reentregas de webhook não dupliquem efeito (ativar = upsert idempotente;
-   evitar reextensão de período em reentrega — periodoFim vem do MP, não recalcula).
-7. **Credenciais** — usar token de teste (`TEST-...`) + usuários de teste do MP;
-   só então trocar por produção. Definir `MERCADOPAGO_WEBHOOK_SECRET` (painel →
-   Webhooks) e `PAYMENTS_PROVIDER=mercadopago`.
+| # | O quê | Evidência |
+|---|---|---|
+| 1 | **Template do `x-signature`** | Notificação real do painel do MP → **200**. Assinatura forjada ou ausente → **401**. `notifications_history`: 1 entrega, 100% de sucesso |
+| 2 | **Corpo do `preapproval`** | **201** nos três planos. `auto_recurring` devolvido com `1/3/12 months`, `19.9/49.9/149.9`, `BRL` — bate com `plans.ts` |
+| 3 | **`init_point`** | Presente. **`sandbox_init_point` não existe neste fluxo** — o ramo `this.sandbox` do `criarCheckout` nunca se aplica, o fallback cobre |
+| 4 | **Grafia do cancelamento** | `{"status":"cancelled"}` → **200**. `{"status":"canceled"}` → **400** `Invalid preapproval status param` |
+| 5 | **Tópicos do webhook** | `subscription_preapproval` **e** `subscription_authorized_payment` inscritos. O segundo estava faltando: sem ele, **renovação mensal nunca notificaria** |
+| 6 | **Checkout ponta a ponta** | `liveMode: true`, R$ 19,90, cartão tokenizado, MP processou e devolveu veredito |
 
-## Pendências conhecidas (pós-sandbox)
+### ⚠️ A documentação do MP mente sobre o cancelamento
+
+A doc oficial usa `canceled` (um "l") em 12 ocorrências e `cancelled` em nenhuma.
+**A API faz o contrário.** Isso já foi "corrigido" uma vez seguindo a doc e teve
+de ser revertido — ver o comentário em `mercadopago-provider.ts` e o teste que
+trava a string. Não refaça esse caminho.
+
+### 🚫 O sandbox de assinaturas está indisponível para esta conta
+
+```
+POST /preapproval  (credenciais TEST-)
+→ 400 {"message":"Both payer and collector must be real or test users"}
+```
+
+As credenciais `TEST-` pertencem à conta **real**, e assinatura exige pagador e
+recebedor do mesmo tipo. Testado inclusive com comprador de teste criado pelo MCP
+oficial — mesmo 400. Sair disso exigiria um vendedor de teste com aplicação
+própria, o que traria um segundo `MERCADOPAGO_WEBHOOK_SECRET` e invalidaria a
+validação do item 1. **A validação é feita em produção.**
+
+### 🚫 O dono da conta não consegue testar pagando a si mesmo
+
+```
+payment_status_detail: cc_rejected_high_risk
+```
+
+Conta MP nova + cartão do mesmo titular do vendedor = padrão de teste de cartão
+roubado para o antifraude. Recusa sistemática, independente do cartão. Para
+exercitar um pagamento **aprovado** é preciso um terceiro, com conta e CPF
+próprios.
+
+## ❌ O que não foi verificado
+
+Tudo aqui depende de um pagamento aprovado:
+
+1. **Mapa de status** — `authorized` e `paused` no preapproval; `approved`/
+   `processed`/`rejected` no authorized_payment.
+2. **`next_payment_date` na autorização** — enquanto `pending`, ele volta como o
+   *instante da criação*. Se vier assim na autorização, gravaríamos um período já
+   vencido. **Mitigado por construção**: `ativarAssinatura` descarta data no
+   passado ou ilegível e cai no ciclo do plano, com aviso no log.
+3. **Renovação recorrente** — o `subscription_authorized_payment` só agora está
+   inscrito; nenhuma renovação ocorreu ainda.
+4. **Dunning** — `marcarInadimplente` nunca foi acionado por evento real.
+5. **Pix Automático** — fora de escopo desta rodada. Cartão é o caminho de
+   lançamento. Exige habilitar na conta e a 1ª autorização no app do banco.
+
+### Como fechar o que falta
+
+Uma assinatura de R$ 19,90 paga por **outra pessoa** (conta MP e CPF próprios),
+seguida de cancelamento e estorno. Verificar depois:
+
+- `notifications_history` registra `subscription_preapproval` **aprovado**
+- `subscriptions`: `status = ativo`, `periodo_fim` ~1 mês à frente
+- se o log trouxer `periodo_fim ... inválido`, o `next_payment_date` do MP é
+  inservível e a rede de segurança agiu — vale abrir chamado com eles
+- `/dashboard` abre sem paywall
+- cancelamento em `/assinar` → `cancelled` no MP **e** `cancelado` no banco
+
+## Pendências conhecidas
 - Reconciliação periódica (GET das assinaturas ativas) como rede de segurança.
 - Tratar `paused` (MP pausa por falha de cobrança) além de cancelled/authorized.
 - Trocar de plano sem cancelar (upgrade/downgrade).
+- `X-Idempotency-Key` não impede um segundo preapproval depois de ~1h; o webhook
+  já lida com isso resolvendo pelo `external_reference`.
